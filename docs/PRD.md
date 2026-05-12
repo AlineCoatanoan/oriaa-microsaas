@@ -41,7 +41,9 @@ Il ne s'agit pas d'un produit destiné à être commercialisé, mais d'un **proj
 
 ## 4. La fonctionnalité principale — Module suivi bénéficiaire
 
-La V1 se concentre sur **un seul module** : le suivi bénéficiaire, dont fait partie intégrante la gestion des tâches quotidiennes.
+La V1 se concentre sur **un seul module** : Vue des tâches quotidiennes liées aux bénéficiaires.
+
+Une interface centralisée permettant à un travailleur social de visualiser toutes ses tâches en cours, triées par urgence et échéance, avec accès direct au dossier bénéficiaire associé.
 
 | Fonctionnalité | Priorité | Sprint |
 |---|---|---|
