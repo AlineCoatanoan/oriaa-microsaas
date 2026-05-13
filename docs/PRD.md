@@ -96,8 +96,7 @@ C’est la base indispensable du système.
 Création / modification / archivage d’un bénéficiaire
 Fiche bénéficiaire centralisée
 Vue synthétique de la situation
-Historique des actions et événements
-Statut de parcours 
+Notes de suivi (RDV + tâches associées)
 
 Sans ça, aucun suivi n’est possible.
 
@@ -108,20 +107,23 @@ Sans ça, aucun suivi n’est possible.
 Création de tâches
 Tâches liées ou non liées à un bénéficiaire
 Priorisation (urgence / échéance)
-Vue quotidienne des tâches de l’utilisateur
+Vue quotidienne des tâches de l’utilisateur (comportement par défaut : affichage des tâches de l’utilisateur connecté)
 Accès direct au dossier bénéficiaire depuis une tâche
 Possibilité de générer une tâche depuis une action ou un RDV
-Système de filtrage des tâches
+Système de filtrage des tâches (par bénéficiaire, statut, échéance, collègues)
 
-**Gestion des rendez-vous/planning (activité terrain)**
+**--> V1 Bis : Gestion des rendez-vous/planning (activité terrain)**
 
 Permet de créer les tâches lors du RDV.
+Il pourrait s'agir d'une fonctionnalité à part entière. Fonctionnalité simplifiée dans un premier temps.
 
+L'idéal : 
 Création de rendez-vous (bureau / domicile / partenaire)
 Association à un bénéficiaire
 Association à un véhicule de service
-Historisation automatique
+Vue planning (paramètres par défaut : affichage du planning de l’utilisateur connecté)
 Possibilité de générer des tâches depuis un RDV
+Système de filtrage du planning (par bénéficiaire, collègues)
 
 ---
 
@@ -139,12 +141,17 @@ Possibilité de générer des tâches depuis un RDV
 
 Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils constituent des fonctionnalités secondaires documentées, envisageables en V2.
 
-- **Répertoire partenaires :** les infos partenariales peuvent être mentionnées.
-- **Import et exports PDF / CSV** 
-- **Notifications et rappels automatiques** 
-- **Gestion de rôles multiples :** un seul niveau d'accès en V1. Différenciation admin / coordinateur / envisagée en V2.
-- **Application mobile native :** la V1 est une SPA web responsive, utilisable sur téléphone. Une app mobile dédiée est identifiée comme l'évolution naturelle en V2 : le besoin terrain est réel, notamment pour les visites à domicile.
-- **dashboard :** accessible en tant qu'admin. vue sur les statistiques de l'activité globale.
+- **Répertoire partenaires :** centralisation des contacts externes utilisés dans le cadre de l’accompagnement (CAF, CMP, bailleurs, associations…).
+
+- **Exports et reporting :** génération de documents au format PDF ou CSV (dossiers bénéficiaires, listes de tâches, synthèses d’activité).
+
+- **Notifications et rappels :** système d’alertes pour les échéances de tâches et rendez-vous.
+
+- **Gestion des rôles utilisateurs :** introduction de profils différenciés (travailleur social, coordinateur, administration) avec des vues adaptées (personnelles ou globales).
+
+- **Application mobile :** évolution vers une application dédiée pour faciliter l’usage terrain, notamment lors des visites à domicile.
+
+- **Tableau de bord direction :** vue globale de l’activité (statistiques) (bénéficiaires, tâches, rendez-vous) destinée aux profils d’encadrement.
 
 
 ### V3 (évolution vers un outil de gestion complète d’établissement)
