@@ -1,0 +1,59 @@
+@startuml use-cases
+top to bottom direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam nodesep 50
+skinparam ranksep 60
+skinparam padding 12
+
+skinparam usecase {
+  BackgroundColor White
+  BorderColor #555
+  FontSize 12
+}
+
+skinparam package {
+  BackgroundColor #F8F8F8
+  BorderColor #888
+  FontSize 13
+  FontStyle bold
+}
+
+actor "Éducatrice spécialisée" as educ
+
+package "Bénéficiaires" {
+  usecase "Créer un dossier" as UC3
+  usecase "Rechercher un bénéficiaire" as UC7
+  usecase "Consulter un dossier" as UC4
+  usecase "Modifier un dossier" as UC5
+  usecase "Archiver un dossier" as UC6
+  usecase "Changer le statut" as UC8
+}
+
+package "Actions" {
+  usecase "Créer une action (RDV, rapport...)" as UC9
+  usecase "Consulter l'historique" as UC10
+}
+
+package "Tâches" {
+  usecase "Voir ses tâches du jour" as UC11
+  usecase "Créer une tâche" as UC12
+  usecase "Lier une tâche à un bénéficiaire" as UC13
+  usecase "Marquer comme terminée" as UC14
+}
+
+package "Documents" {
+  usecase "Ajouter un document" as UC15
+  usecase "Télécharger un document" as UC16
+}
+
+educ --> UC3
+educ --> UC9
+educ --> UC11
+educ --> UC15
+
+UC9 ..> UC10 : <<include>>
+UC4 ..> UC10 : <<include>>
+UC13 ..> UC4 : <<include>>
+
+@enduml
