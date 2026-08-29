@@ -1,1 +1,0 @@
-MCD : https://app.diagrams.net/#G1tLkmtrILlteYMnKXpvrQXNdsKDyRBGYi#%7B%22pageId%22%3A%22mcd-oriaa-v2%22%7D
