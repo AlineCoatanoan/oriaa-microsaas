@@ -1,0 +1,42 @@
+@startuml deploiement
+
+skinparam componentStyle rectangle
+
+node "Poste client" as ClientNode {
+  [Navigateur web] as Browser
+}
+
+node "Runner GitHub Actions\n(environnement CI éphémère)" as CINode {
+  [GitHub Actions\n(tests + build)] as CI
+  database "PostgreSQL\n(conteneur Docker,\nBDD de test)" as DBTest
+  CI --> DBTest : Exécution des tests\n(Jest + Supertest)
+}
+
+cloud "Render" as RenderCloud {
+
+  node "Conteneur Docker\n(React SPA servie via Nginx)" as FrontContainer {
+    [React SPA\n(build de production)] as Front
+  }
+
+  node "Conteneur Docker\n(API back-end)" as APIContainer {
+    [API Express\n+ Prisma ORM] as API
+  }
+
+  database "PostgreSQL\n(managée, prod)" as DBProd
+}
+
+Browser --> Front : HTTPS\n(chargement de l'app)
+Browser --> API : HTTPS / REST\n(appels API + JWT)
+
+API --> DBProd : Connexion Prisma\n(runtime prod)
+
+CI ..> FrontContainer : Déploiement automatique\n(si tests OK)
+CI ..> APIContainer : Déploiement automatique\n(si tests OK)
+
+note bottom of CINode
+  La BDD de test est un conteneur
+  Docker éphémère, recréé à chaque
+  run CI — jamais déployée en prod
+end note
+
+@enduml

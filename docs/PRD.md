@@ -45,7 +45,7 @@ Elle commence souvent sa journée avec :
 
 Elle passe sa journée à :
 
-- changer de contexte en permanence (bureau → terrain → bureau)
+- changer de contexte en permanence (bureau --> terrain --> bureau)
 - gérer des interruptions fréquentes
 - reconstituer mentalement “où en est chaque situation”
 
@@ -112,7 +112,7 @@ Accès direct au dossier bénéficiaire depuis une tâche
 Possibilité de générer une tâche depuis une action ou un RDV
 Système de filtrage des tâches (par bénéficiaire, statut, échéance, collègues)
 
-**--> V1 Bis : Gestion des rendez-vous/planning (activité terrain)**
+**Gestion des rendez-vous/planning (activité terrain)**
 
 Permet de créer les tâches lors du RDV.
 Il pourrait s'agir d'une fonctionnalité à part entière. Fonctionnalité simplifiée dans un premier temps.
@@ -141,6 +141,8 @@ Système de filtrage du planning (par bénéficiaire, collègues)
 
 Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils constituent des fonctionnalités secondaires documentées, envisageables en V2.
 
+- **Hébergements :** gestion des hébergements, gestion des entrées, sorties, travaux à prévoir, ménages à prévoir, adresses...
+
 - **Répertoire partenaires :** centralisation des contacts externes utilisés dans le cadre de l’accompagnement (CAF, CMP, bailleurs, associations…).
 
 - **Exports et reporting :** génération de documents au format PDF ou CSV (dossiers bénéficiaires, listes de tâches, synthèses d’activité).
@@ -152,6 +154,8 @@ Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils
 - **Application mobile :** évolution vers une application dédiée pour faciliter l’usage terrain, notamment lors des visites à domicile.
 
 - **Tableau de bord direction :** vue globale de l’activité (statistiques) (bénéficiaires, tâches, rendez-vous) destinée aux profils d’encadrement.
+
+- **Réservation des véhicules et visuel sur le planning :** permettre aux utilisateurs de visualiser les véhicules de service disponibles et leur disponibilité sur le planning.
 
 
 ### V3 (évolution vers un outil de gestion complète d’établissement)
