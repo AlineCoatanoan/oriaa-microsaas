@@ -18,11 +18,13 @@ Analyser les solutions existantes utilisées en structures sociales afin d'ident
 Solution de suivi des soins et de coordination des équipes en établissement.
 
 **Points forts**
+
 - Bon suivi des dossiers et des transmissions
 - Adapté au travail pluridisciplinaire
 - Décrit comme agréable et clair par des témoignages clients ⚠️ (publiés par l'éditeur, source non indépendante)
 
 **Limites terrain**
+
 - Centré sur le dossier plutôt que sur les actions quotidiennes
 - Faible visibilité des priorités individuelles
 - Charge mentale toujours portée par l'utilisateur
@@ -38,11 +40,13 @@ Outil efficace pour documenter, mais limité pour organiser le travail quotidien
 ERP complet pour la gestion globale des établissements sociaux et médico-sociaux.
 
 **Points forts**
+
 - Couverture fonctionnelle très large
 - Gestion organisationnelle globale (RH, planning, administratif)
 - Adapté aux structures complexes
 
 **Limites terrain**
+
 - Perçu comme lourd et lent au quotidien (confirmé par avis indépendant vérifié, note 2/5 — lebonlogiciel.com)
 - Complexité d'usage, courbe d'apprentissage importante
 - Difficile à appréhender pour les équipes terrain
@@ -58,11 +62,13 @@ Solution puissante mais difficile à exploiter dans un usage opérationnel rapid
 Outil numérique de gestion documentaire, testé personnellement en tant qu'éducatrice spécialisée.
 
 **Points forts**
+
 - Interface claire et aérée
 - Plutôt rapide à l'usage
 - Relativement simple d'utilisation
 
 **Limites terrain**
+
 - Aucune fonctionnalité concernant les tâches ou la priorisation
 - Organisation des dossiers et fichiers entièrement à la charge de l'utilisateur (création, classement, catégorisation)
 - Sans structure imposée, l'absence de rigueur personnelle mène rapidement au désordre
@@ -80,11 +86,13 @@ Un outil agréable visuellement, mais qui ne répond pas au besoin de gestion de
 Méthode utilisée avant l'adoption d'un logiciel métier : dossiers papier et fichiers Excel de contournement pour la gestion des tâches.
 
 **Points forts**
+
 - Simple d'utilisation, aucune courbe d'apprentissage
 - Grande flexibilité (Excel)
 - Aucune complexité outil : tout repose sur la rigueur personnelle
 
 **Limites terrain**
+
 - Plutôt lent : aucune automatisation, tout doit être rédigé et organisé manuellement
 - Aucune intégration avec les dossiers bénéficiaires
 - Risque de perte ou de désorganisation des données
@@ -93,7 +101,6 @@ Méthode utilisée avant l'adoption d'un logiciel métier : dossiers papier et f
 Solution de contournement plutôt qu'outil métier — fonctionne uniquement grâce à la rigueur individuelle, sans aucun gain de temps.
 
 ---
-
 
 > Reconnect et « Sans logiciel » évalués sur retour d'expérience personnel (usage terrain en tant qu'éducatrice).
 
@@ -109,7 +116,8 @@ Solution de contournement plutôt qu'outil métier — fonctionne uniquement gr�
 
 Trois catégories de solutions coexistent :
 
-**Outils métiers** 
+**Outils métiers**
+
 - Structurent les dossiers
 - Centralisent les informations
 - Mais ne facilitent pas la priorisation quotidienne
@@ -117,6 +125,7 @@ Trois catégories de solutions coexistent :
 - Mais aucune fonctionnalité tâches, organisation reportée sur l'utilisateur
 
 **Méthode manuelle** (papier / Excel)
+
 - Flexible mais complexe car prend beaucoup de temps de rédaction
 - Non structurée, sans intégration bénéficiaire
 

@@ -123,16 +123,16 @@ Le découpage de l'application en couches indépendantes facilite également sa 
 
 # Stack technique
 
-| Élément | Choix | Justification |
-|----------|-------|---------------|
-| Langage | TypeScript | Typage statique et meilleure maintenabilité |
-| Frontend | React (Vite) | Interface moderne et réactive |
-| Backend | Express | API REST simple et largement utilisée |
-| ORM | Prisma | Typage, migrations et productivité |
-| Base de données | PostgreSQL | Robustesse et gestion des relations |
-| Authentification | JWT + bcrypt | API stateless et stockage sécurisé des mots de passe |
-| Validation | Joi | Validation des entrées utilisateur |
-| Sécurité | Helmet + CORS | Protection de l'API |
-| Tests | Jest, Supertest, Playwright | Tests unitaires, API et end-to-end |
-| CI/CD | GitHub Actions | Automatisation des tests |
-| Conteneurisation | Docker | Reproductibilité des environnements |
+| Élément          | Choix                       | Justification                                        |
+| ---------------- | --------------------------- | ---------------------------------------------------- |
+| Langage          | TypeScript                  | Typage statique et meilleure maintenabilité          |
+| Frontend         | React (Vite)                | Interface moderne et réactive                        |
+| Backend          | Express                     | API REST simple et largement utilisée                |
+| ORM              | Prisma                      | Typage, migrations et productivité                   |
+| Base de données  | PostgreSQL                  | Robustesse et gestion des relations                  |
+| Authentification | JWT + bcrypt                | API stateless et stockage sécurisé des mots de passe |
+| Validation       | Joi                         | Validation des entrées utilisateur                   |
+| Sécurité         | Helmet + CORS               | Protection de l'API                                  |
+| Tests            | Jest, Supertest, Playwright | Tests unitaires, API et end-to-end                   |
+| CI/CD            | GitHub Actions              | Automatisation des tests                             |
+| Conteneurisation | Docker                      | Reproductibilité des environnements                  |

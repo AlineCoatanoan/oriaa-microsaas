@@ -1,4 +1,5 @@
 # PRD - Oriaa
+
 **Outil de suivi des bénéficiaires · Structures d'hébergement · Secteur précarité**
 
 ---
@@ -21,7 +22,7 @@ Sur les deux dernières années de cette expérience, j'ai utilisé un logiciel 
 
 ## 2. La cible : Le persona
 
-*Agathe : Éducatrice spécialisée en CHRS (hébergement diffus)*
+_Agathe : Éducatrice spécialisée en CHRS (hébergement diffus)_
 
 Agathe travaille dans une structure d’hébergement en diffus. Elle accompagne environ 15 à 30 personnes selon les périodes, avec des situations très hétérogènes : ruptures de parcours, insertion, santé mentale, démarches administratives, accès au logement, etc.
 
@@ -55,7 +56,7 @@ Et elle termine souvent sa journée avec :
 - des tâches à reporter
 - une fatigue cognitive liée à la dispersion des informations
 
-**Sa vraie problématique** 
+**Sa vraie problématique**
 
 - dispersion des informations entre plusieurs supports (papier, e-mails, fichiers, outils différents)
 - difficulté à retrouver rapidement une information précise
@@ -64,7 +65,7 @@ Et elle termine souvent sa journée avec :
 - nécessité de reconstituer mentalement l’historique d’une situation avant chaque interaction
 - perte de continuité possible en cas d’absence ou de changement de référent
 
-**Ses contraintes terrain** 
+**Ses contraintes terrain**
 
 - interruptions fréquentes dans le travail quotidien
 - déplacements réguliers hors du bureau
@@ -77,7 +78,7 @@ Et elle termine souvent sa journée avec :
 
 ## 3. La proposition de valeur
 
-**Oriaa** du latin *oriri* (naître, apparaître) et *origo* (point de départ) est une application web interne qui centralise le suivi des bénéficiaires d'une structure d'hébergement en un seul endroit : fiche individuelle, statuts de parcours, documents joints, et gestion des tâches quotidiennes liées aux dossiers.
+**Oriaa** du latin _oriri_ (naître, apparaître) et _origo_ (point de départ) est une application web interne qui centralise le suivi des bénéficiaires d'une structure d'hébergement en un seul endroit : fiche individuelle, statuts de parcours, documents joints, et gestion des tâches quotidiennes liées aux dossiers.
 
 Il ne s'agit pas d'un produit destiné à être commercialisé, mais d'un **projet pédagogique** démontrant une démarche de conception logicielle complète. Oriaa ne remplace pas les logiciels institutionnels (SI-SIAO, etc.), il comble le vide opérationnel du quotidien.
 
@@ -117,7 +118,7 @@ Système de filtrage des tâches (par bénéficiaire, statut, échéance, collè
 Permet de créer les tâches lors du RDV.
 Il pourrait s'agir d'une fonctionnalité à part entière. Fonctionnalité simplifiée dans un premier temps.
 
-L'idéal : 
+L'idéal :
 Création de rendez-vous (bureau / domicile / partenaire)
 Association à un bénéficiaire
 Association à un véhicule de service
@@ -135,7 +136,7 @@ Système de filtrage du planning (par bénéficiaire, collègues)
 
 ---
 
-## 6. Hors périmètre 
+## 6. Hors périmètre
 
 ### V2 (évolutions fonctionnelles)
 
@@ -157,13 +158,12 @@ Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils
 
 - **Réservation des véhicules et visuel sur le planning :** permettre aux utilisateurs de visualiser les véhicules de service disponibles et leur disponibilité sur le planning.
 
-
 ### V3 (évolution vers un outil de gestion complète d’établissement)
 
 - **Gestion des fonds éducatifs :** Suivi des participations financières des bénéficiaires, suivi des dépenses associés (fournitures, aide alimentaires...), gestion des justificatifs.
 - **Gestion RH :** Suivi des heures travaillées, déclaration des heures supp, gestion des demandes de congés...
-- **Gestion avancées des hébergements:** Gestion du parc hébergement, Suivi des entrées, sorties, travaux à prévoir, ménages à prévoir, adresses... 
-- **Gestion véhicules de service :** Accessible en tant que coordinateur et admin. Entretien véhicule. 
+- **Gestion avancées des hébergements:** Gestion du parc hébergement, Suivi des entrées, sorties, travaux à prévoir, ménages à prévoir, adresses...
+- **Gestion véhicules de service :** Accessible en tant que coordinateur et admin. Entretien véhicule.
 
 ---
 
@@ -177,12 +177,12 @@ Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils
 
 **Risques identifiés :**
 
-| Risque | Probabilité | Mitigation |
-|---|---|---|
-| **Retard de conception (MCD/MLD mal posé)** : une modélisation bancale en amont provoque des blocages en développement et oblige à tout reprendre. C'est le risque le plus structurant du projet. | Forte | Consacrer le temps nécessaire aux phases 1 et 2 avant d'écrire la moindre ligne de code. Faire valider le MCD par le formateur avant de commencer le développement. |
-| **Retard technique global** : développement solo, auth JWT, gestion de fichiers : plusieurs fonctionnalités sont plus complexes qu'elles n'y paraissent. | Forte | Si retard avéré : déclasser des MUST en SHOULD plutôt que de livrer quelque chose de bancal. Mieux vaut moins de fonctionnalités qui tournent vraiment. |
-| **Scope creep** : tendance à vouloir ajouter des fonctionnalités dès qu'une idée émerge, que ce soit au démarrage d'un sprint ou en plein milieu. | Forte | Toute nouvelle idée est notée dans un backlog V2 et ne rentre pas dans la V1. Le périmètre est figé après la phase de conception. |
-| **Problème d'infrastructure le jour de la démo** : serveur distant indisponible ou instable lors de la soutenance. | Faible | L'application sera dockerisée et pourra être lancée en local depuis l'ordinateur personnel en moins de 5 minutes. |
+| Risque                                                                                                                                                                                            | Probabilité | Mitigation                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Retard de conception (MCD/MLD mal posé)** : une modélisation bancale en amont provoque des blocages en développement et oblige à tout reprendre. C'est le risque le plus structurant du projet. | Forte       | Consacrer le temps nécessaire aux phases 1 et 2 avant d'écrire la moindre ligne de code. Faire valider le MCD par le formateur avant de commencer le développement. |
+| **Retard technique global** : développement solo, auth JWT, gestion de fichiers : plusieurs fonctionnalités sont plus complexes qu'elles n'y paraissent.                                          | Forte       | Si retard avéré : déclasser des MUST en SHOULD plutôt que de livrer quelque chose de bancal. Mieux vaut moins de fonctionnalités qui tournent vraiment.             |
+| **Scope creep** : tendance à vouloir ajouter des fonctionnalités dès qu'une idée émerge, que ce soit au démarrage d'un sprint ou en plein milieu.                                                 | Forte       | Toute nouvelle idée est notée dans un backlog V2 et ne rentre pas dans la V1. Le périmètre est figé après la phase de conception.                                   |
+| **Problème d'infrastructure le jour de la démo** : serveur distant indisponible ou instable lors de la soutenance.                                                                                | Faible      | L'application sera dockerisée et pourra être lancée en local depuis l'ordinateur personnel en moins de 5 minutes.                                                   |
 
 **Contraintes non négociables :**
 
@@ -191,5 +191,3 @@ Les éléments suivants sont identifiés mais explicitement exclus de la V1. Ils
 - V1 entièrement fonctionnelle et déployée pour la soutenance.
 
 ---
-
-

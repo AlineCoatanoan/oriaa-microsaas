@@ -18,9 +18,11 @@
 **Type :** Forum professionnel (travailleurs sociaux)
 
 **Extrait :**
+
 > « Nos critères tournent autour de l’ergonomie, de la qualité de la hotline, et de la facilité à faire évoluer en interne… »
 
 **Ce que ça prouve :**
+
 - L’ergonomie est un critère prioritaire dans les outils métiers
 - Les structures sociales ont peu de ressources techniques internes
 - Le besoin de simplicité et d’autonomie est central
@@ -33,11 +35,13 @@
 **Type :** Avis vérifié B2B
 
 **Extrait :**
+
 > « Très complet… mais lourd et compliqué au quotidien. »
 
 **Note :** 2/5
 
 **Ce que ça prouve :**
+
 - Tension forte entre richesse fonctionnelle et usage réel
 - Les outils trop complexes sont peu adaptés au quotidien terrain
 
@@ -49,9 +53,11 @@
 **Type :** Témoignage utilisateur
 
 **Extrait :**
+
 > « transmissions, agenda, carnet de correspondance… »
 
 **Ce que ça prouve :**
+
 - Les usages quotidiens sont centrés sur quelques actions clés
 - Le besoin principal est la coordination et le suivi opérationnel
 
@@ -63,9 +69,11 @@
 **Type :** Article institutionnel
 
 **Extrait :**
+
 > « répondre aux inquiétudes des futurs utilisateurs »
 
 **Ce que ça prouve :**
+
 - L’adoption d’outils numériques dans le social est un enjeu majeur
 - Le changement d’outil impacte directement les équipes terrain
 
@@ -76,6 +84,7 @@
 **Type :** synthèse d’avis utilisateurs
 
 **Ce que ça montre :**
+
 - Difficultés d’usage pour les profils non techniques
 - Nécessité fréquente d’un référent interne
 - Courbe d’apprentissage importante dans les outils existants
@@ -90,10 +99,12 @@
 J'ai accompagné plusieurs personnes dans différentes structures durant 10 ans. Je pouvais accompagner entre 10 à 70 dossiers bénéficiaires actifs.
 
 **Extrait / constat :**
+
 > Dans ma pratique quotidienne, les tâches liées aux bénéficiaires étaient notées dans un cahier séparé des dossiers, avec les dates de rendez-vous, les noms des personnes concernées et le niveau d’urgence.  
-> Avec plus d'une vingtaine de dossiers actifs, il était impossible d’avoir une vision globale des actions à réaliser. Je notais chaque tâches dans un cahier en y mettant des couleurs pour fixer les priorités. 
+> Avec plus d'une vingtaine de dossiers actifs, il était impossible d’avoir une vision globale des actions à réaliser. Je notais chaque tâches dans un cahier en y mettant des couleurs pour fixer les priorités.
 
 **Ce que ça prouve :**
+
 - Les tâches quotidiennes constituent une couche transverse aux dossiers bénéficiaires
 - La gestion papier entraîne une perte de visibilité et de priorisation
 - Les professionnels doivent constamment “recomposer” leur charge de travail mentalement
@@ -104,13 +115,13 @@ J'ai accompagné plusieurs personnes dans différentes structures durant 10 ans.
 
 # Synthèse du problème
 
-| Signal | Source | Ce que ça prouve |
-|--------|--------|-----------------|
-| Ergonomie prioritaire | LeSocial.fr | La simplicité est essentielle |
-| Outil “complet mais lourd” | OGiRYS | Trop de fonctionnalités nuit à l’usage |
-| Usage concentré sur quelques actions | Airmes | Les besoins réels sont simples et quotidiens |
-| Résistance au changement | ASRL | L’adoption est un enjeu critique |
-| Besoin d’accompagnement | Airmes / Likeo | Les outils ne sont pas intuitifs par défaut |
+| Signal                                                 | Source             | Ce que ça prouve                                  |
+| ------------------------------------------------------ | ------------------ | ------------------------------------------------- |
+| Ergonomie prioritaire                                  | LeSocial.fr        | La simplicité est essentielle                     |
+| Outil “complet mais lourd”                             | OGiRYS             | Trop de fonctionnalités nuit à l’usage            |
+| Usage concentré sur quelques actions                   | Airmes             | Les besoins réels sont simples et quotidiens      |
+| Résistance au changement                               | ASRL               | L’adoption est un enjeu critique                  |
+| Besoin d’accompagnement                                | Airmes / Likeo     | Les outils ne sont pas intuitifs par défaut       |
 | Dispersion des tâches dans un support externe (cahier) | Expérience terrain | Absence de centralisation des tâches quotidiennes |
 
 ---
@@ -120,6 +131,7 @@ J'ai accompagné plusieurs personnes dans différentes structures durant 10 ans.
 ## Vue des tâches quotidiennes liées aux bénéficiaires
 
 Une interface centralisée permettant à un travailleur social de :
+
 - visualiser toutes ses tâches en cours
 - trier par urgence et échéance
 - accéder directement au dossier bénéficiaire associé

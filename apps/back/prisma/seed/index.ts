@@ -1,17 +1,17 @@
-import prisma from "../../src/lib/prisma.js";
+import prisma from '../../src/lib/prisma.js';
 
-import { seedRoles } from "./roles.seed.js";
-import { seedUsers } from "./users.seed.js";
-import { seedBeneficiaries } from "./beneficiaries.seed.js";
-import { seedTasks } from "./tasks.seed.js";
-import { seedSubtasks } from "./subtasks.seed.js";
-import { seedNotes } from "./notes.seed.js";
-import { seedAppointments } from "./appointments.seed.js";
-import { seedDocuments } from "./documents.seed.js";
-import { seedFilters } from "./filters.seed.js";
+import { seedRoles } from './roles.seed.js';
+import { seedUsers } from './users.seed.js';
+import { seedBeneficiaries } from './beneficiaries.seed.js';
+import { seedTasks } from './tasks.seed.js';
+import { seedSubtasks } from './subtasks.seed.js';
+import { seedNotes } from './notes.seed.js';
+import { seedAppointments } from './appointments.seed.js';
+import { seedDocuments } from './documents.seed.js';
+import { seedFilters } from './filters.seed.js';
 
 async function main() {
-  console.log("Début du seed...");
+  console.log('Début du seed...');
 
   const roles = await seedRoles();
 
@@ -59,12 +59,12 @@ async function main() {
     },
   });
 
-  console.log("Seed terminé.");
+  console.log('Seed terminé.');
 }
 
 main()
   .catch((error) => {
-    console.error("Erreur pendant le seed :", error);
+    console.error('Erreur pendant le seed :', error);
     process.exit(1);
   })
   .finally(async () => {
