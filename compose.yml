@@ -1,0 +1,44 @@
+services:
+  postgres-dev:
+    image: postgres:18
+    container_name: oriaa-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oriaa
+      POSTGRES_PASSWORD: oriaa
+      POSTGRES_DB: oriaa_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - oriaa_dev_data:/var/lib/postgresql
+
+  postgres-staging:
+    image: postgres:18
+    container_name: oriaa-db-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oriaa
+      POSTGRES_PASSWORD: oriaa
+      POSTGRES_DB: oriaa_staging
+    ports:
+      - "5433:5432"
+    volumes:
+      - oriaa_staging_data:/var/lib/postgresql
+
+  postgres-prod:
+    image: postgres:18
+    container_name: oriaa-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oriaa
+      POSTGRES_PASSWORD: oriaa
+      POSTGRES_DB: oriaa_prod
+    ports:
+      - "5434:5432"
+    volumes:
+      - oriaa_prod_data:/var/lib/postgresql
+
+volumes:
+  oriaa_dev_data:
+  oriaa_staging_data:
+  oriaa_prod_data:
