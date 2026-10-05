@@ -89,7 +89,7 @@ model Note {
   beneficiary_id Int?
   user_id        Int
 
-  beneficiary  Beneficiary?      @relation(fields: [beneficiary_id], references: [beneficiary_id])
+  beneficiary  Beneficiary?      @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
   user         User              @relation(fields: [user_id], references: [user_id])
   tasks        TaskNote[]
   appointments NoteAppointment[]
@@ -116,7 +116,7 @@ model Document {
   file_path      String @db.VarChar(500)
   beneficiary_id Int
 
-  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id])
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
 }
 
 model Subtask {
@@ -163,7 +163,7 @@ model BeneficiaryTask {
   beneficiary_id Int
   task_id        Int
 
-  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id])
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
   task        Task        @relation(fields: [task_id], references: [task_id])
 
   @@id([beneficiary_id, task_id])
@@ -173,7 +173,7 @@ model BeneficiaryAppointment {
   beneficiary_id Int
   appointment_id Int
 
-  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id])
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
   appointment Appointment @relation(fields: [appointment_id], references: [appointment_id])
 
   @@id([beneficiary_id, appointment_id])
