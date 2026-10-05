@@ -1,6 +1,6 @@
 import prisma from '../../src/lib/prisma.js';
 
-export async function seedBeneficiaries(userId: string) {
+export async function seedBeneficiaries(userId: number) {
   const beneficiary1 = await prisma.beneficiary.create({
     data: {
       last_name: 'Durand',

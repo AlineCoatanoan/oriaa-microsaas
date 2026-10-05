@@ -2,8 +2,8 @@ import bcrypt from 'bcrypt';
 import prisma from '../../src/lib/prisma.js';
 
 export async function seedUsers(roles: {
-  adminRole: { role_id: string };
-  userRole: { role_id: string };
+  adminRole: { role_id: number };
+  userRole: { role_id: number };
 }) {
   const password = await bcrypt.hash('Oriaa123!', 10);
 

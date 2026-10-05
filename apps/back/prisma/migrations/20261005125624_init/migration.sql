@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Role" (
-    "role_id" UUID NOT NULL,
+    "role_id" SERIAL NOT NULL,
     "label" VARCHAR(50) NOT NULL,
 
     CONSTRAINT "Role_pkey" PRIMARY KEY ("role_id")
@@ -8,7 +8,7 @@ CREATE TABLE "Role" (
 
 -- CreateTable
 CREATE TABLE "User" (
-    "user_id" UUID NOT NULL,
+    "user_id" SERIAL NOT NULL,
     "last_name" VARCHAR(50) NOT NULL,
     "first_name" VARCHAR(50) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
@@ -16,14 +16,14 @@ CREATE TABLE "User" (
     "job" VARCHAR(50) NOT NULL,
     "archived_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL,
-    "role_id" UUID NOT NULL,
+    "role_id" INTEGER NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
 CREATE TABLE "Beneficiary" (
-    "beneficiary_id" UUID NOT NULL,
+    "beneficiary_id" SERIAL NOT NULL,
     "last_name" VARCHAR(50) NOT NULL,
     "first_name" VARCHAR(50) NOT NULL,
     "email" VARCHAR(255),
@@ -40,14 +40,14 @@ CREATE TABLE "Beneficiary" (
     "exit_date" DATE,
     "created_at" TIMESTAMP(3) NOT NULL,
     "archived_at" TIMESTAMP(3),
-    "user_id" UUID NOT NULL,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "Beneficiary_pkey" PRIMARY KEY ("beneficiary_id")
 );
 
 -- CreateTable
 CREATE TABLE "Task" (
-    "task_id" UUID NOT NULL,
+    "task_id" SERIAL NOT NULL,
     "title" VARCHAR(50),
     "description" TEXT,
     "due_date" DATE,
@@ -55,96 +55,96 @@ CREATE TABLE "Task" (
     "updated_at" TIMESTAMP(3) NOT NULL,
     "status" VARCHAR(50),
     "priority" VARCHAR(50),
-    "user_id_assigned" UUID,
-    "user_id_created_by" UUID NOT NULL,
+    "user_id_assigned" INTEGER,
+    "user_id_created_by" INTEGER NOT NULL,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("task_id")
 );
 
 -- CreateTable
 CREATE TABLE "Note" (
-    "note_id" UUID NOT NULL,
+    "note_id" SERIAL NOT NULL,
     "title" VARCHAR(50),
     "content" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "beneficiary_id" UUID,
-    "user_id" UUID NOT NULL,
+    "beneficiary_id" INTEGER,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "Note_pkey" PRIMARY KEY ("note_id")
 );
 
 -- CreateTable
 CREATE TABLE "Appointment" (
-    "appointment_id" UUID NOT NULL,
+    "appointment_id" SERIAL NOT NULL,
     "title" VARCHAR(50) NOT NULL,
     "description" VARCHAR(500),
     "location" VARCHAR(50),
     "start_at" TIMESTAMP(3) NOT NULL,
     "end_at" TIMESTAMP(3) NOT NULL,
-    "user_id" UUID NOT NULL,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "Appointment_pkey" PRIMARY KEY ("appointment_id")
 );
 
 -- CreateTable
 CREATE TABLE "Document" (
-    "document_id" UUID NOT NULL,
+    "document_id" SERIAL NOT NULL,
     "file_name" VARCHAR(255) NOT NULL,
     "category" VARCHAR(50) NOT NULL,
     "file_path" VARCHAR(500) NOT NULL,
-    "beneficiary_id" UUID NOT NULL,
+    "beneficiary_id" INTEGER NOT NULL,
 
     CONSTRAINT "Document_pkey" PRIMARY KEY ("document_id")
 );
 
 -- CreateTable
 CREATE TABLE "Subtask" (
-    "subtask_id" UUID NOT NULL,
+    "subtask_id" SERIAL NOT NULL,
     "label" VARCHAR(50) NOT NULL,
     "is_completed" BOOLEAN NOT NULL DEFAULT false,
-    "task_id" UUID NOT NULL,
+    "task_id" INTEGER NOT NULL,
 
     CONSTRAINT "Subtask_pkey" PRIMARY KEY ("subtask_id")
 );
 
 -- CreateTable
 CREATE TABLE "FilterPreference" (
-    "filter_preference_id" UUID NOT NULL,
-    "user_id_target" UUID NOT NULL,
-    "user_id_define" UUID NOT NULL,
+    "filter_preference_id" SERIAL NOT NULL,
+    "user_id_target" INTEGER NOT NULL,
+    "user_id_define" INTEGER NOT NULL,
 
     CONSTRAINT "FilterPreference_pkey" PRIMARY KEY ("filter_preference_id")
 );
 
 -- CreateTable
 CREATE TABLE "TaskNote" (
-    "task_id" UUID NOT NULL,
-    "note_id" UUID NOT NULL,
+    "task_id" INTEGER NOT NULL,
+    "note_id" INTEGER NOT NULL,
 
     CONSTRAINT "TaskNote_pkey" PRIMARY KEY ("task_id","note_id")
 );
 
 -- CreateTable
 CREATE TABLE "NoteAppointment" (
-    "note_id" UUID NOT NULL,
-    "appointment_id" UUID NOT NULL,
+    "note_id" INTEGER NOT NULL,
+    "appointment_id" INTEGER NOT NULL,
 
     CONSTRAINT "NoteAppointment_pkey" PRIMARY KEY ("note_id","appointment_id")
 );
 
 -- CreateTable
 CREATE TABLE "BeneficiaryTask" (
-    "beneficiary_id" UUID NOT NULL,
-    "task_id" UUID NOT NULL,
+    "beneficiary_id" INTEGER NOT NULL,
+    "task_id" INTEGER NOT NULL,
 
     CONSTRAINT "BeneficiaryTask_pkey" PRIMARY KEY ("beneficiary_id","task_id")
 );
 
 -- CreateTable
 CREATE TABLE "BeneficiaryAppointment" (
-    "beneficiary_id" UUID NOT NULL,
-    "appointment_id" UUID NOT NULL,
+    "beneficiary_id" INTEGER NOT NULL,
+    "appointment_id" INTEGER NOT NULL,
 
     CONSTRAINT "BeneficiaryAppointment_pkey" PRIMARY KEY ("beneficiary_id","appointment_id")
 );

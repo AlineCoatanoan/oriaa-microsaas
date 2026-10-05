@@ -1,10 +1,10 @@
 import prisma from '../../src/lib/prisma.js';
 
 export async function seedSubtasks(tasks: {
-  task1: { task_id: string };
-  task2: { task_id: string };
-  task3: { task_id: string };
-  task4: { task_id: string };
+  task1: { task_id: number };
+  task2: { task_id: number };
+  task3: { task_id: number };
+  task4: { task_id: number };
 }) {
   const subtask1 = await prisma.subtask.create({
     data: {

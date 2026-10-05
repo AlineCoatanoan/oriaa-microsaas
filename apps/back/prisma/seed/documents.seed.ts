@@ -1,9 +1,9 @@
 import prisma from '../../src/lib/prisma.js';
 
 export async function seedDocuments(beneficiaries: {
-  beneficiary1: { beneficiary_id: string };
-  beneficiary2: { beneficiary_id: string };
-  beneficiary3: { beneficiary_id: string };
+  beneficiary1: { beneficiary_id: number };
+  beneficiary2: { beneficiary_id: number };
+  beneficiary3: { beneficiary_id: number };
 }) {
   const document1 = await prisma.document.create({
     data: {

@@ -1,8 +1,8 @@
 import prisma from '../../src/lib/prisma.js';
 
 export async function seedFilters(users: {
-  admin: { user_id: string };
-  user: { user_id: string };
+  admin: { user_id: number };
+  user: { user_id: number };
 }) {
   const filter1 = await prisma.filterPreference.create({
     data: {
