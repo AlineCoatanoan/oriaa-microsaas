@@ -5,6 +5,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev:back": "pnpm --filter back dev",
+    "dev:front": "pnpm --filter front dev",
+    "build:back": "pnpm --filter back build",
+    "build:front": "pnpm --filter front build",
+    "prisma:generate": "pnpm --filter back prisma:generate",
+    "prisma:migrate": "pnpm --filter back prisma:migrate",
+    "prisma:studio": "pnpm --filter back prisma:studio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
