@@ -2,13 +2,13 @@ import prisma from '../../src/lib/prisma.js';
 
 export async function seedAppointments(
   users: {
-    admin: { user_id: string };
-    user: { user_id: string };
+    admin: { user_id: number };
+    user: { user_id: number };
   },
   beneficiaries: {
-    beneficiary1: { beneficiary_id: string };
-    beneficiary2: { beneficiary_id: string };
-    beneficiary3: { beneficiary_id: string };
+    beneficiary1: { beneficiary_id: number };
+    beneficiary2: { beneficiary_id: number };
+    beneficiary3: { beneficiary_id: number };
   },
 ) {
   const appointment1 = await prisma.appointment.create({
