@@ -13,6 +13,8 @@
     "prisma:generate": "pnpm --filter back prisma:generate",
     "prisma:migrate": "pnpm --filter back prisma:migrate",
     "prisma:studio": "pnpm --filter back prisma:studio",
+    "db:seed": "pnpm --filter back db:seed",
+    "db:reset": "pnpm --filter back db:reset",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
