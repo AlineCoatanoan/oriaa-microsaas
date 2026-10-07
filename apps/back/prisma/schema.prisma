@@ -125,7 +125,7 @@ model Subtask {
   is_completed Boolean @default(false)
   task_id      Int
 
-  task Task @relation(fields: [task_id], references: [task_id])
+  task Task @relation(fields: [task_id], references: [task_id], onDelete: Cascade)
 }
 
 model FilterPreference {
@@ -144,7 +144,7 @@ model TaskNote {
   note_id Int
 
   task Task @relation(fields: [task_id], references: [task_id])
-  note Note @relation(fields: [note_id], references: [note_id])
+  note Note @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
 
   @@id([task_id, note_id])
 }
@@ -153,7 +153,7 @@ model NoteAppointment {
   note_id        Int
   appointment_id Int
 
-  note        Note        @relation(fields: [note_id], references: [note_id])
+  note        Note        @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
   appointment Appointment @relation(fields: [appointment_id], references: [appointment_id])
 
   @@id([note_id, appointment_id])
