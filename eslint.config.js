@@ -32,7 +32,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['apps/back/**/*.ts'],
+    files: ['apps/back/**/*.{ts,js}'],
     languageOptions: {
       globals: globals.node,
     },

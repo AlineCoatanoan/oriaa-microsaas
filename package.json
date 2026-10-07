@@ -18,7 +18,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "test": "pnpm --filter back test",
+    "test:watch": "pnpm --filter back test:watch",
+    "db:test:migrate": "pnpm --filter back db:test-migrate"
   },
   "keywords": [],
   "author": "",
