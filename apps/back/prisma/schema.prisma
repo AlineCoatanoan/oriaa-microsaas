@@ -81,11 +81,11 @@ model Task {
 }
 
 model Note {
-  note_id        Int       @id @default(autoincrement())
-  title          String?   @db.VarChar(50)
-  content        String?   @db.Text
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  note_id        Int      @id @default(autoincrement())
+  title          String?  @db.VarChar(50)
+  content        String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
   beneficiary_id Int?
   user_id        Int
 
@@ -96,10 +96,10 @@ model Note {
 }
 
 model Appointment {
-  appointment_id Int       @id @default(autoincrement())
-  title          String    @db.VarChar(50)
-  description    String?   @db.VarChar(500)
-  location       String?   @db.VarChar(50)
+  appointment_id Int      @id @default(autoincrement())
+  title          String   @db.VarChar(50)
+  description    String?  @db.VarChar(500)
+  location       String?  @db.VarChar(50)
   start_at       DateTime
   end_at         DateTime
   user_id        Int
@@ -129,9 +129,10 @@ model Subtask {
 }
 
 model FilterPreference {
-  filter_preference_id Int @id @default(autoincrement())
+  filter_preference_id Int    @id @default(autoincrement())
   user_id_target       Int
   user_id_define       Int
+  type_listing         String @db.VarChar(50)
 
   user_target User @relation("FilterPreferenceTarget", fields: [user_id_target], references: [user_id])
   user_define User @relation("FilterPreferenceDefine", fields: [user_id_define], references: [user_id])
