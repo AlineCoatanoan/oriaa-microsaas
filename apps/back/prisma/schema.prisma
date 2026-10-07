@@ -17,7 +17,7 @@ model User {
   user_id     Int       @id @default(autoincrement())
   last_name   String    @db.VarChar(50)
   first_name  String    @db.VarChar(50)
-  email       String    @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
   password    String    @db.VarChar(255)
   job         String    @db.VarChar(50)
   archived_at DateTime?
