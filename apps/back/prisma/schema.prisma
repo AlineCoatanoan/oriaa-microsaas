@@ -21,7 +21,7 @@ model User {
   password    String    @db.VarChar(255)
   job         String    @db.VarChar(50)
   archived_at DateTime?
-  created_at  DateTime
+  created_at  DateTime  @default(now())
   role_id     Int
 
   role                      Role               @relation(fields: [role_id], references: [role_id])
@@ -50,7 +50,7 @@ model Beneficiary {
   pathway_status        String?   @db.VarChar(50)
   entry_date            DateTime  @db.Date
   exit_date             DateTime? @db.Date
-  created_at            DateTime
+  created_at            DateTime  @default(now())
   archived_at           DateTime?
   user_id               Int
 
@@ -66,8 +66,8 @@ model Task {
   title              String?   @db.VarChar(50)
   description        String?   @db.Text
   due_date           DateTime? @db.Date
-  created_at         DateTime
-  updated_at         DateTime
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
   status             String?   @db.VarChar(50)
   priority           String?   @db.VarChar(50)
   user_id_assigned   Int?
@@ -84,8 +84,8 @@ model Note {
   note_id        Int       @id @default(autoincrement())
   title          String?   @db.VarChar(50)
   content        String?   @db.Text
-  created_at     DateTime
-  updated_at     DateTime
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
   beneficiary_id Int?
   user_id        Int
 
