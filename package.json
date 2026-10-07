@@ -1,9 +1,10 @@
 {
   "name": "oriaa-microsaas",
   "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.11.0",
   "type": "module",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "dev:back": "pnpm --filter back dev",
     "dev:front": "pnpm --filter front dev",
