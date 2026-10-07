@@ -8,6 +8,7 @@ export async function seedFilters(users: {
     data: {
       user_id_target: users.admin.user_id,
       user_id_define: users.user.user_id,
+      type_listing: 'beneficiaries',
     },
   });
 
@@ -15,6 +16,7 @@ export async function seedFilters(users: {
     data: {
       user_id_target: users.user.user_id,
       user_id_define: users.admin.user_id,
+      type_listing: 'tasks',
     },
   });
 
