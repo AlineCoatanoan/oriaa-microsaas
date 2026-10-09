@@ -1,0 +1,106 @@
+#  CI ORIAA : contrôle qualité automatique
+
+name: CI
+
+# --- Déclencheurs
+# La CI tourne :
+#  - à chaque PR vers dev ou main (avant le merge) ;
+#  - à chaque push sur dev ou main (après un merge).
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+# --- Anti-doublon
+# Si je pousse plusieurs fois de suite sur la même branche,
+# l'exécution précédente est annulée et seule la dernière va au bout.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, build et tests
+    runs-on: ubuntu-latest # Machine Linux fournie par GitHub
+
+    # --- Base de données de test
+    # GitHub lance son propre PostgreSQL 18, jetable, détruit à la fin.
+    # docker-compose.yml n'est PAS utilisé ici.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: oriaa
+          POSTGRES_PASSWORD: oriaa
+          POSTGRES_DB: oriaa_test
+        ports:
+          - 5432:5432
+        # Attend que PostgreSQL soit prêt avant de lancer les étapes
+        options: >-
+          --health-cmd "pg_isready -U oriaa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # --- Variables d'environnement
+    # Le fichier .env.test n'existe pas sur GitHub (il est ignoré par git).
+    # Les variables sont donc définies ici. Ce sont des valeurs locales
+    # et jetables, pas des secrets.
+    env:
+      PORT: 3001
+      DATABASE_URL: postgresql://oriaa:oriaa@localhost:5432/oriaa_test
+      FRONTEND_URL: http://localhost:5173
+
+    steps:
+      # Récupère le code de la branche ou de la PR
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      # Installe pnpm dans la version indiquée du package.json racine (pnpm@9.11.0)
+      - name: Installer pnpm
+        uses: pnpm/action-setup@v4
+
+      # Installe Node.js 22 et met en cache les dépendances pnpm
+      # pour accélérer les exécutions suivantes
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --frozen-lockfile : échoue si pnpm-lock.yaml ne correspond pas
+      # aux package.json, ce qui garantit les mêmes versions
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      # Le client Prisma n'est pas versionné : il faut le générer avant
+      # de vérifier les types et de compiler (il a besoin de DATABASE_URL)
+      - name: Générer le client Prisma
+        run: pnpm prisma:generate
+
+      # #117 : ESLint sur tout le monorepo
+      - name: Lint
+        run: pnpm lint
+
+      # Vérifie les types TypeScript du back, tests compris
+      # (ts-jest ne le fait pas, à cause de isolatedModules)
+      - name: Vérifier les types (back)
+        run: pnpm --filter back exec tsc --noEmit
+
+      # #119 : compilation du back (src -> dist)
+      - name: Build back
+        run: pnpm build:back
+
+      # #119 : compilation du front (tsc + vite build)
+      - name: Build front
+        run: pnpm build:front
+
+      # Applique les migrations Prisma sur la base de test vide.
+      # Vérifie au passage que les migrations sont valides.
+      - name: Appliquer les migrations sur la base de test
+        run: pnpm --filter back exec prisma migrate deploy
+
+      # Lance les tests Jest + Supertest du back
+      - name: Tests
+        run: pnpm test
