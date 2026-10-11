@@ -21,6 +21,8 @@
     "lint:fix": "eslint --fix .",
     "test": "pnpm --filter back test",
     "test:watch": "pnpm --filter back test:watch",
+    "test:coverage": "pnpm --filter back test:coverage",
+    "coverage:badge": "node scripts/coverage-badges.js",
     "db:test:migrate": "pnpm --filter back db:test-migrate"
   },
   "keywords": [],
@@ -28,6 +30,7 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "badge-maker": "^6.0.0",
     "eslint": "^10.11.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",

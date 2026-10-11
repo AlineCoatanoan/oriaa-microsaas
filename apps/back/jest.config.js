@@ -8,4 +8,8 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   clearMocks: true,
+  collectCoverageFrom: ['src/**/*.ts', '!src/index.ts'],
+  coverageDirectory: 'coverage',
+  coverageProvider: 'v8',
+  coverageReporters: ['text', 'text-summary', 'json-summary', 'lcov'],
 };
