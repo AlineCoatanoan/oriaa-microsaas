@@ -79,7 +79,7 @@ jobs:
       - name: Générer le client Prisma
         run: pnpm prisma:generate
 
-      # #117 : ESLint sur tout le monorepo
+      #  ESLint sur tout le monorepo
       - name: Lint
         run: pnpm lint
 
@@ -88,11 +88,11 @@ jobs:
       - name: Vérifier les types (back)
         run: pnpm --filter back exec tsc --noEmit
 
-      # #119 : compilation du back (src -> dist)
+      # compilation du back (src -> dist)
       - name: Build back
         run: pnpm build:back
 
-      # #119 : compilation du front (tsc + vite build)
+      # compilation du front (tsc + vite build)
       - name: Build front
         run: pnpm build:front
 
@@ -101,6 +101,11 @@ jobs:
       - name: Appliquer les migrations sur la base de test
         run: pnpm --filter back exec prisma migrate deploy
 
-      # Lance les tests Jest + Supertest du back
-      - name: Tests
-        run: pnpm test
+      # Lance les tests du back avec mesure de la couverture
+      - name: Tests et couverture
+        run: pnpm test:coverage
+
+      # Affiche le résumé de couverture sur la page de l'exécution
+      - name: Résumé de couverture
+        run: |
+          node -e "const t=require('./apps/back/coverage/coverage-summary.json').total; console.log('### Couverture back\n\n| Métrique | % |\n|---|---|\n| Lignes | '+t.lines.pct+' |\n| Instructions | '+t.statements.pct+' |\n| Fonctions | '+t.functions.pct+' |\n| Branches | '+t.branches.pct+' |')" >> $GITHUB_STEP_SUMMARY

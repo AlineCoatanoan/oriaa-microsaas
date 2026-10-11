@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "db:test-migrate": "dotenv run -q -f .env.test -- prisma migrate deploy",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
