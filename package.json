@@ -23,7 +23,8 @@
     "test:watch": "pnpm --filter back test:watch",
     "test:coverage": "pnpm --filter back test:coverage",
     "coverage:badge": "node scripts/coverage-badges.js",
-    "db:test:migrate": "pnpm --filter back db:test-migrate"
+    "db:test:migrate": "pnpm --filter back db:test-migrate",
+    "prepare": "lefthook install"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.12.0",
+    "lefthook": "^2.2.1",
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.70.1"

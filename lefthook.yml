@@ -1,0 +1,16 @@
+# Hooks Git gérés par Lefthook
+# Avant chaque commit : lint et formatage des fichiers indexés uniquement.
+
+pre-commit:
+  commands:
+    # 1. ESLint : corrige ce qui peut l'être, bloque le commit sinon
+    lint:
+      glob: '*.{js,ts,tsx}'
+      run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
+      stage_fixed: true
+
+    # 2. Prettier : formate les fichiers modifiés
+    format:
+      glob: '*.{js,ts,tsx,json,md,css,yml,yaml}'
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
