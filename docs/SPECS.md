@@ -1,8 +1,6 @@
 ## Spécifications — Scénarios Gherkin
 
-
-
-### Feature: Authentification 
+### Feature: Authentification
 
 **Scenario:** Une éducatrice accède à l'application avec ses identifiants
 
@@ -23,7 +21,7 @@ And elle ne peut plus accéder aux données sans se reconnecter
 
 ---
 
-### Feature: Création d'un dossier bénéficiaire 
+### Feature: Création d'un dossier bénéficiaire
 
 **Scenario:** Un nouveau bénéficiaire est enregistré dans le système
 
@@ -33,6 +31,7 @@ When elle crée un nouveau dossier bénéficiaire avec les informations requises
 Then le dossier est enregistré avec le statut "En attente"
 And il est visible dans la liste des bénéficiaires
 ```
+
 ---
 
 ### Feature: Recherche d'un bénéficiaire
@@ -48,7 +47,7 @@ And elle peut accéder au dossier concerné en un seul clic
 
 ---
 
-### Feature: Création d'une action 
+### Feature: Création d'une action
 
 **Scenario:** Une éducatrice enregistre un RDV sur le dossier d'un bénéficiaire
 
@@ -127,4 +126,5 @@ When elle crée une tâche de suivi liée à ce RDV
 Then la tâche apparaît dans sa vue quotidienne
 And elle est rattachée au dossier du bénéficiaire concerné
 ```
+
 ---

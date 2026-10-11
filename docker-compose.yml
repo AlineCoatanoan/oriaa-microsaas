@@ -8,9 +8,10 @@ services:
       POSTGRES_PASSWORD: oriaa
       POSTGRES_DB: oriaa_dev
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - oriaa_dev_data:/var/lib/postgresql
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
 
   postgres-staging:
     image: postgres:18
@@ -21,7 +22,7 @@ services:
       POSTGRES_PASSWORD: oriaa
       POSTGRES_DB: oriaa_staging
     ports:
-      - "5433:5432"
+      - '5433:5432'
     volumes:
       - oriaa_staging_data:/var/lib/postgresql
 
@@ -34,7 +35,7 @@ services:
       POSTGRES_PASSWORD: oriaa
       POSTGRES_DB: oriaa_prod
     ports:
-      - "5434:5432"
+      - '5434:5432'
     volumes:
       - oriaa_prod_data:/var/lib/postgresql
 

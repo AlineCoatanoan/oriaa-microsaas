@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  role_id Int    @id @default(autoincrement())
+  label   String @db.VarChar(50)
+
+  users User[]
+}
+
+model User {
+  user_id     Int       @id @default(autoincrement())
+  last_name   String    @db.VarChar(50)
+  first_name  String    @db.VarChar(50)
+  email       String    @unique @db.VarChar(255)
+  password    String    @db.VarChar(255)
+  job         String    @db.VarChar(50)
+  archived_at DateTime?
+  created_at  DateTime  @default(now())
+  role_id     Int
+
+  role                      Role               @relation(fields: [role_id], references: [role_id])
+  beneficiaries             Beneficiary[]
+  tasks_assigned            Task[]             @relation("TaskAssignedUser")
+  tasks_created             Task[]             @relation("TaskCreatedBy")
+  notes                     Note[]
+  appointments              Appointment[]
+  filter_preferences_target FilterPreference[] @relation("FilterPreferenceTarget")
+  filter_preferences_define FilterPreference[] @relation("FilterPreferenceDefine")
+}
+
+model Beneficiary {
+  beneficiary_id        Int       @id @default(autoincrement())
+  last_name             String    @db.VarChar(50)
+  first_name            String    @db.VarChar(50)
+  email                 String?   @db.VarChar(255)
+  date_of_birth         DateTime? @db.Date
+  address               String?   @db.VarChar(255)
+  postal_code           String?   @db.VarChar(10)
+  city                  String?   @db.VarChar(100)
+  phone                 String?   @db.VarChar(20)
+  family_status         String?   @db.VarChar(50)
+  number_of_children    Int?
+  household_composition String?   @db.VarChar(50)
+  pathway_status        String?   @db.VarChar(50)
+  entry_date            DateTime  @db.Date
+  exit_date             DateTime? @db.Date
+  created_at            DateTime  @default(now())
+  archived_at           DateTime?
+  user_id               Int
+
+  user         User                     @relation(fields: [user_id], references: [user_id])
+  tasks        BeneficiaryTask[]
+  appointments BeneficiaryAppointment[]
+  documents    Document[]
+  notes        Note[]
+}
+
+model Task {
+  task_id            Int       @id @default(autoincrement())
+  title              String?   @db.VarChar(50)
+  description        String?   @db.Text
+  due_date           DateTime? @db.Date
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  status             String?   @db.VarChar(50)
+  priority           String?   @db.VarChar(50)
+  user_id_assigned   Int?
+  user_id_created_by Int
+
+  assigned_user User?             @relation("TaskAssignedUser", fields: [user_id_assigned], references: [user_id])
+  created_by    User              @relation("TaskCreatedBy", fields: [user_id_created_by], references: [user_id])
+  subtasks      Subtask[]
+  notes         TaskNote[]
+  beneficiaries BeneficiaryTask[]
+}
+
+model Note {
+  note_id        Int      @id @default(autoincrement())
+  title          String?  @db.VarChar(50)
+  content        String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  beneficiary_id Int?
+  user_id        Int
+
+  beneficiary  Beneficiary?      @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  user         User              @relation(fields: [user_id], references: [user_id])
+  tasks        TaskNote[]
+  appointments NoteAppointment[]
+}
+
+model Appointment {
+  appointment_id Int      @id @default(autoincrement())
+  title          String   @db.VarChar(50)
+  description    String?  @db.VarChar(500)
+  location       String?  @db.VarChar(50)
+  start_at       DateTime
+  end_at         DateTime
+  user_id        Int
+
+  user          User                     @relation(fields: [user_id], references: [user_id])
+  notes         NoteAppointment[]
+  beneficiaries BeneficiaryAppointment[]
+}
+
+model Document {
+  document_id    Int    @id @default(autoincrement())
+  file_name      String @db.VarChar(255)
+  category       String @db.VarChar(50)
+  file_path      String @db.VarChar(500)
+  beneficiary_id Int
+
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+}
+
+model Subtask {
+  subtask_id   Int     @id @default(autoincrement())
+  label        String  @db.VarChar(50)
+  is_completed Boolean @default(false)
+  task_id      Int
+
+  task Task @relation(fields: [task_id], references: [task_id], onDelete: Cascade)
+}
+
+model FilterPreference {
+  filter_preference_id Int    @id @default(autoincrement())
+  user_id_target       Int
+  user_id_define       Int
+  type_listing         String @db.VarChar(50)
+
+  user_target User @relation("FilterPreferenceTarget", fields: [user_id_target], references: [user_id])
+  user_define User @relation("FilterPreferenceDefine", fields: [user_id_define], references: [user_id])
+}
+
+// tables d'association
+
+model TaskNote {
+  task_id Int
+  note_id Int
+
+  task Task @relation(fields: [task_id], references: [task_id])
+  note Note @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
+
+  @@id([task_id, note_id])
+}
+
+model NoteAppointment {
+  note_id        Int
+  appointment_id Int
+
+  note        Note        @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointment_id], references: [appointment_id])
+
+  @@id([note_id, appointment_id])
+}
+
+model BeneficiaryTask {
+  beneficiary_id Int
+  task_id        Int
+
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  task        Task        @relation(fields: [task_id], references: [task_id])
+
+  @@id([beneficiary_id, task_id])
+}
+
+model BeneficiaryAppointment {
+  beneficiary_id Int
+  appointment_id Int
+
+  beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointment_id], references: [appointment_id])
+
+  @@id([beneficiary_id, appointment_id])
+}
