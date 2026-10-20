@@ -84,7 +84,7 @@ jobs:
         run: pnpm lint
 
       # Vérifie les types TypeScript du back, tests compris
-      # (ts-jest ne le fait pas, à cause de isolatedModules)
+      # (Vitest exécute les tests sans vérifier les types)
       - name: Vérifier les types (back)
         run: pnpm --filter back exec tsc --noEmit
 
