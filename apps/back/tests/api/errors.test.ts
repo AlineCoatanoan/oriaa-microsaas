@@ -16,7 +16,7 @@ describe("Gestion des erreurs de l'API", () => {
 
   it('renvoie 400 pour un JSON mal formé', async () => {
     const response = await request(app)
-      .post('/api/health')
+      .post('/api')
       .set('Content-Type', 'application/json')
       .send('{"json invalide"');
 
