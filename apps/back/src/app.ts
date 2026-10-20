@@ -1,7 +1,11 @@
+import './config/zod.js';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { env } from './config/env.js';
+import { notFound } from './middlewares/not-found.js';
+import { errorHandler } from './middlewares/error-handler.js';
+import apiRouter from './routes/index.js';
 
 const app = express();
 
@@ -14,8 +18,9 @@ app.use(
 );
 app.use(express.json());
 
-app.get('/api/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
+app.use('/api', apiRouter);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
