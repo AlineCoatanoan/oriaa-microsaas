@@ -51,6 +51,7 @@ jobs:
       PORT: 3001
       DATABASE_URL: postgresql://oriaa:oriaa@localhost:5432/oriaa_test
       FRONTEND_URL: http://localhost:5173
+      JWT_SECRET: ci-secret-only-for-tests-0123456789abcdef
 
     steps:
       # Récupère le code de la branche ou de la PR
