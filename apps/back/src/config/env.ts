@@ -7,6 +7,10 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
+  // Clé secrète de signature des tokens (au moins 32 caractères)
+  JWT_SECRET: z.string().min(32),
+  // Durée de validité d'un token, en secondes (8 h par défaut : une journée de travail)
+  JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
 });
 
 const env = envSchema.parse(process.env);
