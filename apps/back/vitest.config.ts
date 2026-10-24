@@ -17,5 +17,7 @@ export default defineConfig({
       // json-summary : lu par le script de badge et par la CI
       reporter: ['text', 'text-summary', 'json-summary', 'lcov'],
     },
+    // Les fichiers de test partagent la même base : on les exécute l'un après l'autre
+    fileParallelism: false,
   },
 });
