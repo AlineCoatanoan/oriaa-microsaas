@@ -81,3 +81,14 @@ export async function findById(id: number) {
 
   return toBeneficiaryDto(beneficiary);
 }
+
+/** Liste les bénéficiaires actifs, ou archivés, triés par nom puis prénom. */
+export async function findAll(options: { archived: boolean }) {
+  const beneficiaries = await prisma.beneficiary.findMany({
+    // archived_at vide = actif ; archived_at rempli = archivé
+    where: { archived_at: options.archived ? { not: null } : null },
+    orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
+  });
+
+  return beneficiaries.map(toBeneficiaryDto);
+}
