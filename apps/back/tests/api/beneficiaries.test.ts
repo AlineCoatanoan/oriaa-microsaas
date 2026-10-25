@@ -184,3 +184,100 @@ describe('GET /api/beneficiaries', () => {
     expect(response.status).toBe(400);
   });
 });
+
+describe('PATCH /api/beneficiaries/:id', () => {
+  it('modifie uniquement les champs envoyés', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      firstName: 'Lucas',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ city: 'Brest' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary).toMatchObject({
+      city: 'Brest',
+      lastName: 'Martin', // inchangé
+      firstName: 'Lucas', // inchangé
+    });
+  });
+
+  it('vide un champ facultatif envoyé à null', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+    await prisma.beneficiary.update({
+      where: { beneficiary_id: beneficiary.beneficiary_id },
+      data: { phone: '0601020304' },
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ phone: null });
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary.phone).toBeNull();
+  });
+
+  it('change de référent', async () => {
+    const { agent, user } = await loginAgent();
+    const colleague = await createUser({ email: 'collegue@oriaa.test' });
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ referentId: colleague.user_id });
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary.referentId).toBe(colleague.user_id);
+  });
+
+  it('refuse de modifier un dossier archivé (409)', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ city: 'Brest' });
+
+    expect(response.status).toBe(409);
+    expect(response.body.error.code).toBe('CONFLICT');
+    // Rien n'a changé en base
+    const inDb = await prisma.beneficiary.findUnique({
+      where: { beneficiary_id: beneficiary.beneficiary_id },
+    });
+    expect(inDb?.city).toBeNull();
+  });
+
+  it('refuse une modification vide (400)', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({});
+
+    expect(response.status).toBe(400);
+  });
+
+  it("renvoie 404 si le bénéficiaire n'existe pas", async () => {
+    const { agent } = await loginAgent();
+
+    const response = await agent
+      .patch('/api/beneficiaries/9999')
+      .send({ city: 'Brest' });
+
+    expect(response.status).toBe(404);
+  });
+});
