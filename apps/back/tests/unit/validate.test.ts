@@ -80,4 +80,24 @@ describe('validate', () => {
       field: 'id',
     });
   });
+
+  it('traite un corps absent comme un objet vide', async () => {
+    // Aucune donnée envoyée, et pas de express.json() : req.body reste undefined
+    const app = express();
+    app.post('/items', validate({ body: bodySchema }), (_req, res) => {
+      res.status(200).end();
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).post('/items');
+
+    expect(response.status).toBe(400);
+    // Chaque champ manquant est signalé, plutôt qu'une erreur générale
+    expect(response.body.error.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'email' }),
+        expect.objectContaining({ field: 'firstName' }),
+      ]),
+    );
+  });
 });
