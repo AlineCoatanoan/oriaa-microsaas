@@ -2,14 +2,17 @@ import bcrypt from 'bcrypt';
 import request from 'supertest';
 import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
+import type { RoleLabel } from '../../src/config/roles.js';
 
 export const PASSWORD = 'MotDePasse123!';
 
 /** Crée un rôle et un utilisateur de test. */
 export async function createUser(
-  options: { archivedAt?: Date; email?: string } = {},
+  options: { archivedAt?: Date; email?: string; role?: RoleLabel } = {},
 ) {
-  const role = await prisma.role.create({ data: { label: 'user' } });
+  const role = await prisma.role.create({
+    data: { label: options.role ?? 'user' },
+  });
 
   return prisma.user.create({
     data: {
@@ -24,9 +27,9 @@ export async function createUser(
   });
 }
 
-/** Crée un utilisateur et renvoie un agent déjà connecté (il garde le cookie). */
-export async function loginAgent() {
-  const user = await createUser();
+/** Crée un utilisateur (rôle user par défaut) et renvoie un agent déjà connecté. */
+export async function loginAgent(options: { role?: RoleLabel } = {}) {
+  const user = await createUser({ role: options.role });
   const agent = request.agent(app);
   await agent
     .post('/api/auth/login')

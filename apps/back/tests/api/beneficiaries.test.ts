@@ -396,3 +396,88 @@ describe('PATCH /api/beneficiaries/:id/unarchive', () => {
     expect(response.status).toBe(409);
   });
 });
+
+describe('DELETE /api/beneficiaries/:id', () => {
+  it('supprime définitivement un dossier archivé (admin)', async () => {
+    const { agent, user } = await loginAgent({ role: 'admin' });
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent.delete(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}`,
+    );
+
+    expect(response.status).toBe(204);
+    expect(await prisma.beneficiary.count()).toBe(0);
+  });
+
+  it('supprime ses notes et ses liens, mais conserve les tâches (cascade)', async () => {
+    const { agent, user } = await loginAgent({ role: 'admin' });
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+    await prisma.note.create({
+      data: {
+        title: 'Entretien',
+        beneficiary_id: beneficiary.beneficiary_id,
+        user_id: user.user_id,
+      },
+    });
+    const task = await prisma.task.create({
+      data: { title: 'Dossier CAF', user_id_created_by: user.user_id },
+    });
+    await prisma.beneficiaryTask.create({
+      data: {
+        beneficiary_id: beneficiary.beneficiary_id,
+        task_id: task.task_id,
+      },
+    });
+
+    await agent.delete(`/api/beneficiaries/${beneficiary.beneficiary_id}`);
+
+    expect(await prisma.note.count()).toBe(0);
+    expect(await prisma.beneficiaryTask.count()).toBe(0);
+    // La tâche elle-même est conservée
+    expect(await prisma.task.count()).toBe(1);
+  });
+
+  it("refuse la suppression à un utilisateur qui n'est pas admin (403)", async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent.delete(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}`,
+    );
+
+    expect(response.status).toBe(403);
+    expect(await prisma.beneficiary.count()).toBe(1);
+  });
+
+  it("refuse de supprimer un dossier qui n'est pas archivé (409)", async () => {
+    const { agent, user } = await loginAgent({ role: 'admin' });
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent.delete(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}`,
+    );
+
+    expect(response.status).toBe(409);
+    expect(await prisma.beneficiary.count()).toBe(1);
+  });
+
+  it("renvoie 404 si le bénéficiaire n'existe pas", async () => {
+    const { agent } = await loginAgent({ role: 'admin' });
+
+    const response = await agent.delete('/api/beneficiaries/9999');
+
+    expect(response.status).toBe(404);
+  });
+});
