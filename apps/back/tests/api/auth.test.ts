@@ -1,28 +1,9 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import { createUser, PASSWORD } from '../helpers/users.js';
 import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
 import { resetDatabase } from '../helpers/database.js';
-
-const PASSWORD = 'MotDePasse123!';
-
-/** Crée un rôle et un utilisateur de test. */
-async function createUser(options: { archivedAt?: Date } = {}) {
-  const role = await prisma.role.create({ data: { label: 'user' } });
-
-  return prisma.user.create({
-    data: {
-      last_name: 'Dupont',
-      first_name: 'Marie',
-      email: 'marie.dupont@oriaa.test',
-      password: await bcrypt.hash(PASSWORD, 10),
-      job: 'Travailleuse sociale',
-      role_id: role.role_id,
-      archived_at: options.archivedAt,
-    },
-  });
-}
 
 beforeEach(async () => {
   await resetDatabase();
