@@ -6,12 +6,15 @@ import {
   beneficiaryIdSchema,
   listBeneficiariesQuerySchema,
   updateBeneficiarySchema,
+  archiveBeneficiarySchema,
 } from '../schemas/beneficiary.schema.js';
 import {
   create,
   getById,
   list,
   update,
+  archive,
+  unarchive,
 } from '../controllers/beneficiary.controller.js';
 
 const beneficiaryRouter = Router();
@@ -40,6 +43,18 @@ beneficiaryRouter.patch(
   '/:id',
   validate({ params: beneficiaryIdSchema, body: updateBeneficiarySchema }),
   update,
+);
+
+beneficiaryRouter.patch(
+  '/:id/archive',
+  validate({ params: beneficiaryIdSchema, body: archiveBeneficiarySchema }),
+  archive,
+);
+
+beneficiaryRouter.patch(
+  '/:id/unarchive',
+  validate({ params: beneficiaryIdSchema }),
+  unarchive,
 );
 
 export default beneficiaryRouter;

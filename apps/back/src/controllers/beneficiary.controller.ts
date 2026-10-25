@@ -32,3 +32,17 @@ export async function update(req: Request, res: Response) {
   const beneficiary = await beneficiaryService.update(id, req.body);
   res.status(200).json({ beneficiary });
 }
+
+/** PATCH /api/beneficiaries/:id/archive */
+export async function archive(req: Request, res: Response) {
+  const { id } = res.locals.validated.params;
+  const beneficiary = await beneficiaryService.archive(id, req.body.exitDate);
+  res.status(200).json({ beneficiary });
+}
+
+/** PATCH /api/beneficiaries/:id/unarchive */
+export async function unarchive(_req: Request, res: Response) {
+  const { id } = res.locals.validated.params;
+  const beneficiary = await beneficiaryService.unarchive(id);
+  res.status(200).json({ beneficiary });
+}

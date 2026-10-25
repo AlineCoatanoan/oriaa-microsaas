@@ -47,8 +47,10 @@ export function validate(schemas: RequestSchemas): RequestHandler {
       // Pas de schéma fourni pour cette partie : rien à vérifier
       if (!schema) continue;
 
-      // safeParse ne lève pas d'erreur : il renvoie un résultat (succès ou échec)
-      const result = schema.safeParse(req[location]);
+      // Express 5 laisse req.body à undefined quand la requête n'a pas de corps :
+      // on le traite comme un objet vide, pour que Zod signale les champs manquants un par un.
+      const data = location === 'body' ? (req.body ?? {}) : req[location];
+      const result = schema.safeParse(data);
 
       if (result.success) {
         // Données valides : on garde la version nettoyée et convertie
