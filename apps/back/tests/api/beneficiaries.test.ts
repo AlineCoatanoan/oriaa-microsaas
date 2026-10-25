@@ -35,6 +35,7 @@ describe('POST /api/beneficiaries', () => {
       firstName: 'Lucas',
       city: 'Rennes',
       numberOfChildren: 2,
+      entryDate: '2026-10-01',
       referentId: user.user_id,
     });
     // Il est bien enregistré en base
