@@ -5,6 +5,9 @@ import type { CreateBeneficiaryInput } from '../schemas/beneficiary.schema.js';
 
 /** Convertit une date "2026-10-25" en Date, ou undefined. */
 const toDate = (value?: string) => (value ? new Date(value) : undefined);
+/** Date sans heure (colonne @db.Date) → "2026-10-25", ou null. */
+const toDateOnly = (value: Date | null) =>
+  value ? value.toISOString().slice(0, 10) : null;
 
 /** Format renvoyé au front (camelCase, comme toPublicUser).
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
@@ -16,7 +19,7 @@ export function toBeneficiaryDto(b: Beneficiary) {
     lastName: b.last_name,
     firstName: b.first_name,
     email: b.email,
-    dateOfBirth: b.date_of_birth,
+    dateOfBirth: toDateOnly(b.date_of_birth),
     address: b.address,
     postalCode: b.postal_code,
     city: b.city,
@@ -25,8 +28,8 @@ export function toBeneficiaryDto(b: Beneficiary) {
     numberOfChildren: b.number_of_children,
     householdComposition: b.household_composition,
     pathwayStatus: b.pathway_status,
-    entryDate: b.entry_date,
-    exitDate: b.exit_date,
+    entryDate: toDateOnly(b.entry_date),
+    exitDate: toDateOnly(b.exit_date),
     createdAt: b.created_at,
     archivedAt: b.archived_at,
     referentId: b.user_id,
