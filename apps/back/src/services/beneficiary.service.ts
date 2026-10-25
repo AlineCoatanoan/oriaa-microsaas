@@ -1,10 +1,22 @@
 import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
-import { BadRequestError, NotFoundError } from '../errors/app-error.js';
-import type { CreateBeneficiaryInput } from '../schemas/beneficiary.schema.js';
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from '../errors/app-error.js';
+import type {
+  CreateBeneficiaryInput,
+  UpdateBeneficiaryInput,
+} from '../schemas/beneficiary.schema.js';
 
-/** Convertit une date "2026-10-25" en Date, ou undefined. */
-const toDate = (value?: string) => (value ? new Date(value) : undefined);
+/** "2026-10-25" → Date ; null → null (champ vidé) ; absent → undefined (inchangé). */
+const toDate = (value?: string | null) => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return new Date(value);
+};
+
 /** Date sans heure (colonne @db.Date) → "2026-10-25", ou null. */
 const toDateOnly = (value: Date | null) =>
   value ? value.toISOString().slice(0, 10) : null;
@@ -36,6 +48,14 @@ export function toBeneficiaryDto(b: Beneficiary) {
   };
 }
 
+/** Le référent doit exister et être actif. */
+async function assertActiveReferent(userId: number) {
+  const referent = await prisma.user.findUnique({ where: { user_id: userId } });
+  if (!referent || referent.archived_at) {
+    throw new BadRequestError('Référent introuvable.');
+  }
+}
+
 /** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
 export async function create(
   data: CreateBeneficiaryInput,
@@ -43,13 +63,7 @@ export async function create(
 ) {
   const referentId = data.referentId ?? currentUserId;
 
-  // Le référent doit exister et être actif
-  const referent = await prisma.user.findUnique({
-    where: { user_id: referentId },
-  });
-  if (!referent || referent.archived_at) {
-    throw new BadRequestError('Référent introuvable.');
-  }
+  await assertActiveReferent(referentId);
 
   const beneficiary = await prisma.beneficiary.create({
     data: {
@@ -91,4 +105,44 @@ export async function findAll(options: { archived: boolean }) {
   });
 
   return beneficiaries.map(toBeneficiaryDto);
+}
+
+/** Modifie un bénéficiaire actif. Seuls les champs envoyés sont modifiés. */
+export async function update(id: number, data: UpdateBeneficiaryInput) {
+  const existing = await prisma.beneficiary.findUnique({
+    where: { beneficiary_id: id },
+  });
+  if (!existing) throw new NotFoundError('Bénéficiaire introuvable.');
+
+  // Règle métier : un dossier archivé est en lecture seule
+  if (existing.archived_at) {
+    throw new ConflictError(
+      "Un dossier archivé ne peut pas être modifié. Désarchivez-le d'abord.",
+    );
+  }
+
+  if (data.referentId !== undefined) {
+    await assertActiveReferent(data.referentId);
+  }
+
+  const beneficiary = await prisma.beneficiary.update({
+    where: { beneficiary_id: id },
+    data: {
+      last_name: data.lastName,
+      first_name: data.firstName,
+      entry_date: data.entryDate ? new Date(data.entryDate) : undefined,
+      email: data.email,
+      date_of_birth: toDate(data.dateOfBirth),
+      address: data.address,
+      postal_code: data.postalCode,
+      city: data.city,
+      phone: data.phone,
+      family_status: data.familyStatus,
+      number_of_children: data.numberOfChildren,
+      household_composition: data.householdComposition,
+      user_id: data.referentId,
+    },
+  });
+
+  return toBeneficiaryDto(beneficiary);
 }

@@ -5,11 +5,13 @@ import {
   createBeneficiarySchema,
   beneficiaryIdSchema,
   listBeneficiariesQuerySchema,
+  updateBeneficiarySchema,
 } from '../schemas/beneficiary.schema.js';
 import {
   create,
   getById,
   list,
+  update,
 } from '../controllers/beneficiary.controller.js';
 
 const beneficiaryRouter = Router();
@@ -32,6 +34,12 @@ beneficiaryRouter.get(
   '/:id',
   validate({ params: beneficiaryIdSchema }),
   getById,
+);
+
+beneficiaryRouter.patch(
+  '/:id',
+  validate({ params: beneficiaryIdSchema, body: updateBeneficiarySchema }),
+  update,
 );
 
 export default beneficiaryRouter;
