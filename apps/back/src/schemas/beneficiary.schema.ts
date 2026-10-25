@@ -55,3 +55,8 @@ export const beneficiaryIdSchema = z.object({
 export const listBeneficiariesQuerySchema = z.object({
   archived: z.stringbool().default(false),
 });
+
+/** Archivage : la date de sortie est obligatoire. */
+export const archiveBeneficiarySchema = z.object({
+  exitDate: z.iso.date(),
+});

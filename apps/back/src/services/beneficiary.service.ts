@@ -56,6 +56,15 @@ async function assertActiveReferent(userId: number) {
   }
 }
 
+/** Renvoie le bénéficiaire brut (format base), ou une 404. */
+async function findExistingOrFail(id: number) {
+  const beneficiary = await prisma.beneficiary.findUnique({
+    where: { beneficiary_id: id },
+  });
+  if (!beneficiary) throw new NotFoundError('Bénéficiaire introuvable.');
+  return beneficiary;
+}
+
 /** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
 export async function create(
   data: CreateBeneficiaryInput,
@@ -88,12 +97,7 @@ export async function create(
 
 /** Renvoie un bénéficiaire, ou une 404. */
 export async function findById(id: number) {
-  const beneficiary = await prisma.beneficiary.findUnique({
-    where: { beneficiary_id: id },
-  });
-  if (!beneficiary) throw new NotFoundError('Bénéficiaire introuvable.');
-
-  return toBeneficiaryDto(beneficiary);
+  return toBeneficiaryDto(await findExistingOrFail(id));
 }
 
 /** Liste les bénéficiaires actifs, ou archivés, triés par nom puis prénom. */
@@ -109,10 +113,7 @@ export async function findAll(options: { archived: boolean }) {
 
 /** Modifie un bénéficiaire actif. Seuls les champs envoyés sont modifiés. */
 export async function update(id: number, data: UpdateBeneficiaryInput) {
-  const existing = await prisma.beneficiary.findUnique({
-    where: { beneficiary_id: id },
-  });
-  if (!existing) throw new NotFoundError('Bénéficiaire introuvable.');
+  const existing = await findExistingOrFail(id);
 
   // Règle métier : un dossier archivé est en lecture seule
   if (existing.archived_at) {
@@ -142,6 +143,43 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
       household_composition: data.householdComposition,
       user_id: data.referentId,
     },
+  });
+
+  return toBeneficiaryDto(beneficiary);
+}
+
+/** Archive un bénéficiaire actif (sortie de la structure). */
+export async function archive(id: number, exitDate: string) {
+  const existing = await findExistingOrFail(id);
+  if (existing.archived_at) {
+    throw new ConflictError('Ce dossier est déjà archivé.');
+  }
+
+  const exit = new Date(exitDate);
+  if (exit < existing.entry_date) {
+    throw new BadRequestError(
+      "La date de sortie ne peut pas précéder la date d'entrée.",
+    );
+  }
+
+  const beneficiary = await prisma.beneficiary.update({
+    where: { beneficiary_id: id },
+    data: { archived_at: new Date(), exit_date: exit },
+  });
+
+  return toBeneficiaryDto(beneficiary);
+}
+
+/** Désarchive un bénéficiaire (retour dans la structure). */
+export async function unarchive(id: number) {
+  const existing = await findExistingOrFail(id);
+  if (!existing.archived_at) {
+    throw new ConflictError("Ce dossier n'est pas archivé.");
+  }
+
+  const beneficiary = await prisma.beneficiary.update({
+    where: { beneficiary_id: id },
+    data: { archived_at: null, exit_date: null },
   });
 
   return toBeneficiaryDto(beneficiary);
