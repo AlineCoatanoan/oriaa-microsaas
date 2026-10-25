@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
 import { resetDatabase } from '../helpers/database.js';
-import { loginAgent } from '../helpers/users.js';
+import { createUser, loginAgent } from '../helpers/users.js';
 
 const validBeneficiary = {
   lastName: 'Martin',
@@ -99,5 +99,87 @@ describe('GET /api/beneficiaries/:id', () => {
 
     expect(response.status).toBe(404);
     expect(response.body.error.code).toBe('NOT_FOUND');
+  });
+});
+
+/** Crée directement un bénéficiaire en base (plus rapide que par l'API). */
+async function createBeneficiary(
+  userId: number,
+  data: { lastName: string; firstName?: string; archivedAt?: Date },
+) {
+  return prisma.beneficiary.create({
+    data: {
+      last_name: data.lastName,
+      first_name: data.firstName ?? 'Test',
+      entry_date: new Date('2026-10-01'),
+      archived_at: data.archivedAt,
+      user_id: userId,
+    },
+  });
+}
+
+describe('GET /api/beneficiaries', () => {
+  it('liste les bénéficiaires actifs, triés par nom puis prénom', async () => {
+    const { agent, user } = await loginAgent();
+    await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      firstName: 'Lucas',
+    });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Bernard',
+      firstName: 'Sarah',
+    });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Bernard',
+      firstName: 'Anna',
+    });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Archivé',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent.get('/api/beneficiaries');
+
+    expect(response.status).toBe(200);
+    const names = response.body.beneficiaries.map(
+      (b: { lastName: string; firstName: string }) =>
+        `${b.lastName} ${b.firstName}`,
+    );
+    expect(names).toEqual(['Bernard Anna', 'Bernard Sarah', 'Martin Lucas']);
+  });
+
+  it('liste uniquement les archivés avec ?archived=true', async () => {
+    const { agent, user } = await loginAgent();
+    await createBeneficiary(user.user_id, { lastName: 'Martin' });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Archivé',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent.get('/api/beneficiaries?archived=true');
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiaries).toHaveLength(1);
+    expect(response.body.beneficiaries[0].lastName).toBe('Archivé');
+  });
+
+  it("inclut les bénéficiaires suivis par d'autres référents", async () => {
+    const { agent } = await loginAgent();
+    const colleague = await createUser({ email: 'collegue@oriaa.test' });
+    await createBeneficiary(colleague.user_id, { lastName: 'Durand' });
+
+    const response = await agent.get('/api/beneficiaries');
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiaries).toHaveLength(1);
+    expect(response.body.beneficiaries[0].referentId).toBe(colleague.user_id);
+  });
+
+  it('refuse un filtre invalide', async () => {
+    const { agent } = await loginAgent();
+
+    const response = await agent.get('/api/beneficiaries?archived=abc');
+
+    expect(response.status).toBe(400);
   });
 });
