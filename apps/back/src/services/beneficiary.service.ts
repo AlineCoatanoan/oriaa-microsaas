@@ -184,3 +184,18 @@ export async function unarchive(id: number) {
 
   return toBeneficiaryDto(beneficiary);
 }
+
+/**
+ * Supprime définitivement un bénéficiaire archivé (RGPD).
+ * Ses notes, documents et liens (tâches, RDV) sont supprimés en cascade par la base.
+ */
+export async function remove(id: number) {
+  const existing = await findExistingOrFail(id);
+  if (!existing.archived_at) {
+    throw new ConflictError(
+      "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
+    );
+  }
+
+  await prisma.beneficiary.delete({ where: { beneficiary_id: id } });
+}

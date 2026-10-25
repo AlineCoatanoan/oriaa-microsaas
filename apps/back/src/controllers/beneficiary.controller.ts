@@ -46,3 +46,11 @@ export async function unarchive(_req: Request, res: Response) {
   const beneficiary = await beneficiaryService.unarchive(id);
   res.status(200).json({ beneficiary });
 }
+
+/** DELETE /api/beneficiaries/:id (admin) */
+export async function remove(_req: Request, res: Response) {
+  const { id } = res.locals.validated.params;
+  await beneficiaryService.remove(id);
+  // 204 : succès, sans contenu à renvoyer
+  res.status(204).end();
+}

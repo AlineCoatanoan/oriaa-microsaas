@@ -15,7 +15,10 @@ import {
   update,
   archive,
   unarchive,
+  remove,
 } from '../controllers/beneficiary.controller.js';
+import { authorize } from '../middlewares/authorize.js';
+import { ROLES } from '../config/roles.js';
 
 const beneficiaryRouter = Router();
 
@@ -55,6 +58,14 @@ beneficiaryRouter.patch(
   '/:id/unarchive',
   validate({ params: beneficiaryIdSchema }),
   unarchive,
+);
+
+// Suppression définitive (RGPD) : réservée aux admins
+beneficiaryRouter.delete(
+  '/:id',
+  authorize(ROLES.ADMIN),
+  validate({ params: beneficiaryIdSchema }),
+  remove,
 );
 
 export default beneficiaryRouter;
