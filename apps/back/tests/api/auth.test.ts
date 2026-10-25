@@ -148,3 +148,28 @@ describe('GET /api/auth/session', () => {
     expect(response.status).toBe(401);
   });
 });
+
+describe('POST /api/auth/logout', () => {
+  it('supprime le cookie de connexion', async () => {
+    const response = await request(app).post('/api/auth/logout');
+
+    expect(response.status).toBe(204);
+    const cookie = response.headers['set-cookie']?.[0] ?? '';
+    expect(cookie).toContain('oriaa_token=;');
+    // Date d'expiration dans le passé : le navigateur supprime le cookie
+    expect(cookie).toContain('Expires=Thu, 01 Jan 1970');
+  });
+
+  it("déconnecte l'utilisateur : la session n'est plus reconnue", async () => {
+    await createUser();
+    const agent = request.agent(app);
+    await agent
+      .post('/api/auth/login')
+      .send({ email: 'marie.dupont@oriaa.test', password: PASSWORD });
+    expect((await agent.get('/api/auth/session')).status).toBe(200);
+
+    await agent.post('/api/auth/logout');
+
+    expect((await agent.get('/api/auth/session')).status).toBe(401);
+  });
+});

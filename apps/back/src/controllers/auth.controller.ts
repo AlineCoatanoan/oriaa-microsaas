@@ -21,3 +21,10 @@ export function session(_req: Request, res: Response) {
 
   res.status(200).json({ user });
 }
+
+/** POST /api/auth/logout : supprime le cookie de connexion */
+export function logout(_req: Request, res: Response) {
+  // Mêmes options qu'à la création (Express 5 ignore maxAge ici)
+  res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
+  res.status(204).end();
+}
