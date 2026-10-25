@@ -31,3 +31,8 @@ export const beneficiaryIdSchema = z.object({
 //z.iso.date() attend le format 2026-10-25.
 //z.infer crée le type TypeScript à partir du schéma : une seule source de vérité.
 //pathwayStatus et exitDate ne sont pas acceptés ici : ils ont leurs propres tickets (#94, sortie).//
+
+/** Filtres de la liste : ?archived=true pour voir les archivés. */
+export const listBeneficiariesQuerySchema = z.object({
+  archived: z.stringbool().default(false),
+});
