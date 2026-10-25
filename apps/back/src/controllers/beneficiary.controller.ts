@@ -25,3 +25,10 @@ export async function list(_req: Request, res: Response) {
   const beneficiaries = await beneficiaryService.findAll({ archived });
   res.status(200).json({ beneficiaries });
 }
+
+/** PATCH /api/beneficiaries/:id */
+export async function update(req: Request, res: Response) {
+  const { id } = res.locals.validated.params;
+  const beneficiary = await beneficiaryService.update(id, req.body);
+  res.status(200).json({ beneficiary });
+}
