@@ -281,3 +281,118 @@ describe('PATCH /api/beneficiaries/:id', () => {
     expect(response.status).toBe(404);
   });
 });
+
+describe('PATCH /api/beneficiaries/:id/archive', () => {
+  it('archive le dossier avec la date de sortie envoyée', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}/archive`)
+      .send({ exitDate: '2026-10-20' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary.exitDate).toBe('2026-10-20');
+    expect(response.body.beneficiary.archivedAt).not.toBeNull();
+    // Il disparaît de la liste des actifs
+    const list = await agent.get('/api/beneficiaries');
+    expect(list.body.beneficiaries).toHaveLength(0);
+  });
+
+  it('refuse un archivage sans date de sortie (400)', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent.patch(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}/archive`,
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.details).toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: 'exitDate' })]),
+    );
+    // Le dossier n'a pas été archivé
+    const list = await agent.get('/api/beneficiaries');
+    expect(list.body.beneficiaries).toHaveLength(1);
+  });
+
+  it("refuse une date de sortie antérieure à la date d'entrée (400)", async () => {
+    const { agent, user } = await loginAgent();
+    // createBeneficiary met la date d'entrée au 2026-10-01
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}/archive`)
+      .send({ exitDate: '2026-09-15' });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('refuse un dossier déjà archivé (409)', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}/archive`)
+      .send({ exitDate: '2026-10-20' });
+
+    expect(response.status).toBe(409);
+  });
+
+  it("renvoie 404 si le bénéficiaire n'existe pas", async () => {
+    const { agent } = await loginAgent();
+
+    const response = await agent
+      .patch('/api/beneficiaries/9999/archive')
+      .send({ exitDate: '2026-10-20' });
+
+    expect(response.status).toBe(404);
+  });
+});
+
+describe('PATCH /api/beneficiaries/:id/unarchive', () => {
+  it('désarchive le dossier et vide la date de sortie', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+    await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}/archive`)
+      .send({ exitDate: '2026-10-20' });
+
+    const response = await agent.patch(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}/unarchive`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary).toMatchObject({
+      archivedAt: null,
+      exitDate: null,
+    });
+    // Il revient dans la liste des actifs
+    const list = await agent.get('/api/beneficiaries');
+    expect(list.body.beneficiaries).toHaveLength(1);
+  });
+
+  it("refuse un dossier qui n'est pas archivé (409)", async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent.patch(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}/unarchive`,
+    );
+
+    expect(response.status).toBe(409);
+  });
+});
