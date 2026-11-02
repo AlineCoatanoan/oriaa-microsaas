@@ -1,5 +1,6 @@
 import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
+import { findActiveUser } from './auth.service.js';
 import {
   BadRequestError,
   ConflictError,
@@ -48,12 +49,33 @@ export function toBeneficiaryDto(b: Beneficiary) {
   };
 }
 
+/**
+ * Traduit le format du front (camelCase) vers le format de la base (snake_case).
+ * Champ absent = undefined = inchangé pour Prisma.
+ */
+function toBeneficiaryData(data: UpdateBeneficiaryInput) {
+  return {
+    last_name: data.lastName,
+    first_name: data.firstName,
+    // entry_date est obligatoire : toDate, qui peut renvoyer null, ne convient pas
+    entry_date: data.entryDate ? new Date(data.entryDate) : undefined,
+    email: data.email,
+    date_of_birth: toDate(data.dateOfBirth),
+    address: data.address,
+    postal_code: data.postalCode,
+    city: data.city,
+    phone: data.phone,
+    family_status: data.familyStatus,
+    number_of_children: data.numberOfChildren,
+    household_composition: data.householdComposition,
+    user_id: data.referentId,
+  };
+}
+
 /** Le référent doit exister et être actif. */
 async function assertActiveReferent(userId: number) {
-  const referent = await prisma.user.findUnique({ where: { user_id: userId } });
-  if (!referent || referent.archived_at) {
-    throw new BadRequestError('Référent introuvable.');
-  }
+  const referent = await findActiveUser({ user_id: userId });
+  if (!referent) throw new BadRequestError('Référent introuvable.');
 }
 
 /** Renvoie le bénéficiaire brut (format base), ou une 404. */
@@ -76,18 +98,11 @@ export async function create(
 
   const beneficiary = await prisma.beneficiary.create({
     data: {
+      ...toBeneficiaryData(data),
+      // Champs obligatoires à la création : on précise leur type exact pour Prisma
       last_name: data.lastName,
       first_name: data.firstName,
       entry_date: new Date(data.entryDate),
-      email: data.email,
-      date_of_birth: toDate(data.dateOfBirth),
-      address: data.address,
-      postal_code: data.postalCode,
-      city: data.city,
-      phone: data.phone,
-      family_status: data.familyStatus,
-      number_of_children: data.numberOfChildren,
-      household_composition: data.householdComposition,
       user_id: referentId,
     },
   });
@@ -128,21 +143,7 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
 
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
-    data: {
-      last_name: data.lastName,
-      first_name: data.firstName,
-      entry_date: data.entryDate ? new Date(data.entryDate) : undefined,
-      email: data.email,
-      date_of_birth: toDate(data.dateOfBirth),
-      address: data.address,
-      postal_code: data.postalCode,
-      city: data.city,
-      phone: data.phone,
-      family_status: data.familyStatus,
-      number_of_children: data.numberOfChildren,
-      household_composition: data.householdComposition,
-      user_id: data.referentId,
-    },
+    data: toBeneficiaryData(data),
   });
 
   return toBeneficiaryDto(beneficiary);
