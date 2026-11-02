@@ -1,9 +1,8 @@
 import type { RequestHandler } from 'express';
-import prisma from '../lib/prisma.js';
 import { verifyAccessToken } from '../lib/jwt.js';
 import { AUTH_COOKIE_NAME } from '../config/auth-cookie.js';
 import { UnauthorizedError } from '../errors/app-error.js';
-import { toPublicUser } from '../services/auth.service.js';
+import { findActiveUser, toPublicUser } from '../services/auth.service.js';
 
 /**
  * Protège une route : la requête doit contenir un cookie de connexion valide,
@@ -21,11 +20,8 @@ export const authenticate: RequestHandler = async (req, res, next) => {
   const { userId } = verifyAccessToken(token);
 
   // 3. L'utilisateur existe-t-il toujours, et son compte est-il actif ?
-  const user = await prisma.user.findUnique({
-    where: { user_id: userId },
-    include: { role: true },
-  });
-  if (!user || user.archived_at) {
+  const user = await findActiveUser({ user_id: userId });
+  if (!user) {
     throw new UnauthorizedError('Session invalide, veuillez vous reconnecter.');
   }
 
