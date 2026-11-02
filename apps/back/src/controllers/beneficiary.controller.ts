@@ -19,10 +19,10 @@ export async function getById(_req: Request, res: Response) {
   res.status(200).json({ beneficiary });
 }
 
-/** GET /api/beneficiaries (?archived=true) */
+/** GET /api/beneficiaries (?archived=true, ?search=mar) */
 export async function list(_req: Request, res: Response) {
-  const { archived } = res.locals.validated.query;
-  const beneficiaries = await beneficiaryService.findAll({ archived });
+  const { archived, search } = res.locals.validated.query;
+  const beneficiaries = await beneficiaryService.findAll({ archived, search });
   res.status(200).json({ beneficiaries });
 }
 
