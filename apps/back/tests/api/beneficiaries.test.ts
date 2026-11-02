@@ -183,6 +183,57 @@ describe('GET /api/beneficiaries', () => {
 
     expect(response.status).toBe(400);
   });
+
+  it('recherche par nom ou prénom, sans tenir compte de la casse', async () => {
+    const { agent, user } = await loginAgent();
+    await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      firstName: 'Lucas',
+    });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Bernard',
+      firstName: 'Martine',
+    });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Durand',
+      firstName: 'Sarah',
+    });
+
+    const response = await agent.get('/api/beneficiaries?search=MART');
+
+    expect(response.status).toBe(200);
+    const lastNames = response.body.beneficiaries.map(
+      (b: { lastName: string }) => b.lastName,
+    );
+    expect(lastNames).toEqual(['Bernard', 'Martin']);
+  });
+
+  it('applique la recherche uniquement aux dossiers du filtre choisi', async () => {
+    const { agent, user } = await loginAgent();
+    await createBeneficiary(user.user_id, { lastName: 'Martin' });
+    await createBeneficiary(user.user_id, {
+      lastName: 'Martinez',
+      archivedAt: new Date(),
+    });
+
+    const response = await agent.get(
+      '/api/beneficiaries?search=mart&archived=true',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiaries).toHaveLength(1);
+    expect(response.body.beneficiaries[0].lastName).toBe('Martinez');
+  });
+
+  it('renvoie une liste vide si aucun bénéficiaire ne correspond', async () => {
+    const { agent, user } = await loginAgent();
+    await createBeneficiary(user.user_id, { lastName: 'Martin' });
+
+    const response = await agent.get('/api/beneficiaries?search=inconnu');
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiaries).toEqual([]);
+  });
 });
 
 describe('PATCH /api/beneficiaries/:id', () => {

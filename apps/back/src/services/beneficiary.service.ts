@@ -115,11 +115,25 @@ export async function findById(id: number) {
   return toBeneficiaryDto(await findExistingOrFail(id));
 }
 
-/** Liste les bénéficiaires actifs, ou archivés, triés par nom puis prénom. */
-export async function findAll(options: { archived: boolean }) {
+/**
+ * Liste les bénéficiaires actifs, ou archivés, triés par nom puis prénom.
+ * Si une recherche est fournie, garde ceux dont le nom ou le prénom la contient.
+ */
+export async function findAll(options: { archived: boolean; search?: string }) {
+  const { archived, search } = options;
+
   const beneficiaries = await prisma.beneficiary.findMany({
-    // archived_at vide = actif ; archived_at rempli = archivé
-    where: { archived_at: options.archived ? { not: null } : null },
+    where: {
+      // archived_at vide = actif ; archived_at rempli = archivé
+      archived_at: archived ? { not: null } : null,
+      // mode 'insensitive' : les majuscules et minuscules sont ignorées
+      OR: search
+        ? [
+            { last_name: { contains: search, mode: 'insensitive' } },
+            { first_name: { contains: search, mode: 'insensitive' } },
+          ]
+        : undefined,
+    },
     orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
   });
 

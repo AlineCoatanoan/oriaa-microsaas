@@ -51,9 +51,10 @@ export const beneficiaryIdSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
-/** Filtres de la liste : ?archived=true pour voir les archivés. */
+/** Filtres de la liste : ?archived=true pour voir les archivés, ?search=mar pour chercher par nom ou prénom. */
 export const listBeneficiariesQuerySchema = z.object({
   archived: z.stringbool().default(false),
+  search: z.string().trim().max(50).optional(),
 });
 
 /** Archivage : la date de sortie est obligatoire. */
