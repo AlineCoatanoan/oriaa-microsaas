@@ -28,7 +28,7 @@ And elle ne peut plus accéder aux données sans se reconnecter
 ```gherkin
 Given une éducatrice connectée
 When elle crée un nouveau dossier bénéficiaire avec les informations requises
-Then le dossier est enregistré avec le statut "En attente"
+Then le dossier est enregistré avec le statut "En cours"
 And il est visible dans la liste des bénéficiaires
 ```
 
@@ -94,14 +94,28 @@ And il peut identifier le référent habituel sur la fiche
 
 ### Feature: Changement de statut du parcours
 
-**Scenario:** Un changement de statut est automatiquement tracé dans l'historique
+**Scenario:** Une éducatrice met à jour le statut du parcours
 
 ```gherkin
-Given un bénéficiaire avec le statut "Accueilli"
-When l'éducatrice fait passer son statut à "En accompagnement"
+Given un bénéficiaire avec le statut "En cours"
+When l'éducatrice fait passer son statut à "Préparation à la sortie"
 Then le nouveau statut est visible sur la fiche et dans la liste des bénéficiaires
-And une entrée est automatiquement créée dans l'historique
-And cette entrée contient la date, l'heure et le nom de l'auteure
+```
+
+**Scenario:** L'archivage d'un dossier passe son statut à "Sortie"
+
+```gherkin
+Given un bénéficiaire actif avec le statut "Préparation à la sortie"
+When l'éducatrice archive son dossier avec une date de sortie
+Then le dossier est archivé avec le statut "Sortie"
+```
+
+**Scenario:** Le désarchivage d'un dossier remet son statut à "En cours"
+
+```gherkin
+Given un dossier archivé avec le statut "Sortie"
+When l'éducatrice le désarchive
+Then le dossier redevient actif avec le statut "En cours"
 ```
 
 ---
