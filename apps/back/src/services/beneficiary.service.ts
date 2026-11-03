@@ -10,6 +10,10 @@ import type {
   CreateBeneficiaryInput,
   UpdateBeneficiaryInput,
 } from '../schemas/beneficiary.schema.js';
+import {
+  DEFAULT_PATHWAY_STATUS,
+  EXIT_PATHWAY_STATUS,
+} from '../schemas/beneficiary.schema.js';
 
 /** "2026-10-25" → Date ; null → null (champ vidé) ; absent → undefined (inchangé). */
 const toDate = (value?: string | null) => {
@@ -68,6 +72,7 @@ function toBeneficiaryData(data: UpdateBeneficiaryInput) {
     family_status: data.familyStatus,
     number_of_children: data.numberOfChildren,
     household_composition: data.householdComposition,
+    pathway_status: data.pathwayStatus,
     user_id: data.referentId,
   };
 }
@@ -104,6 +109,7 @@ export async function create(
       first_name: data.firstName,
       entry_date: new Date(data.entryDate),
       user_id: referentId,
+      pathway_status: DEFAULT_PATHWAY_STATUS,
     },
   });
 
@@ -179,7 +185,11 @@ export async function archive(id: number, exitDate: string) {
 
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
-    data: { archived_at: new Date(), exit_date: exit },
+    data: {
+      archived_at: new Date(),
+      exit_date: exit,
+      pathway_status: EXIT_PATHWAY_STATUS,
+    },
   });
 
   return toBeneficiaryDto(beneficiary);
@@ -194,7 +204,11 @@ export async function unarchive(id: number) {
 
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
-    data: { archived_at: null, exit_date: null },
+    data: {
+      archived_at: null,
+      exit_date: null,
+      pathway_status: DEFAULT_PATHWAY_STATUS,
+    },
   });
 
   return toBeneficiaryDto(beneficiary);
