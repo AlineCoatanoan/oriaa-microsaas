@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Subtask } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import {
   BadRequestError,
@@ -24,6 +24,7 @@ import type {
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
+  subtasks: { orderBy: { subtask_id: 'asc' } },
   created_by: authorSelect,
   assignees: {
     include: {
@@ -69,6 +70,15 @@ function isOverdue(task: TaskWithRelations) {
   );
 }
 
+/** Format d'une sous-tâche renvoyé au front. */
+export function toSubtaskDto(subtask: Subtask) {
+  return {
+    id: subtask.subtask_id,
+    label: subtask.label,
+    isCompleted: subtask.is_completed,
+  };
+}
+
 /** Format renvoyé au front. */
 function toTaskDto(task: TaskWithRelations) {
   return {
@@ -95,6 +105,7 @@ function toTaskDto(task: TaskWithRelations) {
       firstName: beneficiary.first_name,
       lastName: beneficiary.last_name,
     })),
+    subtasks: task.subtasks.map(toSubtaskDto),
   };
 }
 
@@ -137,6 +148,11 @@ function assertNotArchived(task: TaskWithRelations) {
       "Une tâche archivée ne peut pas être modifiée. Désarchivez d'abord un de ses bénéficiaires.",
     );
   }
+}
+
+/** Vérifie que la tâche existe et qu'elle est modifiable. */
+export async function assertTaskEditable(id: number) {
+  assertNotArchived(await findExistingOrFail(id));
 }
 
 /**
@@ -250,7 +266,7 @@ export async function update(id: number, data: UpdateTaskInput) {
 
 /** Supprime une tâche. Ses liens et ses sous-tâches sont supprimés en cascade. */
 export async function remove(id: number) {
-  assertNotArchived(await findExistingOrFail(id));
+  await assertTaskEditable(id);
 
   await prisma.task.delete({ where: { task_id: id } });
 }

@@ -14,11 +14,14 @@ import {
   remove,
   update,
 } from '../controllers/task.controller.js';
+import subtaskRouter from './subtask.routes.js';
 
 const taskRouter = Router();
 
 // Toutes les routes des tâches exigent d'être connecté (tous rôles)
 taskRouter.use(authenticate);
+
+taskRouter.use('/:id/subtasks', subtaskRouter);
 
 taskRouter.get('/', validate({ query: listTasksQuerySchema }), list);
 
