@@ -1,10 +1,8 @@
 import bcrypt from 'bcrypt';
 import prisma from '../../src/lib/prisma.js';
+import type { SeedRoles } from './types.js';
 
-export async function seedUsers(roles: {
-  adminRole: { role_id: number };
-  userRole: { role_id: number };
-}) {
+export async function seedUsers(roles: SeedRoles) {
   const password = await bcrypt.hash('Oriaa123!', 10);
 
   const admin = await prisma.user.create({
@@ -14,7 +12,6 @@ export async function seedUsers(roles: {
       email: 'aline.coatanoan@oriaa.test',
       password,
       job: 'Developpeuse',
-      created_at: new Date(),
       role_id: roles.adminRole.role_id,
     },
   });
@@ -26,7 +23,6 @@ export async function seedUsers(roles: {
       email: 'george.orwell@oriaa.test',
       password,
       job: 'Travailleur social',
-      created_at: new Date(),
       role_id: roles.userRole.role_id,
     },
   });

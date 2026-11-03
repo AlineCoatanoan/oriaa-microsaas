@@ -1,4 +1,8 @@
 import prisma from '../../src/lib/prisma.js';
+import {
+  DEFAULT_PATHWAY_STATUS,
+  PREPARING_EXIT_PATHWAY_STATUS,
+} from '../../src/schemas/beneficiary.schema.js';
 
 export async function seedBeneficiaries(userId: number) {
   const beneficiary1 = await prisma.beneficiary.create({
@@ -14,9 +18,8 @@ export async function seedBeneficiaries(userId: number) {
       family_status: 'Célibataire',
       number_of_children: 0,
       household_composition: 'Seul',
-      pathway_status: 'En cours',
+      pathway_status: DEFAULT_PATHWAY_STATUS,
       entry_date: new Date('2026-01-15'),
-      created_at: new Date(),
       user_id: userId,
     },
   });
@@ -34,9 +37,8 @@ export async function seedBeneficiaries(userId: number) {
       family_status: 'Séparée',
       number_of_children: 2,
       household_composition: 'Parent avec enfants',
-      pathway_status: 'En cours',
+      pathway_status: DEFAULT_PATHWAY_STATUS,
       entry_date: new Date('2026-03-02'),
-      created_at: new Date(),
       user_id: userId,
     },
   });
@@ -54,9 +56,8 @@ export async function seedBeneficiaries(userId: number) {
       family_status: 'Célibataire',
       number_of_children: 0,
       household_composition: 'Seule',
-      pathway_status: 'En cours',
+      pathway_status: PREPARING_EXIT_PATHWAY_STATUS,
       entry_date: new Date('2026-05-10'),
-      created_at: new Date(),
       user_id: userId,
     },
   });

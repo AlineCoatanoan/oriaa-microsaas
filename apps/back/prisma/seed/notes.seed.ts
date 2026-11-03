@@ -1,15 +1,9 @@
 import prisma from '../../src/lib/prisma.js';
+import type { SeedBeneficiaries, SeedUsers } from './types.js';
 
 export async function seedNotes(
-  users: {
-    admin: { user_id: number };
-    user: { user_id: number };
-  },
-  beneficiaries: {
-    beneficiary1: { beneficiary_id: number };
-    beneficiary2: { beneficiary_id: number };
-    beneficiary3: { beneficiary_id: number };
-  },
+  users: SeedUsers,
+  beneficiaries: SeedBeneficiaries,
 ) {
   const note1 = await prisma.note.create({
     data: {
@@ -33,7 +27,7 @@ export async function seedNotes(
     },
   });
 
-  const note3 = await prisma.note.create({
+  await prisma.note.create({
     data: {
       title: "Réunion d'équipe",
       content: `Bilan intermédiaire concernant l'accompagnement. Les objectifs définis lors du précédent échange ont été repris afin d'identifier les démarches réalisées et celles restant à engager. La situation apparaît globalement stable. Plusieurs actions administratives restent toutefois à finaliser. Le bénéficiaire semble avoir identifié les prochaines étapes et a indiqué souhaiter poursuivre l'accompagnement sur les démarches en cours. Une nouvelle évaluation de la situation sera réalisée lors du prochain entretien.`,
@@ -44,7 +38,7 @@ export async function seedNotes(
     },
   });
 
-  const note4 = await prisma.note.create({
+  await prisma.note.create({
     data: {
       title: 'Suivi du parcours',
       content: `Bilan de parcours réalisé à partir des différents échanges et démarches effectués depuis le début de l'accompagnement.
@@ -61,7 +55,5 @@ export async function seedNotes(
   return {
     note1,
     note2,
-    note3,
-    note4,
   };
 }
