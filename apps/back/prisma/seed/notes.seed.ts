@@ -39,6 +39,7 @@ export async function seedNotes(
       content: `Bilan intermédiaire concernant l'accompagnement. Les objectifs définis lors du précédent échange ont été repris afin d'identifier les démarches réalisées et celles restant à engager. La situation apparaît globalement stable. Plusieurs actions administratives restent toutefois à finaliser. Le bénéficiaire semble avoir identifié les prochaines étapes et a indiqué souhaiter poursuivre l'accompagnement sur les démarches en cours. Une nouvelle évaluation de la situation sera réalisée lors du prochain entretien.`,
       created_at: new Date('2026-09-24'),
       updated_at: new Date('2026-09-24'),
+      beneficiary_id: beneficiaries.beneficiary2.beneficiary_id,
       user_id: users.user.user_id,
     },
   });

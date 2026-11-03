@@ -86,10 +86,10 @@ model Note {
   content        String?  @db.Text
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  beneficiary_id Int?
+  beneficiary_id Int
   user_id        Int
 
-  beneficiary  Beneficiary?      @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  beneficiary  Beneficiary      @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
   user         User              @relation(fields: [user_id], references: [user_id])
   tasks        TaskNote[]
   appointments NoteAppointment[]
