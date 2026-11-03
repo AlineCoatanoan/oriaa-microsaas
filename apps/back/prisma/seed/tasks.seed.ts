@@ -67,7 +67,7 @@ export async function seedTasks(
     data: {
       title: 'Préparer un atelier cuisine',
       description:
-        'Trouver les bénéficaires interessés, préparer la liste de courses.',
+        'Trouver les bénéficaires intéressés, préparer la liste de courses.',
       due_date: new Date('2026-09-25'),
       created_at: new Date('2026-09-20'),
       updated_at: new Date('2026-09-25'),

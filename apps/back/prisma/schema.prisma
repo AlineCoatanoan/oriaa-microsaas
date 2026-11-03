@@ -26,7 +26,7 @@ model User {
 
   role                      Role               @relation(fields: [role_id], references: [role_id])
   beneficiaries             Beneficiary[]
-  tasks_assignments         TaskAssignee[]             
+  tasks_assignments         TaskAssignee[]
   tasks_created             Task[]             @relation("TaskCreatedBy")
   notes                     Note[]
   appointments              Appointment[]
@@ -88,7 +88,7 @@ model Note {
   beneficiary_id Int
   user_id        Int
 
-  beneficiary  Beneficiary      @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  beneficiary  Beneficiary       @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
   user         User              @relation(fields: [user_id], references: [user_id])
   tasks        TaskNote[]
   appointments NoteAppointment[]
@@ -153,8 +153,8 @@ model TaskNote {
   task_id Int
   note_id Int
 
-  task        Task        @relation(fields: [task_id], references: [task_id], onDelete: Cascade)
-  note        Note        @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
+  task Task @relation(fields: [task_id], references: [task_id], onDelete: Cascade)
+  note Note @relation(fields: [note_id], references: [note_id], onDelete: Cascade)
 
   @@id([task_id, note_id])
 }

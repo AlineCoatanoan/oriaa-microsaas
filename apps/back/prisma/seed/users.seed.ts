@@ -9,7 +9,7 @@ export async function seedUsers(roles: {
 
   const admin = await prisma.user.create({
     data: {
-      last_name: 'coatanoan',
+      last_name: 'Coatanoan',
       first_name: 'Aline',
       email: 'aline.coatanoan@oriaa.test',
       password,
@@ -21,7 +21,7 @@ export async function seedUsers(roles: {
 
   const user = await prisma.user.create({
     data: {
-      last_name: 'orwell',
+      last_name: 'Orwell',
       first_name: 'George',
       email: 'george.orwell@oriaa.test',
       password,
