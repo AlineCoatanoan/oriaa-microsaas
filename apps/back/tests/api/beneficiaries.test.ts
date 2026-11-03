@@ -114,6 +114,91 @@ describe('GET /api/beneficiaries/:id', () => {
   });
 });
 
+describe('GET /api/beneficiaries/:id/timeline', () => {
+  it('fusionne les notes, tâches et rendez-vous, du plus récent au plus ancien', async () => {
+    const { agent, user } = await loginAgent();
+    const { beneficiary_id: beneficiaryId } = await createBeneficiary(
+      user.user_id,
+      { lastName: 'Martin' },
+    );
+
+    await prisma.note.create({
+      data: {
+        title: 'Note',
+        created_at: new Date('2026-10-10'),
+        beneficiary_id: beneficiaryId,
+        user_id: user.user_id,
+      },
+    });
+    await prisma.task.create({
+      data: {
+        title: 'Tâche',
+        created_at: new Date('2026-10-20'),
+        user_id_created_by: user.user_id,
+        beneficiaries: { create: { beneficiary_id: beneficiaryId } },
+      },
+    });
+    await prisma.appointment.create({
+      data: {
+        title: 'Rendez-vous',
+        start_at: new Date('2026-10-30'),
+        end_at: new Date('2026-10-30'),
+        user_id: user.user_id,
+        beneficiaries: { create: { beneficiary_id: beneficiaryId } },
+      },
+    });
+
+    const response = await agent.get(
+      `/api/beneficiaries/${beneficiaryId}/timeline`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.timeline.map((item: { type: string }) => item.type),
+    ).toEqual(['appointment', 'task', 'note']);
+    expect(response.body.timeline[0]).toMatchObject({
+      title: 'Rendez-vous',
+      author: 'Marie Dupont',
+    });
+  });
+
+  it("n'inclut pas les éléments d'un autre bénéficiaire", async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+    const other = await createBeneficiary(user.user_id, { lastName: 'Durand' });
+    await prisma.note.create({
+      data: {
+        title: 'Autre dossier',
+        beneficiary_id: other.beneficiary_id,
+        user_id: user.user_id,
+      },
+    });
+
+    const response = await agent.get(
+      `/api/beneficiaries/${beneficiary.beneficiary_id}/timeline`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.timeline).toEqual([]);
+  });
+
+  it("renvoie 404 si le bénéficiaire n'existe pas", async () => {
+    const { agent } = await loginAgent();
+
+    const response = await agent.get('/api/beneficiaries/9999/timeline');
+
+    expect(response.status).toBe(404);
+  });
+
+  it('refuse une requête sans être connecté', async () => {
+    const response = await request(app).get('/api/beneficiaries/1/timeline');
+
+    expect(response.status).toBe(401);
+  });
+});
+
 /** Crée directement un bénéficiaire en base (plus rapide que par l'API). */
 async function createBeneficiary(
   userId: number,

@@ -11,6 +11,7 @@ import {
 import {
   create,
   getById,
+  getTimeline,
   list,
   update,
   archive,
@@ -40,6 +41,12 @@ beneficiaryRouter.get(
   '/:id',
   validate({ params: beneficiaryIdSchema }),
   getById,
+);
+
+beneficiaryRouter.get(
+  '/:id/timeline',
+  validate({ params: beneficiaryIdSchema }),
+  getTimeline,
 );
 
 beneficiaryRouter.patch(
