@@ -6,5 +6,9 @@ export const toDate = (value?: string | null) => {
 };
 
 /** Date sans heure (colonne @db.Date) → "2026-10-25", ou null. */
+/** Date → "2026-10-25". */
+export const formatDate = (value: Date) => value.toISOString().slice(0, 10);
+
+/** Date sans heure (colonne @db.Date) → "2026-10-25", ou null. */
 export const toDateOnly = (value: Date | null) =>
-  value ? value.toISOString().slice(0, 10) : null;
+  value ? formatDate(value) : null;

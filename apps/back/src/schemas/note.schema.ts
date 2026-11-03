@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   atLeastOneField,
   idParam,
+  idParamsSchema,
   requiredLongText,
   requiredText,
 } from './common.js';
@@ -20,4 +21,4 @@ export const updateNoteSchema = atLeastOneField(createNoteSchema.partial());
 export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
 
 /** Paramètres :id (bénéficiaire) et :noteId dans l'URL. */
-export const noteParamsSchema = z.object({ id: idParam, noteId: idParam });
+export const noteParamsSchema = idParamsSchema.extend({ noteId: idParam });

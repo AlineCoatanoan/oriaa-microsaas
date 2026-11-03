@@ -15,7 +15,7 @@ import type {
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
 import type { Prisma } from '@prisma/client';
-import { toDate, toDateOnly } from '../lib/dates.js';
+import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
 import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
 
 /** Données liées à récupérer avec chaque tâche. */
@@ -24,7 +24,7 @@ const taskInclude = {
   created_by: authorSelect,
   assignees: {
     include: {
-      user: { select: { user_id: true, first_name: true, last_name: true } },
+      user: { select: { ...authorSelect.select, user_id: true } },
     },
   },
   beneficiaries: {
@@ -57,12 +57,14 @@ const isArchived = (task: TaskWithRelations) =>
   task.beneficiaries.length > 0 &&
   task.beneficiaries.every((link) => link.beneficiary.archived_at !== null);
 
+const isCompleted = (task: TaskWithRelations) =>
+  task.status === COMPLETED_TASK_STATUS;
+
 /** En retard : échéance passée et tâche non terminée. */
 function isOverdue(task: TaskWithRelations) {
   const dueDate = toDateOnly(task.due_date);
-  const today = new Date().toISOString().slice(0, 10);
   return (
-    dueDate !== null && dueDate < today && task.status !== COMPLETED_TASK_STATUS
+    dueDate !== null && dueDate < formatDate(new Date()) && !isCompleted(task)
   );
 }
 
@@ -76,9 +78,7 @@ function toTaskDto(task: TaskWithRelations) {
     status: task.status,
     priority: task.priority,
     isOverdue: isOverdue(task),
-    isUrgent:
-      task.priority === URGENT_TASK_PRIORITY &&
-      task.status !== COMPLETED_TASK_STATUS,
+    isUrgent: task.priority === URGENT_TASK_PRIORITY && !isCompleted(task),
     isArchived: isArchived(task),
     createdAt: task.created_at,
     updatedAt: task.updated_at,

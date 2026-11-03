@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { atLeastOneField, idParam, requiredText } from './common.js';
+import {
+  atLeastOneField,
+  idParam,
+  idParamsSchema,
+  requiredText,
+} from './common.js';
 
 const label = requiredText(50);
 
@@ -16,7 +21,6 @@ export const updateSubtaskSchema = atLeastOneField(
 export type UpdateSubtaskInput = z.infer<typeof updateSubtaskSchema>;
 
 /** Paramètres :id (tâche) et :subtaskId dans l'URL. */
-export const subtaskParamsSchema = z.object({
-  id: idParam,
+export const subtaskParamsSchema = idParamsSchema.extend({
   subtaskId: idParam,
 });
