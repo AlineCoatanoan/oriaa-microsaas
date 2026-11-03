@@ -591,7 +591,7 @@ describe('DELETE /api/beneficiaries/:id', () => {
     expect(await prisma.beneficiary.count()).toBe(0);
   });
 
-  it('supprime ses notes et ses liens, mais conserve les tâches (cascade)', async () => {
+  it('supprime ses notes et les tâches liées uniquement à lui', async () => {
     const { agent, user } = await loginAgent({ role: 'admin' });
     const beneficiary = await createBeneficiary(user.user_id, {
       lastName: 'Martin',
@@ -604,22 +604,52 @@ describe('DELETE /api/beneficiaries/:id', () => {
         user_id: user.user_id,
       },
     });
-    const task = await prisma.task.create({
-      data: { title: 'Dossier CAF', user_id_created_by: user.user_id },
-    });
-    await prisma.beneficiaryTask.create({
+    await prisma.task.create({
       data: {
-        beneficiary_id: beneficiary.beneficiary_id,
-        task_id: task.task_id,
+        title: 'Dossier CAF',
+        user_id_created_by: user.user_id,
+        beneficiaries: {
+          create: { beneficiary_id: beneficiary.beneficiary_id },
+        },
       },
     });
 
     await agent.delete(`/api/beneficiaries/${beneficiary.beneficiary_id}`);
 
     expect(await prisma.note.count()).toBe(0);
-    expect(await prisma.beneficiaryTask.count()).toBe(0);
-    // La tâche elle-même est conservée
-    expect(await prisma.task.count()).toBe(1);
+    expect(await prisma.task.count()).toBe(0);
+  });
+
+  it('conserve les tâches partagées et les tâches sans bénéficiaire', async () => {
+    const { agent, user } = await loginAgent({ role: 'admin' });
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+      archivedAt: new Date(),
+    });
+    const other = await createBeneficiary(user.user_id, { lastName: 'Durand' });
+    await prisma.task.create({
+      data: {
+        title: 'Atelier cuisine',
+        user_id_created_by: user.user_id,
+        beneficiaries: {
+          create: [
+            { beneficiary_id: beneficiary.beneficiary_id },
+            { beneficiary_id: other.beneficiary_id },
+          ],
+        },
+      },
+    });
+    await prisma.task.create({
+      data: { title: 'Réunion équipe', user_id_created_by: user.user_id },
+    });
+
+    await agent.delete(`/api/beneficiaries/${beneficiary.beneficiary_id}`);
+
+    expect(await prisma.task.count()).toBe(2);
+    // Le lien avec le bénéficiaire supprimé a disparu, celui de l'autre reste
+    const links = await prisma.beneficiaryTask.findMany();
+    expect(links).toHaveLength(1);
+    expect(links[0].beneficiary_id).toBe(other.beneficiary_id);
   });
 
   it("refuse la suppression à un utilisateur qui n'est pas admin (403)", async () => {
