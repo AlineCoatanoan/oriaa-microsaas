@@ -8,7 +8,7 @@ datasource db {
 
 model Role {
   role_id Int    @id @default(autoincrement())
-  label   String @db.VarChar(50)
+  label   String @unique @db.VarChar(50)
 
   users User[]
 }
