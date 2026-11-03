@@ -84,7 +84,7 @@ async function assertActiveReferent(userId: number) {
 }
 
 /** Renvoie le bénéficiaire brut (format base), ou une 404. */
-async function findExistingOrFail(id: number) {
+export async function findExistingOrFail(id: number) {
   const beneficiary = await prisma.beneficiary.findUnique({
     where: { beneficiary_id: id },
   });
@@ -121,6 +121,15 @@ export async function findById(id: number) {
   return toBeneficiaryDto(await findExistingOrFail(id));
 }
 
+/** Champs de l'auteur à récupérer avec Prisma. */
+export const authorSelect = {
+  select: { first_name: true, last_name: true },
+};
+
+/** Nom affiché de l'auteur : "Marie Dupont". */
+export const toAuthorName = (user: { first_name: string; last_name: string }) =>
+  `${user.first_name} ${user.last_name}`;
+
 /**
  * Chronologie d'un bénéficiaire, calculée à la demande :
  * ses notes, tâches et rendez-vous, du plus récent au plus ancien.
@@ -128,25 +137,20 @@ export async function findById(id: number) {
 export async function findTimeline(id: number) {
   await findExistingOrFail(id);
 
-  const author = { select: { first_name: true, last_name: true } };
-
   const [notes, tasks, appointments] = await Promise.all([
     prisma.note.findMany({
       where: { beneficiary_id: id },
-      include: { user: author },
+      include: { user: authorSelect },
     }),
     prisma.task.findMany({
       where: { beneficiaries: { some: { beneficiary_id: id } } },
-      include: { created_by: author },
+      include: { created_by: authorSelect },
     }),
     prisma.appointment.findMany({
       where: { beneficiaries: { some: { beneficiary_id: id } } },
-      include: { user: author },
+      include: { user: authorSelect },
     }),
   ]);
-
-  const toAuthorName = (user: { first_name: string; last_name: string }) =>
-    `${user.first_name} ${user.last_name}`;
 
   return [
     ...notes.map((note) => ({
