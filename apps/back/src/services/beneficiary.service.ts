@@ -77,10 +77,17 @@ export async function findBeneficiaryOrFail(id: number) {
   return beneficiary;
 }
 
-/** Règle métier : un dossier archivé est en lecture seule. */
+/** Règle métier : un dossier archivé est en lecture seule. Renvoie le dossier. */
 export async function assertBeneficiaryActive(id: number, message: string) {
   const beneficiary = await findBeneficiaryOrFail(id);
   if (beneficiary.archived_at) throw new ConflictError(message);
+  return beneficiary;
+}
+
+/** Vérifie que le dossier est archivé, sinon 409. */
+async function assertBeneficiaryArchived(id: number, message: string) {
+  const beneficiary = await findBeneficiaryOrFail(id);
+  if (!beneficiary.archived_at) throw new ConflictError(message);
 }
 
 /** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
@@ -205,10 +212,10 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
 
 /** Archive un bénéficiaire actif (sortie de la structure). */
 export async function archive(id: number, exitDate: string) {
-  const existing = await findBeneficiaryOrFail(id);
-  if (existing.archived_at) {
-    throw new ConflictError('Ce dossier est déjà archivé.');
-  }
+  const existing = await assertBeneficiaryActive(
+    id,
+    'Ce dossier est déjà archivé.',
+  );
 
   const exit = new Date(exitDate);
   if (exit < existing.entry_date) {
@@ -231,10 +238,7 @@ export async function archive(id: number, exitDate: string) {
 
 /** Désarchive un bénéficiaire (retour dans la structure). */
 export async function unarchive(id: number) {
-  const existing = await findBeneficiaryOrFail(id);
-  if (!existing.archived_at) {
-    throw new ConflictError("Ce dossier n'est pas archivé.");
-  }
+  await assertBeneficiaryArchived(id, "Ce dossier n'est pas archivé.");
 
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
@@ -255,12 +259,10 @@ export async function unarchive(id: number) {
  * Une tâche liée à d'autres bénéficiaires est conservée.
  */
 export async function remove(id: number) {
-  const existing = await findBeneficiaryOrFail(id);
-  if (!existing.archived_at) {
-    throw new ConflictError(
-      "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
-    );
-  }
+  await assertBeneficiaryArchived(
+    id,
+    "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
+  );
 
   // Transaction : soit tout est supprimé, soit rien
   await prisma.$transaction([

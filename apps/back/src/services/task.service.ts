@@ -131,18 +131,15 @@ async function findTaskOrFail(id: number) {
   return task;
 }
 
-/** Règle métier : une tâche archivée est en lecture seule. */
-function assertNotArchived(task: TaskWithRelations) {
+/** Règle métier : une tâche archivée est en lecture seule. Renvoie la tâche. */
+export async function assertTaskEditable(id: number) {
+  const task = await findTaskOrFail(id);
   if (isArchived(task)) {
     throw new ConflictError(
       "Une tâche archivée ne peut pas être modifiée. Désarchivez d'abord un de ses bénéficiaires.",
     );
   }
-}
-
-/** Vérifie que la tâche existe et qu'elle est modifiable. */
-export async function assertTaskEditable(id: number) {
-  assertNotArchived(await findTaskOrFail(id));
+  return task;
 }
 
 /**
@@ -208,9 +205,7 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
  * archivé ou un collègue parti peut être conservé.
  */
 export async function update(id: number, data: UpdateTaskInput) {
-  const existing = await findTaskOrFail(id);
-  assertNotArchived(existing);
-
+  const existing = await assertTaskEditable(id);
   const assigneeIds = data.assigneeIds && unique(data.assigneeIds);
   const beneficiaryIds = data.beneficiaryIds && unique(data.beneficiaryIds);
 
