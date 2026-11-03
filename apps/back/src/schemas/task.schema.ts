@@ -4,6 +4,8 @@ import {
   atLeastOneField,
   idField,
   idParam,
+  isoDate,
+  optionalLongText,
   requiredText,
 } from './common.js';
 
@@ -28,8 +30,8 @@ const idList = z.array(idField);
  */
 export const createTaskSchema = z.object({
   title: requiredText(50),
-  description: z.string().trim().nullish(),
-  dueDate: z.iso.date().nullish(), // format ISO : 2026-10-25
+  description: optionalLongText,
+  dueDate: isoDate.nullish(),
   priority: taskPriority.optional(),
   assigneeIds: idList.min(1).optional(), // au moins un responsable
   beneficiaryIds: idList.optional(), // absent ou vide : tâche sans bénéficiaire

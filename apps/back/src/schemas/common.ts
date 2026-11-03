@@ -12,12 +12,21 @@ export const idParamsSchema = z.object({ id: idParam });
 /** Filtre ?archived=true des listes. */
 export const archivedFilter = z.stringbool().default(false);
 
+/** Date au format ISO : 2026-10-25. */
+export const isoDate = z.iso.date();
+
 /** Texte obligatoire : au moins un caractère, max caractères au plus. */
 export const requiredText = (max: number) => z.string().trim().min(1).max(max);
 
 /** Texte facultatif : absent, null (pour le vider) ou max caractères. */
 export const optionalText = (max: number) =>
   z.string().trim().max(max).nullish();
+
+/** Texte long obligatoire, sans limite de taille (colonne TEXT). */
+export const requiredLongText = z.string().trim().min(1);
+
+/** Texte long facultatif : absent, null ou vide (colonne TEXT). */
+export const optionalLongText = z.string().trim().nullish();
 
 /** Impose au moins un champ dans une modification (PATCH). */
 export const atLeastOneField = <T extends z.ZodObject>(schema: T) =>

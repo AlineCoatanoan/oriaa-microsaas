@@ -1,10 +1,15 @@
 import { z } from 'zod';
-import { atLeastOneField, idParam, requiredText } from './common.js';
+import {
+  atLeastOneField,
+  idParam,
+  requiredLongText,
+  requiredText,
+} from './common.js';
 
 /** Données acceptées pour créer une note. Les max() reprennent la taille des colonnes Prisma. */
 export const createNoteSchema = z.object({
   title: requiredText(50),
-  content: z.string().trim().min(1),
+  content: requiredLongText,
 });
 
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;

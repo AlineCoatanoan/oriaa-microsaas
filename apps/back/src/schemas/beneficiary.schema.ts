@@ -3,6 +3,7 @@ import {
   archivedFilter,
   atLeastOneField,
   idField,
+  isoDate,
   optionalText,
   requiredText,
 } from './common.js';
@@ -23,9 +24,9 @@ export const EXIT_PATHWAY_STATUS = 'Sortie';
 export const createBeneficiarySchema = z.object({
   lastName: requiredText(50),
   firstName: requiredText(50),
-  entryDate: z.iso.date(), // format ISO : 2026-10-25
+  entryDate: isoDate,
   email: z.email().max(255).nullish(),
-  dateOfBirth: z.iso.date().nullish(),
+  dateOfBirth: isoDate.nullish(),
   address: optionalText(255),
   postalCode: optionalText(10),
   city: optionalText(100),
@@ -66,5 +67,5 @@ export const listBeneficiariesQuerySchema = z.object({
 
 /** Archivage : la date de sortie est obligatoire. */
 export const archiveBeneficiarySchema = z.object({
-  exitDate: z.iso.date(),
+  exitDate: isoDate,
 });
