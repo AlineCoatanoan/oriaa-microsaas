@@ -20,7 +20,7 @@ export async function seedTasks(
       updated_at: new Date(),
       status: 'À faire',
       priority: 'Haute',
-      user_id_assigned: users.user.user_id,
+      assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
       beneficiaries: {
         create: {
@@ -39,7 +39,7 @@ export async function seedTasks(
       updated_at: new Date(),
       status: 'En cours',
       priority: 'Normale',
-      user_id_assigned: users.admin.user_id,
+      assignees: { create: { user_id: users.admin.user_id } },
       user_id_created_by: users.user.user_id,
       beneficiaries: {
         create: {
@@ -58,7 +58,7 @@ export async function seedTasks(
       updated_at: new Date(),
       status: 'À faire',
       priority: 'Normale',
-      user_id_assigned: users.user.user_id,
+      assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.user.user_id,
     },
   });
@@ -73,7 +73,7 @@ export async function seedTasks(
       updated_at: new Date('2026-09-25'),
       status: 'Terminée',
       priority: 'Basse',
-      user_id_assigned: users.user.user_id,
+      assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
       beneficiaries: {
         create: {
