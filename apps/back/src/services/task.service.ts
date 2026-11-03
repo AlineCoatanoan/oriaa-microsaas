@@ -1,4 +1,7 @@
+import type { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
+import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
+import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
 import {
   BadRequestError,
   ConflictError,
@@ -14,9 +17,9 @@ import type {
   CreateTaskInput,
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
-import type { Prisma } from '@prisma/client';
-import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
-import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
+import { assertActiveUsers } from './auth.service.js';
+
+const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
@@ -99,14 +102,14 @@ function toTaskDto(task: TaskWithRelations) {
 /** Enlève les doublons d'une liste d'identifiants. */
 const unique = (ids: number[]) => [...new Set(ids)];
 
-/** Les responsables ajoutés doivent exister et être actifs. */
-async function assertActiveAssignees(ids: number[]) {
-  const count = await prisma.user.count({
-    where: { user_id: { in: ids }, archived_at: null },
-  });
-  if (count !== ids.length)
-    throw new BadRequestError('Responsable introuvable.');
-}
+/** Garde uniquement les identifiants absents de la liste actuelle. */
+const newIds = (ids: number[], current: number[]) =>
+  ids.filter((id) => !current.includes(id));
+
+const toAssigneeLinks = (ids: number[]) => ids.map((user_id) => ({ user_id }));
+
+const toBeneficiaryLinks = (ids: number[]) =>
+  ids.map((beneficiary_id) => ({ beneficiary_id }));
 
 /** Les bénéficiaires ajoutés doivent exister et ne pas être archivés. */
 async function assertActiveBeneficiaries(ids: number[]) {
@@ -119,7 +122,7 @@ async function assertActiveBeneficiaries(ids: number[]) {
 }
 
 /** Renvoie la tâche avec ses liens, ou une 404. */
-async function findExistingOrFail(id: number) {
+async function findTaskOrFail(id: number) {
   const task = await prisma.task.findUnique({
     where: { task_id: id },
     include: taskInclude,
@@ -139,7 +142,7 @@ function assertNotArchived(task: TaskWithRelations) {
 
 /** Vérifie que la tâche existe et qu'elle est modifiable. */
 export async function assertTaskEditable(id: number) {
-  assertNotArchived(await findExistingOrFail(id));
+  assertNotArchived(await findTaskOrFail(id));
 }
 
 /**
@@ -171,7 +174,7 @@ export async function findAll(options: {
 
 /** Renvoie une tâche, ou une 404. */
 export async function findById(id: number) {
-  return toTaskDto(await findExistingOrFail(id));
+  return toTaskDto(await findTaskOrFail(id));
 }
 
 /** Crée une tâche. Par défaut, la personne connectée en est responsable. */
@@ -179,7 +182,7 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
   const assigneeIds = unique(data.assigneeIds ?? [currentUserId]);
   const beneficiaryIds = unique(data.beneficiaryIds ?? []);
 
-  await assertActiveAssignees(assigneeIds);
+  await assertActiveUsers(assigneeIds, UNKNOWN_ASSIGNEE_MESSAGE);
   await assertActiveBeneficiaries(beneficiaryIds);
 
   const task = await prisma.task.create({
@@ -190,10 +193,8 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
       status: DEFAULT_TASK_STATUS,
       priority: data.priority ?? DEFAULT_TASK_PRIORITY,
       user_id_created_by: currentUserId,
-      assignees: { create: assigneeIds.map((user_id) => ({ user_id })) },
-      beneficiaries: {
-        create: beneficiaryIds.map((beneficiary_id) => ({ beneficiary_id })),
-      },
+      assignees: { create: toAssigneeLinks(assigneeIds) },
+      beneficiaries: { create: toBeneficiaryLinks(beneficiaryIds) },
     },
     include: taskInclude,
   });
@@ -207,23 +208,26 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
  * archivé ou un collègue parti peut être conservé.
  */
 export async function update(id: number, data: UpdateTaskInput) {
-  const existing = await findExistingOrFail(id);
+  const existing = await findTaskOrFail(id);
   assertNotArchived(existing);
 
   const assigneeIds = data.assigneeIds && unique(data.assigneeIds);
   const beneficiaryIds = data.beneficiaryIds && unique(data.beneficiaryIds);
 
   if (assigneeIds) {
-    const current = existing.assignees.map((link) => link.user_id);
-    await assertActiveAssignees(
-      assigneeIds.filter((userId) => !current.includes(userId)),
+    await assertActiveUsers(
+      newIds(
+        assigneeIds,
+        existing.assignees.map((link) => link.user_id),
+      ),
+      UNKNOWN_ASSIGNEE_MESSAGE,
     );
   }
   if (beneficiaryIds) {
-    const current = existing.beneficiaries.map((link) => link.beneficiary_id);
     await assertActiveBeneficiaries(
-      beneficiaryIds.filter(
-        (beneficiaryId) => !current.includes(beneficiaryId),
+      newIds(
+        beneficiaryIds,
+        existing.beneficiaries.map((link) => link.beneficiary_id),
       ),
     );
   }
@@ -236,13 +240,14 @@ export async function update(id: number, data: UpdateTaskInput) {
       due_date: toDate(data.dueDate),
       status: data.status,
       priority: data.priority,
+      // deleteMany + create : la liste envoyée remplace l'ancienne
       assignees: assigneeIds && {
         deleteMany: {},
-        create: assigneeIds.map((user_id) => ({ user_id })),
+        create: toAssigneeLinks(assigneeIds),
       },
       beneficiaries: beneficiaryIds && {
         deleteMany: {},
-        create: beneficiaryIds.map((beneficiary_id) => ({ beneficiary_id })),
+        create: toBeneficiaryLinks(beneficiaryIds),
       },
     },
     include: taskInclude,
