@@ -8,10 +8,11 @@ import { z } from 'zod';
 
 /** Champ texte facultatif : absent, null (pour le vider) ou max caractères. */
 const optionalText = (max: number) => z.string().trim().max(max).nullish();
+export const DEFAULT_PATHWAY_STATUS = 'En cours';
+export const EXIT_PATHWAY_STATUS = 'Sortie';
 
 /**
- * Données acceptées pour créer un bénéficiaire.
- * pathwayStatus et exitDate ne sont pas acceptés ici : ils ont leurs propres tickets (#94, #104).
+ * Tout nouveau dossier démarre à "En cours".
  */
 export const createBeneficiarySchema = z.object({
   lastName: z.string().trim().min(1).max(50),
@@ -39,6 +40,13 @@ export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
  * Champ absent = inchangé ; null = vidé (champs facultatifs uniquement).
  */
 export const updateBeneficiarySchema = createBeneficiarySchema
+  .extend({
+    pathwayStatus: z.enum([
+      DEFAULT_PATHWAY_STATUS,
+      'Préparation à la sortie',
+      EXIT_PATHWAY_STATUS,
+    ]),
+  })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Aucune donnée à modifier.',

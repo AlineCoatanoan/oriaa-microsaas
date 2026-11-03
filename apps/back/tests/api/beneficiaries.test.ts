@@ -76,6 +76,17 @@ describe('POST /api/beneficiaries', () => {
 
     expect(response.status).toBe(401);
   });
+
+  it('démarre le parcours au statut "En cours"', async () => {
+    const { agent } = await loginAgent();
+
+    const response = await agent
+      .post('/api/beneficiaries')
+      .send({ ...validBeneficiary, pathwayStatus: 'Sortie' });
+
+    expect(response.status).toBe(201);
+    expect(response.body.beneficiary.pathwayStatus).toBe('En cours');
+  });
 });
 
 describe('GET /api/beneficiaries/:id', () => {
@@ -331,6 +342,35 @@ describe('PATCH /api/beneficiaries/:id', () => {
 
     expect(response.status).toBe(404);
   });
+
+  it('change le statut du parcours', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ pathwayStatus: 'Sortie' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.beneficiary.pathwayStatus).toBe('Sortie');
+    // Le dossier reste actif tant qu'il n'est pas archivé
+    expect(response.body.beneficiary.archivedAt).toBeNull();
+  });
+
+  it('refuse un statut de parcours inconnu (400)', async () => {
+    const { agent, user } = await loginAgent();
+    const beneficiary = await createBeneficiary(user.user_id, {
+      lastName: 'Martin',
+    });
+
+    const response = await agent
+      .patch(`/api/beneficiaries/${beneficiary.beneficiary_id}`)
+      .send({ pathwayStatus: 'Inconnu' });
+
+    expect(response.status).toBe(400);
+  });
 });
 
 describe('PATCH /api/beneficiaries/:id/archive', () => {
@@ -347,6 +387,7 @@ describe('PATCH /api/beneficiaries/:id/archive', () => {
     expect(response.status).toBe(200);
     expect(response.body.beneficiary.exitDate).toBe('2026-10-20');
     expect(response.body.beneficiary.archivedAt).not.toBeNull();
+    expect(response.body.beneficiary.pathwayStatus).toBe('Sortie');
     // Il disparaît de la liste des actifs
     const list = await agent.get('/api/beneficiaries');
     expect(list.body.beneficiaries).toHaveLength(0);
@@ -428,6 +469,7 @@ describe('PATCH /api/beneficiaries/:id/unarchive', () => {
     expect(response.body.beneficiary).toMatchObject({
       archivedAt: null,
       exitDate: null,
+      pathwayStatus: 'En cours',
     });
     // Il revient dans la liste des actifs
     const list = await agent.get('/api/beneficiaries');
