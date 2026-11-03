@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { atLeastOneField, idParam } from './common.js';
 
 /** Données acceptées pour créer une note. Les max() reprennent la taille des colonnes Prisma. */
 export const createNoteSchema = z.object({
@@ -9,16 +10,9 @@ export const createNoteSchema = z.object({
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 
 /** Données acceptées pour modifier une note : au moins un champ. */
-export const updateNoteSchema = createNoteSchema
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'Aucune donnée à modifier.',
-  });
+export const updateNoteSchema = atLeastOneField(createNoteSchema.partial());
 
 export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
 
 /** Paramètres :id (bénéficiaire) et :noteId dans l'URL. */
-export const noteParamsSchema = z.object({
-  id: z.coerce.number().int().positive(),
-  noteId: z.coerce.number().int().positive(),
-});
+export const noteParamsSchema = z.object({ id: idParam, noteId: idParam });

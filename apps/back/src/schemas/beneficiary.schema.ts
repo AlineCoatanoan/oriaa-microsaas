@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { archivedFilter, atLeastOneField, idParam } from './common.js';
 
 /**
  * Schémas de validation des bénéficiaires.
@@ -36,32 +37,27 @@ export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
 /**
  * Données acceptées pour modifier un bénéficiaire (PATCH).
  * .partial() reprend toutes les règles de la création en rendant chaque champ facultatif.
- * .refine() impose au moins un champ.
  * Champ absent = inchangé ; null = vidé (champs facultatifs uniquement).
  */
-export const updateBeneficiarySchema = createBeneficiarySchema
-  .extend({
-    pathwayStatus: z.enum([
-      DEFAULT_PATHWAY_STATUS,
-      'Préparation à la sortie',
-      EXIT_PATHWAY_STATUS,
-    ]),
-  })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'Aucune donnée à modifier.',
-  });
+export const updateBeneficiarySchema = atLeastOneField(
+  createBeneficiarySchema
+    .extend({
+      pathwayStatus: z.enum([
+        DEFAULT_PATHWAY_STATUS,
+        'Préparation à la sortie',
+        EXIT_PATHWAY_STATUS,
+      ]),
+    })
+    .partial(),
+);
 
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;
 
-/** Paramètre :id dans l'URL. */
-export const beneficiaryIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
-});
+export const beneficiaryIdSchema = z.object({ id: idParam });
 
 /** Filtres de la liste : ?archived=true pour voir les archivés, ?search=mar pour chercher par nom ou prénom. */
 export const listBeneficiariesQuerySchema = z.object({
-  archived: z.stringbool().default(false),
+  archived: archivedFilter,
   search: z.string().trim().max(50).optional(),
 });
 

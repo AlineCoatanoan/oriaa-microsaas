@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { archivedFilter, atLeastOneField, idParam } from './common.js';
 
 /** Statuts et priorités utilisés aussi par le service. */
 export const DEFAULT_TASK_STATUS = 'À faire';
@@ -34,24 +35,20 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
  * Données acceptées pour modifier une tâche (PATCH).
  * assigneeIds et beneficiaryIds remplacent les listes existantes.
  */
-export const updateTaskSchema = createTaskSchema
-  .extend({
-    status: z.enum([DEFAULT_TASK_STATUS, 'En cours', COMPLETED_TASK_STATUS]),
-  })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'Aucune donnée à modifier.',
-  });
+export const updateTaskSchema = atLeastOneField(
+  createTaskSchema
+    .extend({
+      status: z.enum([DEFAULT_TASK_STATUS, 'En cours', COMPLETED_TASK_STATUS]),
+    })
+    .partial(),
+);
 
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 
-/** Paramètre :id dans l'URL. */
-export const taskIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
-});
+export const taskIdSchema = z.object({ id: idParam });
 
 /** Filtres de la liste : ?archived=true, ?beneficiaryId=5 pour l'onglet de la fiche. */
 export const listTasksQuerySchema = z.object({
-  archived: z.stringbool().default(false),
-  beneficiaryId: z.coerce.number().int().positive().optional(),
+  archived: archivedFilter,
+  beneficiaryId: idParam.optional(),
 });
