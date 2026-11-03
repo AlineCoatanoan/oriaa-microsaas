@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { NotFoundError } from '../errors/app-error.js';
-import { assertTaskEditable, toSubtaskDto } from './task.service.js';
+import { toSubtaskDto } from '../lib/dto.js';
+import { assertTaskEditable } from './task.service.js';
 import type {
   CreateSubtaskInput,
   UpdateSubtaskInput,

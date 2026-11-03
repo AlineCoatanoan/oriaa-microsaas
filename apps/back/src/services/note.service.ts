@@ -1,15 +1,12 @@
 import type { Note, User } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { ConflictError, NotFoundError } from '../errors/app-error.js';
-import {
-  authorSelect,
-  findExistingOrFail,
-  toAuthorName,
-} from './beneficiary.service.js';
 import type {
   CreateNoteInput,
   UpdateNoteInput,
 } from '../schemas/note.schema.js';
+import { authorSelect, toAuthorName } from '../lib/dto.js';
+import { findExistingOrFail } from './beneficiary.service.js';
 
 type NoteWithAuthor = Note & { user: Pick<User, 'first_name' | 'last_name'> };
 

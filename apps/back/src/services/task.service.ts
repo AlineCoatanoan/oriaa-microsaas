@@ -1,16 +1,9 @@
-import type { Prisma, Subtask } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import {
   BadRequestError,
   ConflictError,
   NotFoundError,
 } from '../errors/app-error.js';
-import {
-  authorSelect,
-  toAuthorName,
-  toDate,
-  toDateOnly,
-} from './beneficiary.service.js';
 import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
@@ -21,6 +14,9 @@ import type {
   CreateTaskInput,
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
+import type { Prisma } from '@prisma/client';
+import { toDate, toDateOnly } from '../lib/dates.js';
+import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
@@ -68,15 +64,6 @@ function isOverdue(task: TaskWithRelations) {
   return (
     dueDate !== null && dueDate < today && task.status !== COMPLETED_TASK_STATUS
   );
-}
-
-/** Format d'une sous-tâche renvoyé au front. */
-export function toSubtaskDto(subtask: Subtask) {
-  return {
-    id: subtask.subtask_id,
-    label: subtask.label,
-    isCompleted: subtask.is_completed,
-  };
 }
 
 /** Format renvoyé au front. */
