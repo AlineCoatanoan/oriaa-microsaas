@@ -15,6 +15,7 @@ import {
  */
 
 export const DEFAULT_PATHWAY_STATUS = 'En cours';
+export const PREPARING_EXIT_PATHWAY_STATUS = 'Préparation à la sortie';
 export const EXIT_PATHWAY_STATUS = 'Sortie';
 
 /**
