@@ -21,7 +21,7 @@ import { authorSelect, toAuthorName } from '../lib/dto.js';
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
  * Si une colonne change un jour, seul ce fichier est modifié.
  */
-export function toBeneficiaryDto(b: Beneficiary) {
+function toBeneficiaryDto(b: Beneficiary) {
   return {
     id: b.beneficiary_id,
     lastName: b.last_name,

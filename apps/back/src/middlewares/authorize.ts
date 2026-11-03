@@ -1,18 +1,17 @@
 import type { RequestHandler } from 'express';
 import type { RoleLabel } from '../config/roles.js';
-import { ForbiddenError, UnauthorizedError } from '../errors/app-error.js';
+import { ForbiddenError } from '../errors/app-error.js';
+import { getCurrentUser } from '../lib/current-user.js';
 
 /**
- * Réserve une route à certains rôles.
+ * Réserve une route à un ou plusieurs rôles : authorize('admin') ou authorize('admin', 'user').
+ * Fabrique un middleware, sur le même principe que validate({ body: ... }).
  * À placer après authenticate, qui remplit res.locals.user.
- * Exemple : router.post('/', authenticate, authorize('admin'), createUser)
  */
 export function authorize(...allowedRoles: RoleLabel[]): RequestHandler {
   return (_req, res, next) => {
-    const user = res.locals.user;
-
-    // Sécurité : si authenticate a été oublié, on refuse plutôt que d'ouvrir la route
-    if (!user) throw new UnauthorizedError();
+    // Si authenticate a été oublié, getCurrentUser refuse plutôt que d'ouvrir la route
+    const user = getCurrentUser(res);
 
     // Connecté, mais pas le bon rôle : 403
     if (!allowedRoles.includes(user.role as RoleLabel)) {

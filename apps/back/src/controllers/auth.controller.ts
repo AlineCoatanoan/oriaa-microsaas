@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import * as authService from '../services/auth.service.js';
 import { AUTH_COOKIE_NAME, authCookieOptions } from '../config/auth-cookie.js';
-import { UnauthorizedError } from '../errors/app-error.js';
+import { getCurrentUser } from '../lib/current-user.js';
 
 /** POST /api/auth/login */
 export async function login(req: Request, res: Response) {
@@ -16,10 +16,7 @@ export async function login(req: Request, res: Response) {
 
 /** GET /api/auth/session : renvoie l'utilisateur connecté */
 export function session(_req: Request, res: Response) {
-  const user = res.locals.user;
-  if (!user) throw new UnauthorizedError();
-
-  res.status(200).json({ user });
+  res.status(200).json({ user: getCurrentUser(res) });
 }
 
 /** POST /api/auth/logout : supprime le cookie de connexion */

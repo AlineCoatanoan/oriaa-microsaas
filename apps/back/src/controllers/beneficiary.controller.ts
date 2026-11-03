@@ -1,11 +1,10 @@
 import type { Request, Response } from 'express';
 import * as beneficiaryService from '../services/beneficiary.service.js';
-import { UnauthorizedError } from '../errors/app-error.js';
+import { getCurrentUser } from '../lib/current-user.js';
 
 /** POST /api/beneficiaries */
 export async function create(req: Request, res: Response) {
-  const user = res.locals.user;
-  if (!user) throw new UnauthorizedError();
+  const user = getCurrentUser(res);
 
   const beneficiary = await beneficiaryService.create(req.body, user.id);
   // 201 : ressource créée
