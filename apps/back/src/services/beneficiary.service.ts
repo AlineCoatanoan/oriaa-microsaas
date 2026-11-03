@@ -122,6 +122,58 @@ export async function findById(id: number) {
 }
 
 /**
+ * Chronologie d'un bénéficiaire, calculée à la demande :
+ * ses notes, tâches et rendez-vous, du plus récent au plus ancien.
+ */
+export async function findTimeline(id: number) {
+  await findExistingOrFail(id);
+
+  const author = { select: { first_name: true, last_name: true } };
+
+  const [notes, tasks, appointments] = await Promise.all([
+    prisma.note.findMany({
+      where: { beneficiary_id: id },
+      include: { user: author },
+    }),
+    prisma.task.findMany({
+      where: { beneficiaries: { some: { beneficiary_id: id } } },
+      include: { created_by: author },
+    }),
+    prisma.appointment.findMany({
+      where: { beneficiaries: { some: { beneficiary_id: id } } },
+      include: { user: author },
+    }),
+  ]);
+
+  const toAuthorName = (user: { first_name: string; last_name: string }) =>
+    `${user.first_name} ${user.last_name}`;
+
+  return [
+    ...notes.map((note) => ({
+      type: 'note',
+      id: note.note_id,
+      title: note.title,
+      date: note.created_at,
+      author: toAuthorName(note.user),
+    })),
+    ...tasks.map((task) => ({
+      type: 'task',
+      id: task.task_id,
+      title: task.title,
+      date: task.created_at,
+      author: toAuthorName(task.created_by),
+    })),
+    ...appointments.map((appointment) => ({
+      type: 'appointment',
+      id: appointment.appointment_id,
+      title: appointment.title,
+      date: appointment.start_at,
+      author: toAuthorName(appointment.user),
+    })),
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+}
+
+/**
  * Liste les bénéficiaires actifs, ou archivés, triés par nom puis prénom.
  * Si une recherche est fournie, garde ceux dont le nom ou le prénom la contient.
  */
