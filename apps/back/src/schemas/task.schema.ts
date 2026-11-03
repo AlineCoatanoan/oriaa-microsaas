@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { archivedFilter, atLeastOneField, idParam } from './common.js';
+import {
+  archivedFilter,
+  atLeastOneField,
+  idField,
+  idParam,
+  requiredText,
+} from './common.js';
 
 /** Statuts et priorités utilisés aussi par le service. */
 export const DEFAULT_TASK_STATUS = 'À faire';
@@ -13,7 +19,7 @@ const taskPriority = z.enum([
   URGENT_TASK_PRIORITY,
 ]);
 
-const idList = z.array(z.number().int().positive());
+const idList = z.array(idField);
 
 /**
  * Données acceptées pour créer une tâche.
@@ -21,7 +27,7 @@ const idList = z.array(z.number().int().positive());
  * assigneeIds absent : la personne connectée devient responsable.
  */
 export const createTaskSchema = z.object({
-  title: z.string().trim().min(1).max(50),
+  title: requiredText(50),
   description: z.string().trim().nullish(),
   dueDate: z.iso.date().nullish(), // format ISO : 2026-10-25
   priority: taskPriority.optional(),
@@ -44,8 +50,6 @@ export const updateTaskSchema = atLeastOneField(
 );
 
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
-
-export const taskIdSchema = z.object({ id: idParam });
 
 /** Filtres de la liste : ?archived=true, ?beneficiaryId=5 pour l'onglet de la fiche. */
 export const listTasksQuerySchema = z.object({

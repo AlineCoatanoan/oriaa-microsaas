@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { archivedFilter, atLeastOneField, idParam } from './common.js';
+import {
+  archivedFilter,
+  atLeastOneField,
+  idField,
+  optionalText,
+  requiredText,
+} from './common.js';
 
 /**
  * Schémas de validation des bénéficiaires.
@@ -7,17 +13,16 @@ import { archivedFilter, atLeastOneField, idParam } from './common.js';
  * une valeur trop longue est refusée proprement (400) au lieu de faire planter la base (500).
  */
 
-/** Champ texte facultatif : absent, null (pour le vider) ou max caractères. */
-const optionalText = (max: number) => z.string().trim().max(max).nullish();
 export const DEFAULT_PATHWAY_STATUS = 'En cours';
 export const EXIT_PATHWAY_STATUS = 'Sortie';
 
 /**
- * Tout nouveau dossier démarre à "En cours".
+ * Données acceptées pour créer un bénéficiaire.
+ * pathwayStatus n'est pas accepté ici : tout nouveau dossier démarre à "En cours".
  */
 export const createBeneficiarySchema = z.object({
-  lastName: z.string().trim().min(1).max(50),
-  firstName: z.string().trim().min(1).max(50),
+  lastName: requiredText(50),
+  firstName: requiredText(50),
   entryDate: z.iso.date(), // format ISO : 2026-10-25
   email: z.email().max(255).nullish(),
   dateOfBirth: z.iso.date().nullish(),
@@ -28,7 +33,7 @@ export const createBeneficiarySchema = z.object({
   familyStatus: optionalText(50),
   numberOfChildren: z.number().int().min(0).nullish(),
   householdComposition: optionalText(50),
-  referentId: z.number().int().positive().optional(), // jamais null : un bénéficiaire a toujours un référent
+  referentId: idField.optional(), // jamais null : un bénéficiaire a toujours un référent
 });
 
 /** Type TypeScript déduit du schéma : une seule source de vérité. */
@@ -52,8 +57,6 @@ export const updateBeneficiarySchema = atLeastOneField(
 );
 
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;
-
-export const beneficiaryIdSchema = z.object({ id: idParam });
 
 /** Filtres de la liste : ?archived=true pour voir les archivés, ?search=mar pour chercher par nom ou prénom. */
 export const listBeneficiariesQuerySchema = z.object({

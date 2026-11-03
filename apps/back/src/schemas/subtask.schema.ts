@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { atLeastOneField, idParam } from './common.js';
+import { atLeastOneField, idParam, requiredText } from './common.js';
 
-const label = z.string().trim().min(1).max(50);
+const label = requiredText(50);
 
 /** Une nouvelle sous-tâche démarre toujours non cochée. */
 export const createSubtaskSchema = z.object({ label });

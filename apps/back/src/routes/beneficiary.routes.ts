@@ -3,7 +3,6 @@ import { authenticate } from '../middlewares/authenticate.js';
 import { validate } from '../middlewares/validate.js';
 import {
   createBeneficiarySchema,
-  beneficiaryIdSchema,
   listBeneficiariesQuerySchema,
   updateBeneficiarySchema,
   archiveBeneficiarySchema,
@@ -21,6 +20,7 @@ import {
 import { authorize } from '../middlewares/authorize.js';
 import { ROLES } from '../config/roles.js';
 import noteRouter from './note.routes.js';
+import { idParamsSchema } from '../schemas/common.js';
 
 const beneficiaryRouter = Router();
 
@@ -39,33 +39,29 @@ beneficiaryRouter.post(
   validate({ body: createBeneficiarySchema }),
   create,
 );
-beneficiaryRouter.get(
-  '/:id',
-  validate({ params: beneficiaryIdSchema }),
-  getById,
-);
+beneficiaryRouter.get('/:id', validate({ params: idParamsSchema }), getById);
 
 beneficiaryRouter.get(
   '/:id/timeline',
-  validate({ params: beneficiaryIdSchema }),
+  validate({ params: idParamsSchema }),
   getTimeline,
 );
 
 beneficiaryRouter.patch(
   '/:id',
-  validate({ params: beneficiaryIdSchema, body: updateBeneficiarySchema }),
+  validate({ params: idParamsSchema, body: updateBeneficiarySchema }),
   update,
 );
 
 beneficiaryRouter.patch(
   '/:id/archive',
-  validate({ params: beneficiaryIdSchema, body: archiveBeneficiarySchema }),
+  validate({ params: idParamsSchema, body: archiveBeneficiarySchema }),
   archive,
 );
 
 beneficiaryRouter.patch(
   '/:id/unarchive',
-  validate({ params: beneficiaryIdSchema }),
+  validate({ params: idParamsSchema }),
   unarchive,
 );
 
@@ -73,7 +69,7 @@ beneficiaryRouter.patch(
 beneficiaryRouter.delete(
   '/:id',
   authorize(ROLES.ADMIN),
-  validate({ params: beneficiaryIdSchema }),
+  validate({ params: idParamsSchema }),
   remove,
 );
 
