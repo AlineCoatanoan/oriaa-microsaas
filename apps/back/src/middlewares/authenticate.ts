@@ -17,7 +17,7 @@ export const authenticate: RequestHandler = async (req, res, next) => {
   }
 
   // 2. Le token est-il valide ? (sinon verifyAccessToken lance une 401)
-  const { userId } = verifyAccessToken(token);
+  const userId = verifyAccessToken(token);
 
   // 3. L'utilisateur existe-t-il toujours, et son compte est-il actif ?
   const user = await findActiveUser({ user_id: userId });

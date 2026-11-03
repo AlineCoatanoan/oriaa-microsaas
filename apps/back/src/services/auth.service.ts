@@ -52,10 +52,7 @@ export async function login(email: string, password: string) {
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
 
-  const token = signAccessToken({
-    userId: user.user_id,
-    role: user.role.label,
-  });
+  const token = signAccessToken(user.user_id);
 
   return {
     token,

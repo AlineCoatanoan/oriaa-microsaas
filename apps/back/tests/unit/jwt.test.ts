@@ -5,15 +5,15 @@ import { env } from '../../src/config/env.js';
 import { UnauthorizedError } from '../../src/errors/app-error.js';
 
 describe('JWT', () => {
-  it("crée un token qui contient l'identifiant et le rôle", () => {
-    const token = signAccessToken({ userId: 12, role: 'admin' });
+  it("crée un token qui contient l'identifiant de l'utilisateur", () => {
+    const token = signAccessToken(12);
 
-    expect(verifyAccessToken(token)).toEqual({ userId: 12, role: 'admin' });
+    expect(verifyAccessToken(token)).toBe(12);
   });
 
   it('refuse un token expiré', () => {
     const expired = jwt.sign(
-      { role: 'user', exp: Math.floor(Date.now() / 1000) - 60 },
+      { exp: Math.floor(Date.now() / 1000) - 60 },
       env.JWT_SECRET,
       { subject: '12' },
     );
@@ -22,13 +22,9 @@ describe('JWT', () => {
   });
 
   it('refuse un token signé avec une autre clé', () => {
-    const forged = jwt.sign(
-      { role: 'admin' },
-      'une-autre-cle-secrete-tres-longue-123456',
-      {
-        subject: '12',
-      },
-    );
+    const forged = jwt.sign({}, 'une-autre-cle-secrete-tres-longue-123456', {
+      subject: '12',
+    });
 
     expect(() => verifyAccessToken(forged)).toThrow(UnauthorizedError);
   });
