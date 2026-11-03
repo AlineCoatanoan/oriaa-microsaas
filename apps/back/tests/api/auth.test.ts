@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
-import { createUser, PASSWORD } from '../helpers/users.js';
+import { createUser, loginAgent, PASSWORD } from '../helpers/users.js';
 import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
 import { resetDatabase } from '../helpers/database.js';
@@ -96,13 +96,7 @@ describe('GET /api/auth/session', () => {
   });
 
   it("renvoie l'utilisateur connecté", async () => {
-    await createUser();
-    // agent = un "navigateur" de test qui garde les cookies entre deux requêtes
-    const agent = request.agent(app);
-    await agent
-      .post('/api/auth/login')
-      .send({ email: 'marie.dupont@oriaa.test', password: PASSWORD });
-
+    const { agent } = await loginAgent();
     const response = await agent.get('/api/auth/session');
 
     expect(response.status).toBe(200);
@@ -114,12 +108,7 @@ describe('GET /api/auth/session', () => {
   });
 
   it("coupe l'accès dès que le compte est archivé", async () => {
-    const user = await createUser();
-    const agent = request.agent(app);
-    await agent
-      .post('/api/auth/login')
-      .send({ email: 'marie.dupont@oriaa.test', password: PASSWORD });
-
+    const { agent, user } = await loginAgent();
     await prisma.user.update({
       where: { user_id: user.user_id },
       data: { archived_at: new Date() },
@@ -142,11 +131,7 @@ describe('POST /api/auth/logout', () => {
   });
 
   it("déconnecte l'utilisateur : la session n'est plus reconnue", async () => {
-    await createUser();
-    const agent = request.agent(app);
-    await agent
-      .post('/api/auth/login')
-      .send({ email: 'marie.dupont@oriaa.test', password: PASSWORD });
+    const { agent } = await loginAgent();
     expect((await agent.get('/api/auth/session')).status).toBe(200);
 
     await agent.post('/api/auth/logout');
