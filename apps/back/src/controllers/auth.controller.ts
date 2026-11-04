@@ -25,3 +25,9 @@ export function logout(_req: Request, res: Response) {
   res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions);
   res.status(204).end();
 }
+
+/** PATCH /api/auth/password : change le mot de passe de l'utilisateur connecté */
+export async function changePassword(req: Request, res: Response) {
+  await authService.changePassword(getCurrentUser(res).id, req.body);
+  res.status(204).end();
+}

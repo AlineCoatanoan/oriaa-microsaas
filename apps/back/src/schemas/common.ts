@@ -39,3 +39,6 @@ export const idList = z.array(idField);
 
 /** Date et heure au format ISO : 2026-11-04T14:30:00+01:00. */
 export const isoDateTime = z.iso.datetime({ offset: true });
+
+/** Nouveau mot de passe : 12 caractères au moins, 72 au plus (limite de bcrypt). */
+export const newPassword = z.string().min(12).max(72);
