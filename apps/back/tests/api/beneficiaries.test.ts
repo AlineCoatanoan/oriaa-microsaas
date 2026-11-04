@@ -591,7 +591,7 @@ describe('DELETE /api/beneficiaries/:id', () => {
     expect(await prisma.beneficiary.count()).toBe(0);
   });
 
-  it('supprime ses notes et les tâches liées uniquement à lui', async () => {
+  it('supprime ses notes, et les tâches et rendez-vous liés uniquement à lui', async () => {
     const { agent, user } = await loginAgent({ role: 'admin' });
     const beneficiary = await createBeneficiary(user.user_id, {
       lastName: 'Martin',
@@ -614,10 +614,23 @@ describe('DELETE /api/beneficiaries/:id', () => {
       },
     });
 
+    await prisma.appointment.create({
+      data: {
+        title: 'Entretien',
+        start_at: new Date('2026-11-04T09:00:00Z'),
+        end_at: new Date('2026-11-04T10:00:00Z'),
+        user_id: user.user_id,
+        beneficiaries: {
+          create: { beneficiary_id: beneficiary.beneficiary_id },
+        },
+      },
+    });
+
     await agent.delete(`/api/beneficiaries/${beneficiary.beneficiary_id}`);
 
     expect(await prisma.note.count()).toBe(0);
     expect(await prisma.task.count()).toBe(0);
+    expect(await prisma.appointment.count()).toBe(0);
   });
 
   it('conserve les tâches partagées et les tâches sans bénéficiaire', async () => {
