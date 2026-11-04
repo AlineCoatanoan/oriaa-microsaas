@@ -47,17 +47,28 @@ And elle peut accéder au dossier concerné en un seul clic
 
 ---
 
-### Feature: Création d'une action
+### Feature: Gestion des rendez-vous
 
-**Scenario:** Une éducatrice enregistre un RDV sur le dossier d'un bénéficiaire
+**Scenario:** Un travailleur social planifie un rendez-vous
 
 ```gherkin
-Given une éducatrice sur le dossier d'un bénéficiaire
-When elle crée une action de type "RDV" avec une date et un contenu
-Then l'action est enregistrée avec la date, l'heure et le nom de l'auteure
-And elle apparaît dans l'onglet correspondant du dossier
-And elle ne peut plus être modifiée après enregistrement
+Given un travailleur social connecté
+When il crée un rendez-vous avec une date et une heure de début et de fin
+Then le rendez-vous apparaît dans le planning de la personne en charge
+And il apparaît dans le dossier de chaque bénéficiaire concerné
 ```
+
+**Scenario:** Un travailleur social planifie un rendez-vous pour un collègue
+
+```gherkin
+Given un travailleur social connecté
+When il crée un rendez-vous en désignant un collègue
+Then le rendez-vous apparaît dans le planning de ce collègue
+```
+
+---
+
+### Feature: Création d'une action
 
 **Scenario:** Une éducatrice enregistre un rapport sur le dossier d'un bénéficiaire
 
@@ -130,15 +141,6 @@ When elle ouvre sa vue des tâches
 Then elle voit l'ensemble de ses tâches triées par urgence et par deadline
 And chaque tâche liée à un bénéficiaire affiche son nom
 And un clic sur la tâche l'amène directement au dossier concerné
-```
-
-**Scenario:** Un RDV génère une tâche de suivi associée au dossier
-
-```gherkin
-Given une éducatrice qui enregistre un RDV dans le dossier d'un bénéficiaire
-When elle crée une tâche de suivi liée à ce RDV
-Then la tâche apparaît dans sa vue quotidienne
-And elle est rattachée au dossier du bénéficiaire concerné
 ```
 
 ---

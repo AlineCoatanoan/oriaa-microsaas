@@ -33,3 +33,9 @@ export const atLeastOneField = <T extends z.ZodObject>(schema: T) =>
   schema.refine((data) => Object.keys(data).length > 0, {
     message: 'Aucune donnée à modifier.',
   });
+
+/** Liste d'identifiants reçue dans le corps de la requête. */
+export const idList = z.array(idField);
+
+/** Date et heure au format ISO : 2026-11-04T14:30:00+01:00. */
+export const isoDateTime = z.iso.datetime({ offset: true });
