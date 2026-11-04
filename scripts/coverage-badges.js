@@ -40,16 +40,3 @@ for (const service of services) {
   fs.writeFileSync(`badges/coverage-${service.name}.svg`, badge);
   console.log(`✅ ${service.name} : ${percent}%`);
 }
-
-let readme = fs.readFileSync('README.md', 'utf8');
-const badgesMarkdown = services
-  .map((s) => `![${s.name} coverage](badges/coverage-${s.name}.svg)`)
-  .join(' ');
-
-readme = readme.replace(
-  /<!-- COVERAGE BADGES START -->[\s\S]*<!-- COVERAGE BADGES END -->/,
-  `<!-- COVERAGE BADGES START -->\n${badgesMarkdown}\n<!-- COVERAGE BADGES END -->`,
-);
-
-fs.writeFileSync('README.md', readme);
-console.log('README mis à jour avec les badges de couverture.');

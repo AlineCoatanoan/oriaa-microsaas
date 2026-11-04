@@ -23,6 +23,8 @@ jobs:
   quality:
     name: Lint, build et tests
     runs-on: ubuntu-latest # Machine Linux fournie par GitHub
+    permissions:
+      contents: write # pour publier le badge sur la branche badges
 
     # --- Base de données de test
     # GitHub lance son propre PostgreSQL 18, jetable, détruit à la fin.
@@ -110,3 +112,19 @@ jobs:
       - name: Résumé de couverture
         run: |
           node -e "const t=require('./apps/back/coverage/coverage-summary.json').total; console.log('### Couverture back\n\n| Métrique | % |\n|---|---|\n| Lignes | '+t.lines.pct+' |\n| Instructions | '+t.statements.pct+' |\n| Fonctions | '+t.functions.pct+' |\n| Branches | '+t.branches.pct+' |')" >> $GITHUB_STEP_SUMMARY
+
+      # Après un merge sur dev uniquement : met à jour le badge de couverture
+      - name: Générer le badge de couverture
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        run: pnpm coverage:badge
+
+      # Le badge va sur une branche dédiée, pour ne pas ajouter de commit sur dev
+      - name: Publier le badge de couverture
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./badges
+          publish_branch: badges
+          force_orphan: true
+          commit_message: 'chore: update coverage badge'

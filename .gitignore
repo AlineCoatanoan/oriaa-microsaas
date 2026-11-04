@@ -22,6 +22,9 @@ lib-cov
 coverage
 *.lcov
 
+# Coverage badges (generated, published on the badges branch)
+badges/
+
 # nyc test coverage
 .nyc_output
 
