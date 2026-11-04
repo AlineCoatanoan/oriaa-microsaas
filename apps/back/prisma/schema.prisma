@@ -135,6 +135,8 @@ model FilterPreference {
 
   user_target User @relation("FilterPreferenceTarget", fields: [user_id_target], references: [user_id])
   user_define User @relation("FilterPreferenceDefine", fields: [user_id_define], references: [user_id])
+
+   @@unique([user_id_define, type_listing])
 }
 
 // tables d'association
