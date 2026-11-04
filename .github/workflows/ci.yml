@@ -24,7 +24,7 @@ jobs:
     name: Lint, build et tests
     runs-on: ubuntu-latest # Machine Linux fournie par GitHub
     permissions:
-      contents: write # pour pouvoir créer le résumé de couverture dans github.
+      contents: write # pour publier le badge sur la branche badges
 
     # --- Base de données de test
     # GitHub lance son propre PostgreSQL 18, jetable, détruit à la fin.
