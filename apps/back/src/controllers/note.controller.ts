@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as noteService from '../services/note.service.js';
-import { UnauthorizedError } from '../errors/app-error.js';
+import { getCurrentUser } from '../lib/current-user.js';
 
 /** GET /api/beneficiaries/:id/notes */
 export async function list(_req: Request, res: Response) {
@@ -11,8 +11,7 @@ export async function list(_req: Request, res: Response) {
 
 /** POST /api/beneficiaries/:id/notes */
 export async function create(req: Request, res: Response) {
-  const user = res.locals.user;
-  if (!user) throw new UnauthorizedError();
+  const user = getCurrentUser(res);
 
   const { id } = res.locals.validated.params;
   const note = await noteService.create(id, req.body, user.id);

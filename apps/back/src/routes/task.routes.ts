@@ -4,7 +4,6 @@ import { validate } from '../middlewares/validate.js';
 import {
   createTaskSchema,
   listTasksQuerySchema,
-  taskIdSchema,
   updateTaskSchema,
 } from '../schemas/task.schema.js';
 import {
@@ -15,6 +14,7 @@ import {
   update,
 } from '../controllers/task.controller.js';
 import subtaskRouter from './subtask.routes.js';
+import { idParamsSchema } from '../schemas/common.js';
 
 const taskRouter = Router();
 
@@ -27,14 +27,14 @@ taskRouter.get('/', validate({ query: listTasksQuerySchema }), list);
 
 taskRouter.post('/', validate({ body: createTaskSchema }), create);
 
-taskRouter.get('/:id', validate({ params: taskIdSchema }), getById);
+taskRouter.get('/:id', validate({ params: idParamsSchema }), getById);
 
 taskRouter.patch(
   '/:id',
-  validate({ params: taskIdSchema, body: updateTaskSchema }),
+  validate({ params: idParamsSchema, body: updateTaskSchema }),
   update,
 );
 
-taskRouter.delete('/:id', validate({ params: taskIdSchema }), remove);
+taskRouter.delete('/:id', validate({ params: idParamsSchema }), remove);
 
 export default taskRouter;

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as taskService from '../services/task.service.js';
-import { UnauthorizedError } from '../errors/app-error.js';
+import { getCurrentUser } from '../lib/current-user.js';
 
 /** GET /api/tasks (?archived=true, ?beneficiaryId=5) */
 export async function list(_req: Request, res: Response) {
@@ -18,8 +18,7 @@ export async function getById(_req: Request, res: Response) {
 
 /** POST /api/tasks */
 export async function create(req: Request, res: Response) {
-  const user = res.locals.user;
-  if (!user) throw new UnauthorizedError();
+  const user = getCurrentUser(res);
 
   const task = await taskService.create(req.body, user.id);
   res.status(201).json({ task });

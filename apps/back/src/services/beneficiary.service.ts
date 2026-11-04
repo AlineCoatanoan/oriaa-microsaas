@@ -1,36 +1,27 @@
 import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
-import { findActiveUser } from './auth.service.js';
+import { toDate, toDateOnly } from '../lib/dates.js';
+import { authorSelect, toAuthorName } from '../lib/dto.js';
 import {
   BadRequestError,
   ConflictError,
   NotFoundError,
 } from '../errors/app-error.js';
-import type {
-  CreateBeneficiaryInput,
-  UpdateBeneficiaryInput,
-} from '../schemas/beneficiary.schema.js';
 import {
   DEFAULT_PATHWAY_STATUS,
   EXIT_PATHWAY_STATUS,
 } from '../schemas/beneficiary.schema.js';
-
-/** "2026-10-25" → Date ; null → null (champ vidé) ; absent → undefined (inchangé). */
-export const toDate = (value?: string | null) => {
-  if (value === undefined) return undefined;
-  if (value === null) return null;
-  return new Date(value);
-};
-
-/** Date sans heure (colonne @db.Date) → "2026-10-25", ou null. */
-export const toDateOnly = (value: Date | null) =>
-  value ? value.toISOString().slice(0, 10) : null;
+import type {
+  CreateBeneficiaryInput,
+  UpdateBeneficiaryInput,
+} from '../schemas/beneficiary.schema.js';
+import { assertActiveUsers } from './auth.service.js';
 
 /** Format renvoyé au front (camelCase, comme toPublicUser).
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
  * Si une colonne change un jour, seul ce fichier est modifié.
  */
-export function toBeneficiaryDto(b: Beneficiary) {
+function toBeneficiaryDto(b: Beneficiary) {
   return {
     id: b.beneficiary_id,
     lastName: b.last_name,
@@ -77,19 +68,26 @@ function toBeneficiaryData(data: UpdateBeneficiaryInput) {
   };
 }
 
-/** Le référent doit exister et être actif. */
-async function assertActiveReferent(userId: number) {
-  const referent = await findActiveUser({ user_id: userId });
-  if (!referent) throw new BadRequestError('Référent introuvable.');
-}
-
 /** Renvoie le bénéficiaire brut (format base), ou une 404. */
-export async function findExistingOrFail(id: number) {
+export async function findBeneficiaryOrFail(id: number) {
   const beneficiary = await prisma.beneficiary.findUnique({
     where: { beneficiary_id: id },
   });
   if (!beneficiary) throw new NotFoundError('Bénéficiaire introuvable.');
   return beneficiary;
+}
+
+/** Règle métier : un dossier archivé est en lecture seule. Renvoie le dossier. */
+export async function assertBeneficiaryActive(id: number, message: string) {
+  const beneficiary = await findBeneficiaryOrFail(id);
+  if (beneficiary.archived_at) throw new ConflictError(message);
+  return beneficiary;
+}
+
+/** Vérifie que le dossier est archivé, sinon 409. */
+async function assertBeneficiaryArchived(id: number, message: string) {
+  const beneficiary = await findBeneficiaryOrFail(id);
+  if (!beneficiary.archived_at) throw new ConflictError(message);
 }
 
 /** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
@@ -99,7 +97,7 @@ export async function create(
 ) {
   const referentId = data.referentId ?? currentUserId;
 
-  await assertActiveReferent(referentId);
+  await assertActiveUsers([referentId], 'Référent introuvable.');
 
   const beneficiary = await prisma.beneficiary.create({
     data: {
@@ -118,24 +116,15 @@ export async function create(
 
 /** Renvoie un bénéficiaire, ou une 404. */
 export async function findById(id: number) {
-  return toBeneficiaryDto(await findExistingOrFail(id));
+  return toBeneficiaryDto(await findBeneficiaryOrFail(id));
 }
-
-/** Champs de l'auteur à récupérer avec Prisma. */
-export const authorSelect = {
-  select: { first_name: true, last_name: true },
-};
-
-/** Nom affiché de l'auteur : "Marie Dupont". */
-export const toAuthorName = (user: { first_name: string; last_name: string }) =>
-  `${user.first_name} ${user.last_name}`;
 
 /**
  * Chronologie d'un bénéficiaire, calculée à la demande :
  * ses notes, tâches et rendez-vous, du plus récent au plus ancien.
  */
 export async function findTimeline(id: number) {
-  await findExistingOrFail(id);
+  await findBeneficiaryOrFail(id);
 
   const [notes, tasks, appointments] = await Promise.all([
     prisma.note.findMany({
@@ -204,17 +193,13 @@ export async function findAll(options: { archived: boolean; search?: string }) {
 
 /** Modifie un bénéficiaire actif. Seuls les champs envoyés sont modifiés. */
 export async function update(id: number, data: UpdateBeneficiaryInput) {
-  const existing = await findExistingOrFail(id);
-
-  // Règle métier : un dossier archivé est en lecture seule
-  if (existing.archived_at) {
-    throw new ConflictError(
-      "Un dossier archivé ne peut pas être modifié. Désarchivez-le d'abord.",
-    );
-  }
+  await assertBeneficiaryActive(
+    id,
+    "Un dossier archivé ne peut pas être modifié. Désarchivez-le d'abord.",
+  );
 
   if (data.referentId !== undefined) {
-    await assertActiveReferent(data.referentId);
+    await assertActiveUsers([data.referentId], 'Référent introuvable.');
   }
 
   const beneficiary = await prisma.beneficiary.update({
@@ -227,10 +212,10 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
 
 /** Archive un bénéficiaire actif (sortie de la structure). */
 export async function archive(id: number, exitDate: string) {
-  const existing = await findExistingOrFail(id);
-  if (existing.archived_at) {
-    throw new ConflictError('Ce dossier est déjà archivé.');
-  }
+  const existing = await assertBeneficiaryActive(
+    id,
+    'Ce dossier est déjà archivé.',
+  );
 
   const exit = new Date(exitDate);
   if (exit < existing.entry_date) {
@@ -253,10 +238,7 @@ export async function archive(id: number, exitDate: string) {
 
 /** Désarchive un bénéficiaire (retour dans la structure). */
 export async function unarchive(id: number) {
-  const existing = await findExistingOrFail(id);
-  if (!existing.archived_at) {
-    throw new ConflictError("Ce dossier n'est pas archivé.");
-  }
+  await assertBeneficiaryArchived(id, "Ce dossier n'est pas archivé.");
 
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
@@ -277,12 +259,10 @@ export async function unarchive(id: number) {
  * Une tâche liée à d'autres bénéficiaires est conservée.
  */
 export async function remove(id: number) {
-  const existing = await findExistingOrFail(id);
-  if (!existing.archived_at) {
-    throw new ConflictError(
-      "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
-    );
-  }
+  await assertBeneficiaryArchived(
+    id,
+    "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
+  );
 
   // Transaction : soit tout est supprimé, soit rien
   await prisma.$transaction([

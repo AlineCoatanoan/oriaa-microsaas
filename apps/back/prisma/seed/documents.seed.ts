@@ -1,11 +1,8 @@
 import prisma from '../../src/lib/prisma.js';
+import type { SeedBeneficiaries } from './types.js';
 
-export async function seedDocuments(beneficiaries: {
-  beneficiary1: { beneficiary_id: number };
-  beneficiary2: { beneficiary_id: number };
-  beneficiary3: { beneficiary_id: number };
-}) {
-  const document1 = await prisma.document.create({
+export async function seedDocuments(beneficiaries: SeedBeneficiaries) {
+  await prisma.document.create({
     data: {
       file_name: 'justificatif_identite.pdf',
       category: 'Identité',
@@ -14,7 +11,7 @@ export async function seedDocuments(beneficiaries: {
     },
   });
 
-  const document2 = await prisma.document.create({
+  await prisma.document.create({
     data: {
       file_name: 'attestation_domicile.pdf',
       category: 'Domicile',
@@ -23,7 +20,7 @@ export async function seedDocuments(beneficiaries: {
     },
   });
 
-  const document3 = await prisma.document.create({
+  await prisma.document.create({
     data: {
       file_name: 'justificatifs_ressources.pdf',
       category: 'Ressources',
@@ -32,7 +29,7 @@ export async function seedDocuments(beneficiaries: {
     },
   });
 
-  const document4 = await prisma.document.create({
+  await prisma.document.create({
     data: {
       file_name: 'courrier_administratif.pdf',
       category: 'Administratif',
@@ -40,11 +37,4 @@ export async function seedDocuments(beneficiaries: {
       beneficiary_id: beneficiaries.beneficiary3.beneficiary_id,
     },
   });
-
-  return {
-    document1,
-    document2,
-    document3,
-    document4,
-  };
 }

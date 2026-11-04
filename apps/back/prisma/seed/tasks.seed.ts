@@ -1,25 +1,23 @@
 import prisma from '../../src/lib/prisma.js';
+import type { SeedBeneficiaries, SeedUsers } from './types.js';
+import {
+  COMPLETED_TASK_STATUS,
+  DEFAULT_TASK_PRIORITY,
+  DEFAULT_TASK_STATUS,
+  URGENT_TASK_PRIORITY,
+} from '../../src/schemas/task.schema.js';
 
 export async function seedTasks(
-  users: {
-    admin: { user_id: number };
-    user: { user_id: number };
-  },
-  beneficiaries: {
-    beneficiary1: { beneficiary_id: number };
-    beneficiary2: { beneficiary_id: number };
-    beneficiary3: { beneficiary_id: number };
-  },
+  users: SeedUsers,
+  beneficiaries: SeedBeneficiaries,
 ) {
   const task1 = await prisma.task.create({
     data: {
       title: 'Préparer le dossier CAF',
       description: 'Vérifier les documents nécessaires avant le rendez-vous.',
       due_date: new Date('2026-10-02'),
-      created_at: new Date(),
-      updated_at: new Date(),
-      status: 'À faire',
-      priority: 'Haute',
+      status: DEFAULT_TASK_STATUS,
+      priority: URGENT_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
       beneficiaries: {
@@ -35,10 +33,8 @@ export async function seedTasks(
       title: 'Appeler le référent',
       description: 'Faire le point sur la situation du bénéficiaire.',
       due_date: new Date('2026-09-30'),
-      created_at: new Date(),
-      updated_at: new Date(),
-      status: 'En cours',
-      priority: 'Normale',
+      status: DEFAULT_TASK_STATUS,
+      priority: DEFAULT_TASK_PRIORITY,
       assignees: { create: { user_id: users.admin.user_id } },
       user_id_created_by: users.user.user_id,
       beneficiaries: {
@@ -54,10 +50,8 @@ export async function seedTasks(
       title: "Préparer la réunion d'équipe",
       description: 'Rassembler les éléments nécessaires pour la réunion.',
       due_date: new Date('2026-10-05'),
-      created_at: new Date(),
-      updated_at: new Date(),
-      status: 'À faire',
-      priority: 'Normale',
+      status: DEFAULT_TASK_STATUS,
+      priority: DEFAULT_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.user.user_id,
     },
@@ -67,11 +61,11 @@ export async function seedTasks(
     data: {
       title: 'Préparer un atelier cuisine',
       description:
-        'Trouver les bénéficaires interessés, préparer la liste de courses.',
+        'Trouver les bénéficaires intéressés, préparer la liste de courses.',
       due_date: new Date('2026-09-25'),
       created_at: new Date('2026-09-20'),
       updated_at: new Date('2026-09-25'),
-      status: 'Terminée',
+      status: COMPLETED_TASK_STATUS,
       priority: 'Basse',
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,

@@ -1,17 +1,20 @@
 import type { Note, User } from '@prisma/client';
 import prisma from '../lib/prisma.js';
-import { ConflictError, NotFoundError } from '../errors/app-error.js';
-import {
-  authorSelect,
-  findExistingOrFail,
-  toAuthorName,
-} from './beneficiary.service.js';
+import { authorSelect, toAuthorName } from '../lib/dto.js';
+import { NotFoundError } from '../errors/app-error.js';
 import type {
   CreateNoteInput,
   UpdateNoteInput,
 } from '../schemas/note.schema.js';
+import {
+  assertBeneficiaryActive,
+  findBeneficiaryOrFail,
+} from './beneficiary.service.js';
 
 type NoteWithAuthor = Note & { user: Pick<User, 'first_name' | 'last_name'> };
+
+const ARCHIVED_NOTES_MESSAGE =
+  "Les notes d'un dossier archivé ne peuvent pas être modifiées. Désarchivez-le d'abord.";
 
 /** Format renvoyé au front. */
 function toNoteDto(note: NoteWithAuthor) {
@@ -26,16 +29,6 @@ function toNoteDto(note: NoteWithAuthor) {
   };
 }
 
-/** Règle métier : les notes d'un dossier archivé sont en lecture seule. */
-async function assertBeneficiaryActive(beneficiaryId: number) {
-  const beneficiary = await findExistingOrFail(beneficiaryId);
-  if (beneficiary.archived_at) {
-    throw new ConflictError(
-      "Les notes d'un dossier archivé ne peuvent pas être modifiées. Désarchivez-le d'abord.",
-    );
-  }
-}
-
 /** Vérifie que la note existe et appartient bien à ce bénéficiaire, sinon 404. */
 async function assertNoteExists(beneficiaryId: number, noteId: number) {
   const note = await prisma.note.findFirst({
@@ -46,7 +39,7 @@ async function assertNoteExists(beneficiaryId: number, noteId: number) {
 
 /** Liste les notes d'un bénéficiaire, de la plus récente à la plus ancienne. */
 export async function findAllByBeneficiary(beneficiaryId: number) {
-  await findExistingOrFail(beneficiaryId);
+  await findBeneficiaryOrFail(beneficiaryId);
 
   const notes = await prisma.note.findMany({
     where: { beneficiary_id: beneficiaryId },
@@ -63,7 +56,7 @@ export async function create(
   data: CreateNoteInput,
   currentUserId: number,
 ) {
-  await assertBeneficiaryActive(beneficiaryId);
+  await assertBeneficiaryActive(beneficiaryId, ARCHIVED_NOTES_MESSAGE);
 
   const note = await prisma.note.create({
     data: {
@@ -84,7 +77,7 @@ export async function update(
   noteId: number,
   data: UpdateNoteInput,
 ) {
-  await assertBeneficiaryActive(beneficiaryId);
+  await assertBeneficiaryActive(beneficiaryId, ARCHIVED_NOTES_MESSAGE);
   await assertNoteExists(beneficiaryId, noteId);
 
   const note = await prisma.note.update({
@@ -98,7 +91,7 @@ export async function update(
 
 /** Supprime une note. */
 export async function remove(beneficiaryId: number, noteId: number) {
-  await assertBeneficiaryActive(beneficiaryId);
+  await assertBeneficiaryActive(beneficiaryId, ARCHIVED_NOTES_MESSAGE);
   await assertNoteExists(beneficiaryId, noteId);
 
   await prisma.note.delete({ where: { note_id: noteId } });

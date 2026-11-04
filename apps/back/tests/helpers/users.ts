@@ -10,8 +10,11 @@ export const PASSWORD = 'MotDePasse123!';
 export async function createUser(
   options: { archivedAt?: Date; email?: string; role?: RoleLabel } = {},
 ) {
-  const role = await prisma.role.create({
-    data: { label: options.role ?? 'user' },
+  const label = options.role ?? 'user';
+  const role = await prisma.role.upsert({
+    where: { label },
+    update: {},
+    create: { label },
   });
 
   return prisma.user.create({

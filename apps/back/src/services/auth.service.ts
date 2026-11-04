@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import prisma from '../lib/prisma.js';
 import { signAccessToken } from '../lib/jwt.js';
-import { UnauthorizedError } from '../errors/app-error.js';
+import { BadRequestError, UnauthorizedError } from '../errors/app-error.js';
 import type { Prisma, Role, User } from '@prisma/client';
 
 // Même message dans tous les cas : on ne révèle jamais
@@ -23,12 +23,19 @@ export function toPublicUser(user: User & { role: Role }) {
 export type PublicUser = ReturnType<typeof toPublicUser>;
 
 /** Renvoie l'utilisateur s'il existe et que son compte est actif, sinon null. */
-export async function findActiveUser(where: Prisma.UserWhereUniqueInput) {
-  const user = await prisma.user.findUnique({
-    where,
+export function findActiveUser(where: Prisma.UserWhereInput) {
+  return prisma.user.findFirst({
+    where: { ...where, archived_at: null },
     include: { role: true },
   });
-  return user && !user.archived_at ? user : null;
+}
+
+/** Vérifie que ces utilisateurs existent et sont actifs, sinon 400. */
+export async function assertActiveUsers(ids: number[], message: string) {
+  const count = await prisma.user.count({
+    where: { user_id: { in: ids }, archived_at: null },
+  });
+  if (count !== ids.length) throw new BadRequestError(message);
 }
 
 /**
@@ -45,10 +52,7 @@ export async function login(email: string, password: string) {
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
 
-  const token = signAccessToken({
-    userId: user.user_id,
-    role: user.role.label,
-  });
+  const token = signAccessToken(user.user_id);
 
   return {
     token,

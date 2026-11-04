@@ -1,4 +1,12 @@
 import { z } from 'zod';
+import {
+  archivedFilter,
+  atLeastOneField,
+  idField,
+  isoDate,
+  optionalText,
+  requiredText,
+} from './common.js';
 
 /**
  * Schémas de validation des bénéficiaires.
@@ -6,20 +14,20 @@ import { z } from 'zod';
  * une valeur trop longue est refusée proprement (400) au lieu de faire planter la base (500).
  */
 
-/** Champ texte facultatif : absent, null (pour le vider) ou max caractères. */
-const optionalText = (max: number) => z.string().trim().max(max).nullish();
 export const DEFAULT_PATHWAY_STATUS = 'En cours';
+export const PREPARING_EXIT_PATHWAY_STATUS = 'Préparation à la sortie';
 export const EXIT_PATHWAY_STATUS = 'Sortie';
 
 /**
- * Tout nouveau dossier démarre à "En cours".
+ * Données acceptées pour créer un bénéficiaire.
+ * pathwayStatus n'est pas accepté ici : tout nouveau dossier démarre à "En cours".
  */
 export const createBeneficiarySchema = z.object({
-  lastName: z.string().trim().min(1).max(50),
-  firstName: z.string().trim().min(1).max(50),
-  entryDate: z.iso.date(), // format ISO : 2026-10-25
+  lastName: requiredText(50),
+  firstName: requiredText(50),
+  entryDate: isoDate,
   email: z.email().max(255).nullish(),
-  dateOfBirth: z.iso.date().nullish(),
+  dateOfBirth: isoDate.nullish(),
   address: optionalText(255),
   postalCode: optionalText(10),
   city: optionalText(100),
@@ -27,7 +35,7 @@ export const createBeneficiarySchema = z.object({
   familyStatus: optionalText(50),
   numberOfChildren: z.number().int().min(0).nullish(),
   householdComposition: optionalText(50),
-  referentId: z.number().int().positive().optional(), // jamais null : un bénéficiaire a toujours un référent
+  referentId: idField.optional(), // jamais null : un bénéficiaire a toujours un référent
 });
 
 /** Type TypeScript déduit du schéma : une seule source de vérité. */
@@ -36,36 +44,29 @@ export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
 /**
  * Données acceptées pour modifier un bénéficiaire (PATCH).
  * .partial() reprend toutes les règles de la création en rendant chaque champ facultatif.
- * .refine() impose au moins un champ.
  * Champ absent = inchangé ; null = vidé (champs facultatifs uniquement).
  */
-export const updateBeneficiarySchema = createBeneficiarySchema
-  .extend({
-    pathwayStatus: z.enum([
-      DEFAULT_PATHWAY_STATUS,
-      'Préparation à la sortie',
-      EXIT_PATHWAY_STATUS,
-    ]),
-  })
-  .partial()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'Aucune donnée à modifier.',
-  });
+export const updateBeneficiarySchema = atLeastOneField(
+  createBeneficiarySchema
+    .extend({
+      pathwayStatus: z.enum([
+        DEFAULT_PATHWAY_STATUS,
+        'Préparation à la sortie',
+        EXIT_PATHWAY_STATUS,
+      ]),
+    })
+    .partial(),
+);
 
 export type UpdateBeneficiaryInput = z.infer<typeof updateBeneficiarySchema>;
 
-/** Paramètre :id dans l'URL. */
-export const beneficiaryIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
-});
-
 /** Filtres de la liste : ?archived=true pour voir les archivés, ?search=mar pour chercher par nom ou prénom. */
 export const listBeneficiariesQuerySchema = z.object({
-  archived: z.stringbool().default(false),
+  archived: archivedFilter,
   search: z.string().trim().max(50).optional(),
 });
 
 /** Archivage : la date de sortie est obligatoire. */
 export const archiveBeneficiarySchema = z.object({
-  exitDate: z.iso.date(),
+  exitDate: isoDate,
 });

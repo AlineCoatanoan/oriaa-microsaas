@@ -1,15 +1,9 @@
 import prisma from '../../src/lib/prisma.js';
+import type { SeedBeneficiaries, SeedUsers } from './types.js';
 
 export async function seedAppointments(
-  users: {
-    admin: { user_id: number };
-    user: { user_id: number };
-  },
-  beneficiaries: {
-    beneficiary1: { beneficiary_id: number };
-    beneficiary2: { beneficiary_id: number };
-    beneficiary3: { beneficiary_id: number };
-  },
+  users: SeedUsers,
+  beneficiaries: SeedBeneficiaries,
 ) {
   const appointment1 = await prisma.appointment.create({
     data: {
@@ -44,7 +38,7 @@ export async function seedAppointments(
     },
   });
 
-  const appointment3 = await prisma.appointment.create({
+  await prisma.appointment.create({
     data: {
       title: "Réunion d'équipe",
       description: "Réunion hebdomadaire de l'équipe d'accompagnement.",
@@ -55,7 +49,7 @@ export async function seedAppointments(
     },
   });
 
-  const appointment4 = await prisma.appointment.create({
+  await prisma.appointment.create({
     data: {
       title: 'Bilan de parcours',
       description:
@@ -75,7 +69,5 @@ export async function seedAppointments(
   return {
     appointment1,
     appointment2,
-    appointment3,
-    appointment4,
   };
 }

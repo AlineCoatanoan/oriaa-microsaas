@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { validate } from '../middlewares/validate.js';
-import { beneficiaryIdSchema } from '../schemas/beneficiary.schema.js';
 import {
   createNoteSchema,
   noteParamsSchema,
@@ -12,15 +11,16 @@ import {
   remove,
   update,
 } from '../controllers/note.controller.js';
+import { idParamsSchema } from '../schemas/common.js';
 
 // mergeParams : donne accès au :id du bénéficiaire, défini dans le routeur parent
 const noteRouter = Router({ mergeParams: true });
 
-noteRouter.get('/', validate({ params: beneficiaryIdSchema }), list);
+noteRouter.get('/', validate({ params: idParamsSchema }), list);
 
 noteRouter.post(
   '/',
-  validate({ params: beneficiaryIdSchema, body: createNoteSchema }),
+  validate({ params: idParamsSchema, body: createNoteSchema }),
   create,
 );
 
