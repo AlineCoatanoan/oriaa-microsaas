@@ -3,10 +3,13 @@ import prisma from '../lib/prisma.js';
 import { signAccessToken } from '../lib/jwt.js';
 import { BadRequestError, UnauthorizedError } from '../errors/app-error.js';
 import type { Prisma, Role, User } from '@prisma/client';
+import type { ChangePasswordInput } from '../schemas/auth.schema.js';
 
 // Même message dans tous les cas : on ne révèle jamais
 // si c'est l'email ou le mot de passe qui est faux.
 const INVALID_CREDENTIALS = 'Email ou mot de passe incorrect.';
+/** Calcule le hash d'un mot de passe. */
+export const hashPassword = (password: string) => bcrypt.hash(password, 10);
 
 /** Informations de l'utilisateur exposées au front (jamais le mot de passe). */
 export function toPublicUser(user: User & { role: Role }) {
@@ -58,4 +61,26 @@ export async function login(email: string, password: string) {
     token,
     user: toPublicUser(user),
   };
+}
+
+/** Change le mot de passe de l'utilisateur connecté, après vérification de l'ancien. */
+export async function changePassword(
+  userId: number,
+  data: ChangePasswordInput,
+) {
+  const user = await findActiveUser({ user_id: userId });
+  if (!user) throw new UnauthorizedError();
+
+  const isPasswordValid = await bcrypt.compare(
+    data.currentPassword,
+    user.password,
+  );
+  if (!isPasswordValid) {
+    throw new BadRequestError('Mot de passe actuel incorrect.');
+  }
+
+  await prisma.user.update({
+    where: { user_id: userId },
+    data: { password: await hashPassword(data.newPassword) },
+  });
 }

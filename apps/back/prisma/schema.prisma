@@ -21,6 +21,7 @@ model User {
   password    String    @db.VarChar(255)
   job         String    @db.VarChar(50)
   archived_at DateTime?
+  deleted_at  DateTime?
   created_at  DateTime  @default(now())
   role_id     Int
 

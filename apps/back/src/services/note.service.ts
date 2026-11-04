@@ -1,6 +1,7 @@
-import type { Note, User } from '@prisma/client';
+import type { Note } from '@prisma/client';
 import prisma from '../lib/prisma.js';
-import { authorSelect, toAuthorName } from '../lib/dto.js';
+import { personSelect, toPerson } from '../lib/dto.js';
+import type { Person } from '../lib/dto.js';
 import { NotFoundError } from '../errors/app-error.js';
 import type {
   CreateNoteInput,
@@ -11,7 +12,7 @@ import {
   findBeneficiaryOrFail,
 } from './beneficiary.service.js';
 
-type NoteWithAuthor = Note & { user: Pick<User, 'first_name' | 'last_name'> };
+type NoteWithAuthor = Note & { user: Person };
 
 const ARCHIVED_NOTES_MESSAGE =
   "Les notes d'un dossier archivé ne peuvent pas être modifiées. Désarchivez-le d'abord.";
@@ -24,7 +25,7 @@ function toNoteDto(note: NoteWithAuthor) {
     content: note.content,
     createdAt: note.created_at,
     updatedAt: note.updated_at,
-    author: toAuthorName(note.user),
+    author: toPerson(note.user),
     beneficiaryId: note.beneficiary_id,
   };
 }
@@ -43,7 +44,7 @@ export async function findAllByBeneficiary(beneficiaryId: number) {
 
   const notes = await prisma.note.findMany({
     where: { beneficiary_id: beneficiaryId },
-    include: { user: authorSelect },
+    include: { user: personSelect },
     orderBy: { created_at: 'desc' },
   });
 
@@ -65,7 +66,7 @@ export async function create(
       beneficiary_id: beneficiaryId,
       user_id: currentUserId,
     },
-    include: { user: authorSelect },
+    include: { user: personSelect },
   });
 
   return toNoteDto(note);
@@ -83,7 +84,7 @@ export async function update(
   const note = await prisma.note.update({
     where: { note_id: noteId },
     data: { title: data.title, content: data.content },
-    include: { user: authorSelect },
+    include: { user: personSelect },
   });
 
   return toNoteDto(note);

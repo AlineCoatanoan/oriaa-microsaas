@@ -1,7 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
-import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
+import { personSelect, toPerson, toSubtaskDto } from '../lib/dto.js';
 import { ConflictError, NotFoundError } from '../errors/app-error.js';
 import {
   COMPLETED_TASK_STATUS,
@@ -31,12 +31,8 @@ const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
   subtasks: { orderBy: { subtask_id: 'asc' } },
-  created_by: authorSelect,
-  assignees: {
-    include: {
-      user: { select: { ...authorSelect.select, user_id: true } },
-    },
-  },
+  created_by: personSelect,
+  assignees: { include: { user: personSelect } },
   beneficiaries: beneficiaryLinksInclude,
 } satisfies Prisma.TaskInclude;
 
@@ -69,11 +65,8 @@ function toTaskDto(task: TaskWithRelations) {
     isArchived: areAllBeneficiariesArchived(task.beneficiaries),
     createdAt: task.created_at,
     updatedAt: task.updated_at,
-    createdBy: toAuthorName(task.created_by),
-    assignees: task.assignees.map(({ user }) => ({
-      id: user.user_id,
-      name: toAuthorName(user),
-    })),
+    createdBy: toPerson(task.created_by),
+    assignees: task.assignees.map(({ user }) => toPerson(user)),
     beneficiaries: task.beneficiaries.map(toBeneficiarySummary),
     subtasks: task.subtasks.map(toSubtaskDto),
   };

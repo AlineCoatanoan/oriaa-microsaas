@@ -36,7 +36,7 @@ describe('POST /api/beneficiaries', () => {
       city: 'Rennes',
       numberOfChildren: 2,
       entryDate: '2026-10-01',
-      referentId: user.user_id,
+      referent: expect.objectContaining({ id: user.user_id }),
     });
     // Il est bien enregistré en base
     expect(await prisma.beneficiary.count()).toBe(1);
@@ -158,7 +158,10 @@ describe('GET /api/beneficiaries/:id/timeline', () => {
     ).toEqual(['appointment', 'task', 'note']);
     expect(response.body.timeline[0]).toMatchObject({
       title: 'Rendez-vous',
-      author: 'Marie Dupont',
+      author: expect.objectContaining({
+        name: 'Marie Dupont',
+        status: 'active',
+      }),
     });
   });
 
@@ -269,7 +272,7 @@ describe('GET /api/beneficiaries', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.beneficiaries).toHaveLength(1);
-    expect(response.body.beneficiaries[0].referentId).toBe(colleague.user_id);
+    expect(response.body.beneficiaries[0].referent.id).toBe(colleague.user_id);
   });
 
   it('refuse un filtre invalide', async () => {
@@ -382,7 +385,7 @@ describe('PATCH /api/beneficiaries/:id', () => {
       .send({ referentId: colleague.user_id });
 
     expect(response.status).toBe(200);
-    expect(response.body.beneficiary.referentId).toBe(colleague.user_id);
+    expect(response.body.beneficiary.referent.id).toBe(colleague.user_id);
   });
 
   it('refuse de modifier un dossier archivé (409)', async () => {
