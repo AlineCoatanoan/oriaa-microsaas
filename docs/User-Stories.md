@@ -49,7 +49,7 @@ _(Rappel : hormis la gestion des comptes utilisateurs et la suppression d'un bé
 | ----------- | ---------------------------------------------- | ------------------------------------------------------------- |
 | Utilisateur | créer une tâche                                | suivre une action à réaliser                                  |
 | Utilisateur | lier une tâche à un ou plusieurs bénéficiaires | organiser une action collective (ex : atelier cuisine)        |
-| Utilisateur | lier une tâche à un RDV et/ou une note         | garder le contexte de pourquoi la tâche existe                |
+| Utilisateur | lier une tâche à une note                      | garder le contexte de pourquoi la tâche existe                |
 | Utilisateur | modifier une tâche                             | adapter une action en cours                                   |
 | Utilisateur | supprimer une tâche                            | la retirer définitivement une fois traitée ou en cas d'erreur |
 | Utilisateur | consulter mes tâches du jour / urgentes        | organiser mon travail quotidien                               |
@@ -82,14 +82,14 @@ _(Rappel : hormis la gestion des comptes utilisateurs et la suppression d'un bé
 
 ## Planning / Rendez-vous
 
-| En tant que | Je veux                              | Afin de                                  |
-| ----------- | ------------------------------------ | ---------------------------------------- |
-| Utilisateur | planifier un RDV pour moi-même       | organiser une intervention               |
-| Utilisateur | planifier un RDV pour un(e) collègue | coordonner les interventions de l'équipe |
-| Utilisateur | consulter le planning de l'équipe    | coordonner les interventions             |
-| Utilisateur | lier un RDV à un bénéficiaire        | garder le contexte de l'intervention     |
-| Utilisateur | modifier un RDV                      | adapter un horaire ou un lieu            |
-| Utilisateur | supprimer un RDV                     | corriger une erreur de saisie            |
+| En tant que | Je veux                                           | Afin de                                  |
+| ----------- | ------------------------------------------------- | ---------------------------------------- |
+| Utilisateur | planifier un RDV pour moi-même                    | organiser une intervention               |
+| Utilisateur | planifier un RDV pour un(e) collègue              | coordonner les interventions de l'équipe |
+| Utilisateur | consulter le planning de l'équipe                 | coordonner les interventions             |
+| Utilisateur | lier un RDV à zéro, un ou plusieurs bénéficiaires | garder le contexte de l'intervention     |
+| Utilisateur | modifier un RDV                                   | adapter un horaire ou un lieu            |
+| Utilisateur | supprimer un RDV                                  | corriger une erreur de saisie            |
 
 ---
 

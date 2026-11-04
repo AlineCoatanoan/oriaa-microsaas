@@ -110,12 +110,10 @@ Tâches liées ou non liées à un bénéficiaire
 Priorisation (urgence / échéance)
 Vue quotidienne des tâches de l’utilisateur (comportement par défaut : affichage des tâches de l’utilisateur connecté)
 Accès direct au dossier bénéficiaire depuis une tâche
-Possibilité de générer une tâche depuis une action ou un RDV
 Système de filtrage des tâches (par bénéficiaire, statut, échéance, collègues)
 
 **Gestion des rendez-vous/planning (activité terrain)**
 
-Permet de créer les tâches lors du RDV.
 Il pourrait s'agir d'une fonctionnalité à part entière. Fonctionnalité simplifiée dans un premier temps.
 
 L'idéal :
@@ -123,7 +121,6 @@ Création de rendez-vous (bureau / domicile / partenaire)
 Association à un bénéficiaire
 Association à un véhicule de service
 Vue planning (paramètres par défaut : affichage du planning de l’utilisateur connecté)
-Possibilité de générer des tâches depuis un RDV
 Système de filtrage du planning (par bénéficiaire, collègues)
 
 ---
