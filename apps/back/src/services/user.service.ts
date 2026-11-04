@@ -7,11 +7,17 @@ import type {
   UpdateUserInput,
 } from '../schemas/user.schema.js';
 import { hashPassword, toPublicUser } from './auth.service.js';
+import type { RoleLabel } from '../config/roles.js';
 
 /** Format renvoyé au front. */
 const toUserDto = (user: User & { role: Role }) => ({
   ...toPublicUser(user),
   archivedAt: user.archived_at,
+});
+
+/** Relie le compte à son rôle, en le créant s'il n'existe pas encore. */
+const toRoleLink = (label: RoleLabel) => ({
+  connectOrCreate: { where: { label }, create: { label } },
 });
 
 /** Renvoie le compte avec son rôle, ou une 404 s'il n'existe pas ou a été supprimé. */
@@ -57,7 +63,7 @@ export async function create(data: CreateUserInput) {
       email: data.email,
       password: await hashPassword(data.password),
       job: data.job,
-      role: { connect: { label: data.role } },
+      role: toRoleLink(data.role),
     },
     include: { role: true },
   });
@@ -83,7 +89,7 @@ export async function update(
     where: { user_id: id },
     data: {
       job: data.job,
-      role: data.role ? { connect: { label: data.role } } : undefined,
+      role: data.role ? toRoleLink(data.role) : undefined,
     },
     include: { role: true },
   });
