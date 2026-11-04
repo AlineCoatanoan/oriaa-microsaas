@@ -15,6 +15,7 @@ import {
 } from '../schemas/task.schema.js';
 import type {
   CreateTaskInput,
+  ListTasksQuery,
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
 import { assertActiveUsers } from './auth.service.js';
@@ -142,26 +143,19 @@ export async function assertTaskEditable(id: number) {
   return task;
 }
 
-/**
- * Liste les tâches, de l'échéance la plus proche à la plus lointaine.
- * Avec beneficiaryId (onglet de la fiche) : toutes les tâches de ce bénéficiaire.
- * Sinon : les tâches courantes, ou les archivées avec archived.
- */
-export async function findAll(options: {
-  archived: boolean;
-  beneficiaryId?: number;
-}) {
-  const { archived, beneficiaryId } = options;
-
-  let where: Prisma.TaskWhereInput;
-  if (beneficiaryId) {
-    where = { beneficiaries: { some: { beneficiary_id: beneficiaryId } } };
-  } else {
-    where = archived ? archivedTaskWhere : { NOT: archivedTaskWhere };
-  }
+/** Liste les tâches filtrées, de l'échéance la plus proche à la plus lointaine. */
+export async function findAll(filters: ListTasksQuery) {
+  const { beneficiaryId, assigneeId, status, priority } = filters;
 
   const tasks = await prisma.task.findMany({
-    where,
+    where: {
+      status,
+      priority,
+      assignees: assigneeId ? { some: { user_id: assigneeId } } : undefined,
+      ...(beneficiaryId
+        ? { beneficiaries: { some: { beneficiary_id: beneficiaryId } } }
+        : { NOT: archivedTaskWhere }),
+    },
     include: taskInclude,
     orderBy: { due_date: { sort: 'asc', nulls: 'last' } },
   });

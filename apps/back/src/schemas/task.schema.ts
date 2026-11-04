@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  archivedFilter,
   atLeastOneField,
   idField,
   idParam,
@@ -19,6 +18,12 @@ const taskPriority = z.enum([
   'Basse',
   DEFAULT_TASK_PRIORITY,
   URGENT_TASK_PRIORITY,
+]);
+
+const taskStatus = z.enum([
+  DEFAULT_TASK_STATUS,
+  'En cours',
+  COMPLETED_TASK_STATUS,
 ]);
 
 const idList = z.array(idField);
@@ -44,17 +49,21 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
  * assigneeIds et beneficiaryIds remplacent les listes existantes.
  */
 export const updateTaskSchema = atLeastOneField(
-  createTaskSchema
-    .extend({
-      status: z.enum([DEFAULT_TASK_STATUS, 'En cours', COMPLETED_TASK_STATUS]),
-    })
-    .partial(),
+  createTaskSchema.extend({ status: taskStatus }).partial(),
 );
 
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 
-/** Filtres de la liste : ?archived=true, ?beneficiaryId=5 pour l'onglet de la fiche. */
+/**
+ * Filtres de la liste, combinables entre eux.
+ * Sans beneficiaryId (page des tâches) : tâches courantes uniquement.
+ * Avec beneficiaryId (onglet de la fiche) : toutes ses tâches, même archivées.
+ */
 export const listTasksQuerySchema = z.object({
-  archived: archivedFilter,
   beneficiaryId: idParam.optional(),
+  assigneeId: idParam.optional(),
+  status: taskStatus.optional(),
+  priority: taskPriority.optional(),
 });
+
+export type ListTasksQuery = z.infer<typeof listTasksQuerySchema>;

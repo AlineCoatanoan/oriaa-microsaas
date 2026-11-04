@@ -2,10 +2,9 @@ import type { Request, Response } from 'express';
 import * as taskService from '../services/task.service.js';
 import { getCurrentUser } from '../lib/current-user.js';
 
-/** GET /api/tasks (?archived=true, ?beneficiaryId=5) */
+/** GET /api/tasks (filtres : voir listTasksQuerySchema) */
 export async function list(_req: Request, res: Response) {
-  const { archived, beneficiaryId } = res.locals.validated.query;
-  const tasks = await taskService.findAll({ archived, beneficiaryId });
+  const tasks = await taskService.findAll(res.locals.validated.query);
   res.status(200).json({ tasks });
 }
 
