@@ -264,9 +264,9 @@ export async function unarchive(id: number) {
 
 /**
  * Supprime définitivement un bénéficiaire archivé (RGPD).
- * Ses notes, documents et liens (tâches, RDV) sont supprimés en cascade par la base.
- * Les tâches qui n'étaient liées qu'à lui sont supprimées aussi.
- * Une tâche liée à d'autres bénéficiaires est conservée.
+ * Ses notes, documents et liens sont supprimés en cascade par la base.
+ * Les tâches et rendez-vous qui n'étaient liés qu'à lui sont supprimés aussi.
+ * Ceux qui sont liés à d'autres bénéficiaires sont conservés.
  */
 export async function remove(id: number) {
   await assertBeneficiaryArchived(
@@ -274,17 +274,18 @@ export async function remove(id: number) {
     "Seul un dossier archivé peut être supprimé définitivement. Archivez-le d'abord.",
   );
 
+  // some + every : au moins ce lien, et aucun autre bénéficiaire
+  const onlyThisBeneficiary = {
+    beneficiaries: {
+      some: { beneficiary_id: id },
+      every: { beneficiary_id: id },
+    },
+  };
+
   // Transaction : soit tout est supprimé, soit rien
   await prisma.$transaction([
-    prisma.task.deleteMany({
-      where: {
-        // some + every : au moins ce lien, et aucun autre bénéficiaire
-        beneficiaries: {
-          some: { beneficiary_id: id },
-          every: { beneficiary_id: id },
-        },
-      },
-    }),
+    prisma.task.deleteMany({ where: onlyThisBeneficiary }),
+    prisma.appointment.deleteMany({ where: onlyThisBeneficiary }),
     prisma.beneficiary.delete({ where: { beneficiary_id: id } }),
   ]);
 }
