@@ -1,7 +1,7 @@
 import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { toDate, toDateOnly } from '../lib/dates.js';
-import { authorSelect, toAuthorName } from '../lib/dto.js';
+import { personSelect, toPerson } from '../lib/dto.js';
 import {
   BadRequestError,
   ConflictError,
@@ -16,12 +16,15 @@ import type {
   UpdateBeneficiaryInput,
 } from '../schemas/beneficiary.schema.js';
 import { assertActiveUsers } from './auth.service.js';
+import type { Person } from '../lib/dto.js';
+
+const beneficiaryInclude = { user: personSelect };
 
 /** Format renvoyé au front (camelCase, comme toPublicUser).
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
  * Si une colonne change un jour, seul ce fichier est modifié.
  */
-function toBeneficiaryDto(b: Beneficiary) {
+function toBeneficiaryDto(b: Beneficiary & { user: Person }) {
   return {
     id: b.beneficiary_id,
     lastName: b.last_name,
@@ -40,7 +43,7 @@ function toBeneficiaryDto(b: Beneficiary) {
     exitDate: toDateOnly(b.exit_date),
     createdAt: b.created_at,
     archivedAt: b.archived_at,
-    referentId: b.user_id,
+    referent: toPerson(b.user),
   };
 }
 
@@ -72,6 +75,7 @@ function toBeneficiaryData(data: UpdateBeneficiaryInput) {
 export async function findBeneficiaryOrFail(id: number) {
   const beneficiary = await prisma.beneficiary.findUnique({
     where: { beneficiary_id: id },
+    include: beneficiaryInclude,
   });
   if (!beneficiary) throw new NotFoundError('Bénéficiaire introuvable.');
   return beneficiary;
@@ -119,6 +123,7 @@ export async function create(
       user_id: referentId,
       pathway_status: DEFAULT_PATHWAY_STATUS,
     },
+    include: beneficiaryInclude,
   });
 
   return toBeneficiaryDto(beneficiary);
@@ -139,15 +144,15 @@ export async function findTimeline(id: number) {
   const [notes, tasks, appointments] = await Promise.all([
     prisma.note.findMany({
       where: { beneficiary_id: id },
-      include: { user: authorSelect },
+      include: { user: personSelect },
     }),
     prisma.task.findMany({
       where: { beneficiaries: { some: { beneficiary_id: id } } },
-      include: { created_by: authorSelect },
+      include: { created_by: personSelect },
     }),
     prisma.appointment.findMany({
       where: { beneficiaries: { some: { beneficiary_id: id } } },
-      include: { user: authorSelect },
+      include: { user: personSelect },
     }),
   ]);
 
@@ -157,21 +162,21 @@ export async function findTimeline(id: number) {
       id: note.note_id,
       title: note.title,
       date: note.created_at,
-      author: toAuthorName(note.user),
+      author: toPerson(note.user),
     })),
     ...tasks.map((task) => ({
       type: 'task',
       id: task.task_id,
       title: task.title,
       date: task.created_at,
-      author: toAuthorName(task.created_by),
+      author: toPerson(task.created_by),
     })),
     ...appointments.map((appointment) => ({
       type: 'appointment',
       id: appointment.appointment_id,
       title: appointment.title,
       date: appointment.start_at,
-      author: toAuthorName(appointment.user),
+      author: toPerson(appointment.user),
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 }
@@ -195,6 +200,7 @@ export async function findAll(options: { archived: boolean; search?: string }) {
           ]
         : undefined,
     },
+    include: beneficiaryInclude,
     orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
   });
 
@@ -215,6 +221,7 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
   const beneficiary = await prisma.beneficiary.update({
     where: { beneficiary_id: id },
     data: toBeneficiaryData(data),
+    include: beneficiaryInclude,
   });
 
   return toBeneficiaryDto(beneficiary);
@@ -241,6 +248,7 @@ export async function archive(id: number, exitDate: string) {
       exit_date: exit,
       pathway_status: EXIT_PATHWAY_STATUS,
     },
+    include: beneficiaryInclude,
   });
 
   return toBeneficiaryDto(beneficiary);
@@ -257,6 +265,7 @@ export async function unarchive(id: number) {
       exit_date: null,
       pathway_status: DEFAULT_PATHWAY_STATUS,
     },
+    include: beneficiaryInclude,
   });
 
   return toBeneficiaryDto(beneficiary);

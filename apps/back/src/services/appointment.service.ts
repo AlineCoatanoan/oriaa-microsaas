@@ -9,7 +9,7 @@ import {
   toBeneficiarySummary,
   unique,
 } from '../lib/beneficiary-links.js';
-import { authorSelect, toAuthorName } from '../lib/dto.js';
+import { personSelect, toPerson } from '../lib/dto.js';
 import {
   BadRequestError,
   ConflictError,
@@ -27,7 +27,7 @@ const UNKNOWN_USER_MESSAGE = 'Personne en charge introuvable.';
 
 /** Données liées à récupérer avec chaque rendez-vous. */
 const appointmentInclude = {
-  user: { select: { ...authorSelect.select, user_id: true } },
+  user: personSelect,
   beneficiaries: beneficiaryLinksInclude,
   notes: { include: { note: { select: { note_id: true, title: true } } } },
 } satisfies Prisma.AppointmentInclude;
@@ -46,10 +46,7 @@ function toAppointmentDto(appointment: AppointmentWithRelations) {
     startAt: appointment.start_at,
     endAt: appointment.end_at,
     isArchived: areAllBeneficiariesArchived(appointment.beneficiaries),
-    user: {
-      id: appointment.user.user_id,
-      name: toAuthorName(appointment.user),
-    },
+    user: toPerson(appointment.user),
     beneficiaries: appointment.beneficiaries.map(toBeneficiarySummary),
     notes: appointment.notes.map(({ note }) => ({
       id: note.note_id,
