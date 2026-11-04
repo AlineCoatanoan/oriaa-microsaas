@@ -90,6 +90,16 @@ async function assertBeneficiaryArchived(id: number, message: string) {
   if (!beneficiary.archived_at) throw new ConflictError(message);
 }
 
+/** Les bénéficiaires ajoutés doivent exister et ne pas être archivés. */
+export async function assertActiveBeneficiaries(ids: number[]) {
+  const count = await prisma.beneficiary.count({
+    where: { beneficiary_id: { in: ids }, archived_at: null },
+  });
+  if (count !== ids.length) {
+    throw new BadRequestError('Bénéficiaire introuvable ou archivé.');
+  }
+}
+
 /** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
 export async function create(
   data: CreateBeneficiaryInput,

@@ -2,11 +2,7 @@ import type { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
 import { authorSelect, toAuthorName, toSubtaskDto } from '../lib/dto.js';
-import {
-  BadRequestError,
-  ConflictError,
-  NotFoundError,
-} from '../errors/app-error.js';
+import { ConflictError, NotFoundError } from '../errors/app-error.js';
 import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
@@ -19,6 +15,16 @@ import type {
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
 import { assertActiveUsers } from './auth.service.js';
+import {
+  allBeneficiariesArchivedWhere,
+  areAllBeneficiariesArchived,
+  beneficiaryLinksInclude,
+  newIds,
+  toBeneficiaryLinks,
+  toBeneficiarySummary,
+  unique,
+} from '../lib/beneficiary-links.js';
+import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
 const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
 
@@ -31,35 +37,12 @@ const taskInclude = {
       user: { select: { ...authorSelect.select, user_id: true } },
     },
   },
-  beneficiaries: {
-    include: {
-      beneficiary: {
-        select: {
-          beneficiary_id: true,
-          first_name: true,
-          last_name: true,
-          archived_at: true,
-        },
-      },
-    },
-  },
+  beneficiaries: beneficiaryLinksInclude,
 } satisfies Prisma.TaskInclude;
 
 type TaskWithRelations = Prisma.TaskGetPayload<{
   include: typeof taskInclude;
 }>;
-
-/** Une tâche est archivée si elle a des bénéficiaires et qu'ils sont tous archivés. */
-const archivedTaskWhere = {
-  beneficiaries: {
-    some: {},
-    every: { beneficiary: { archived_at: { not: null } } },
-  },
-} satisfies Prisma.TaskWhereInput;
-
-const isArchived = (task: TaskWithRelations) =>
-  task.beneficiaries.length > 0 &&
-  task.beneficiaries.every((link) => link.beneficiary.archived_at !== null);
 
 const isCompleted = (task: TaskWithRelations) =>
   task.status === COMPLETED_TASK_STATUS;
@@ -83,7 +66,7 @@ function toTaskDto(task: TaskWithRelations) {
     priority: task.priority,
     isOverdue: isOverdue(task),
     isUrgent: task.priority === URGENT_TASK_PRIORITY && !isCompleted(task),
-    isArchived: isArchived(task),
+    isArchived: areAllBeneficiariesArchived(task.beneficiaries),
     createdAt: task.created_at,
     updatedAt: task.updated_at,
     createdBy: toAuthorName(task.created_by),
@@ -91,36 +74,12 @@ function toTaskDto(task: TaskWithRelations) {
       id: user.user_id,
       name: toAuthorName(user),
     })),
-    beneficiaries: task.beneficiaries.map(({ beneficiary }) => ({
-      id: beneficiary.beneficiary_id,
-      firstName: beneficiary.first_name,
-      lastName: beneficiary.last_name,
-    })),
+    beneficiaries: task.beneficiaries.map(toBeneficiarySummary),
     subtasks: task.subtasks.map(toSubtaskDto),
   };
 }
 
-/** Enlève les doublons d'une liste d'identifiants. */
-const unique = (ids: number[]) => [...new Set(ids)];
-
-/** Garde uniquement les identifiants absents de la liste actuelle. */
-const newIds = (ids: number[], current: number[]) =>
-  ids.filter((id) => !current.includes(id));
-
 const toAssigneeLinks = (ids: number[]) => ids.map((user_id) => ({ user_id }));
-
-const toBeneficiaryLinks = (ids: number[]) =>
-  ids.map((beneficiary_id) => ({ beneficiary_id }));
-
-/** Les bénéficiaires ajoutés doivent exister et ne pas être archivés. */
-async function assertActiveBeneficiaries(ids: number[]) {
-  const count = await prisma.beneficiary.count({
-    where: { beneficiary_id: { in: ids }, archived_at: null },
-  });
-  if (count !== ids.length) {
-    throw new BadRequestError('Bénéficiaire introuvable ou archivé.');
-  }
-}
 
 /** Renvoie la tâche avec ses liens, ou une 404. */
 async function findTaskOrFail(id: number) {
@@ -135,7 +94,7 @@ async function findTaskOrFail(id: number) {
 /** Règle métier : une tâche archivée est en lecture seule. Renvoie la tâche. */
 export async function assertTaskEditable(id: number) {
   const task = await findTaskOrFail(id);
-  if (isArchived(task)) {
+  if (areAllBeneficiariesArchived(task.beneficiaries)) {
     throw new ConflictError(
       "Une tâche archivée ne peut pas être modifiée. Désarchivez d'abord un de ses bénéficiaires.",
     );
@@ -154,7 +113,7 @@ export async function findAll(filters: ListTasksQuery) {
       assignees: assigneeId ? { some: { user_id: assigneeId } } : undefined,
       ...(beneficiaryId
         ? { beneficiaries: { some: { beneficiary_id: beneficiaryId } } }
-        : { NOT: archivedTaskWhere }),
+        : { NOT: allBeneficiariesArchivedWhere }),
     },
     include: taskInclude,
     orderBy: { due_date: { sort: 'asc', nulls: 'last' } },
