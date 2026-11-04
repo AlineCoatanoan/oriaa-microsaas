@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
   atLeastOneField,
-  idField,
+  idList,
   idParam,
   isoDate,
   optionalLongText,
@@ -25,8 +25,6 @@ const taskStatus = z.enum([
   'En cours',
   COMPLETED_TASK_STATUS,
 ]);
-
-const idList = z.array(idField);
 
 /**
  * Données acceptées pour créer une tâche.
