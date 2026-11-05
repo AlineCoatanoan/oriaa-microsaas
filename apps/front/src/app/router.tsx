@@ -1,12 +1,9 @@
 import { createBrowserRouter } from 'react-router';
+import { HomePage } from '@/features/home/HomePage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <main>
-        <h1>ORIAA</h1>
-      </main>
-    ),
+    element: <HomePage />,
   },
 ]);

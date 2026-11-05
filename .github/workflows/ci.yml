@@ -104,14 +104,13 @@ jobs:
       - name: Appliquer les migrations sur la base de test
         run: pnpm --filter back exec prisma migrate deploy
 
-      # Lance les tests du back avec mesure de la couverture
+      # Lance les tests du back et du front avec mesure de la couverture
       - name: Tests et couverture
         run: pnpm test:coverage
 
       # Affiche le résumé de couverture sur la page de l'exécution
       - name: Résumé de couverture
-        run: |
-          node -e "const t=require('./apps/back/coverage/coverage-summary.json').total; console.log('### Couverture back\n\n| Métrique | % |\n|---|---|\n| Lignes | '+t.lines.pct+' |\n| Instructions | '+t.statements.pct+' |\n| Fonctions | '+t.functions.pct+' |\n| Branches | '+t.branches.pct+' |')" >> $GITHUB_STEP_SUMMARY
+        run: node scripts/coverage-summary.js >> $GITHUB_STEP_SUMMARY
 
       # Après un merge sur dev uniquement : met à jour le badge de couverture
       - name: Générer le badge de couverture
