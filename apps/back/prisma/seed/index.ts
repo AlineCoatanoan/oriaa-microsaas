@@ -27,7 +27,7 @@ async function main() {
 
   const appointments = await seedAppointments(users, beneficiaries);
 
-  await seedDocuments(beneficiaries);
+  await seedDocuments(users, beneficiaries);
 
   await seedFilters(users);
 
