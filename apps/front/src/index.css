@@ -21,3 +21,8 @@ h2,
 h3 {
   font-family: var(--font-title);
 }
+
+h1 {
+  font-size: 1.875rem;
+  font-weight: 600;
+}
