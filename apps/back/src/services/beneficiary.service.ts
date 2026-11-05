@@ -19,6 +19,7 @@ import { assertActiveUsers } from './auth.service.js';
 import type { Person } from '../lib/dto.js';
 
 const beneficiaryInclude = { user: personSelect };
+const UNKNOWN_REFERENT_MESSAGE = 'Référent introuvable.';
 
 /** Format renvoyé au front (camelCase, comme toPublicUser).
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
@@ -111,7 +112,7 @@ export async function create(
 ) {
   const referentId = data.referentId ?? currentUserId;
 
-  await assertActiveUsers([referentId], 'Référent introuvable.');
+  await assertActiveUsers([referentId], UNKNOWN_REFERENT_MESSAGE);
 
   const beneficiary = await prisma.beneficiary.create({
     data: {
@@ -215,7 +216,7 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
   );
 
   if (data.referentId !== undefined) {
-    await assertActiveUsers([data.referentId], 'Référent introuvable.');
+    await assertActiveUsers([data.referentId], UNKNOWN_REFERENT_MESSAGE);
   }
 
   const beneficiary = await prisma.beneficiary.update({

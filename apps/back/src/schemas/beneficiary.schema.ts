@@ -51,7 +51,7 @@ export const updateBeneficiarySchema = atLeastOneField(
     .extend({
       pathwayStatus: z.enum([
         DEFAULT_PATHWAY_STATUS,
-        'Préparation à la sortie',
+        PREPARING_EXIT_PATHWAY_STATUS,
         EXIT_PATHWAY_STATUS,
       ]),
     })

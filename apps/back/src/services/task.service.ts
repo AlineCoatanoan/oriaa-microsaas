@@ -34,7 +34,7 @@ import {
 } from '../lib/beneficiary-links.js';
 import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
-const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
+export const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {

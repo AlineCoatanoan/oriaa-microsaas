@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import type { SaveTaskFilterInput } from '../schemas/task-filter.schema.js';
 import { assertActiveUsers } from './auth.service.js';
+import { UNKNOWN_ASSIGNEE_MESSAGE } from './task.service.js';
 
 const TASKS_LISTING = 'tasks';
 
@@ -22,7 +23,7 @@ export async function find(userId: number) {
 
 /** Enregistre le filtre de l'utilisateur, ou remplace l'ancien. */
 export async function save(userId: number, data: SaveTaskFilterInput) {
-  await assertActiveUsers([data.assigneeId], 'Responsable introuvable.');
+  await assertActiveUsers([data.assigneeId], UNKNOWN_ASSIGNEE_MESSAGE);
 
   const filter = await prisma.filterPreference.upsert({
     where: filterKey(userId),
