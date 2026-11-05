@@ -1,7 +1,15 @@
 import type { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
-import { personSelect, toPerson, toSubtaskDto } from '../lib/dto.js';
+import {
+  noteLinksInclude,
+  personSelect,
+  toNoteLinks,
+  toNoteSummary,
+  toPerson,
+  toSubtaskDto,
+} from '../lib/dto.js';
+import { assertNotesExist } from './note.service.js';
 import { ConflictError, NotFoundError } from '../errors/app-error.js';
 import {
   COMPLETED_TASK_STATUS,
@@ -34,6 +42,7 @@ const taskInclude = {
   created_by: personSelect,
   assignees: { include: { user: personSelect } },
   beneficiaries: beneficiaryLinksInclude,
+  notes: noteLinksInclude,
 } satisfies Prisma.TaskInclude;
 
 type TaskWithRelations = Prisma.TaskGetPayload<{
@@ -68,6 +77,7 @@ function toTaskDto(task: TaskWithRelations) {
     createdBy: toPerson(task.created_by),
     assignees: task.assignees.map(({ user }) => toPerson(user)),
     beneficiaries: task.beneficiaries.map(toBeneficiarySummary),
+    notes: task.notes.map(toNoteSummary),
     subtasks: task.subtasks.map(toSubtaskDto),
   };
 }
@@ -124,9 +134,11 @@ export async function findById(id: number) {
 export async function create(data: CreateTaskInput, currentUserId: number) {
   const assigneeIds = unique(data.assigneeIds ?? [currentUserId]);
   const beneficiaryIds = unique(data.beneficiaryIds ?? []);
+  const noteIds = unique(data.noteIds ?? []);
 
   await assertActiveUsers(assigneeIds, UNKNOWN_ASSIGNEE_MESSAGE);
   await assertActiveBeneficiaries(beneficiaryIds);
+  await assertNotesExist(noteIds);
 
   const task = await prisma.task.create({
     data: {
@@ -138,6 +150,7 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
       user_id_created_by: currentUserId,
       assignees: { create: toAssigneeLinks(assigneeIds) },
       beneficiaries: { create: toBeneficiaryLinks(beneficiaryIds) },
+      notes: { create: toNoteLinks(noteIds) },
     },
     include: taskInclude,
   });
@@ -154,6 +167,7 @@ export async function update(id: number, data: UpdateTaskInput) {
   const existing = await assertTaskEditable(id);
   const assigneeIds = data.assigneeIds && unique(data.assigneeIds);
   const beneficiaryIds = data.beneficiaryIds && unique(data.beneficiaryIds);
+  const noteIds = data.noteIds && unique(data.noteIds);
 
   if (assigneeIds) {
     await assertActiveUsers(
@@ -172,6 +186,7 @@ export async function update(id: number, data: UpdateTaskInput) {
       ),
     );
   }
+  if (noteIds) await assertNotesExist(noteIds);
 
   const task = await prisma.task.update({
     where: { task_id: id },
@@ -189,6 +204,10 @@ export async function update(id: number, data: UpdateTaskInput) {
       beneficiaries: beneficiaryIds && {
         deleteMany: {},
         create: toBeneficiaryLinks(beneficiaryIds),
+      },
+      notes: noteIds && {
+        deleteMany: {},
+        create: toNoteLinks(noteIds),
       },
     },
     include: taskInclude,
