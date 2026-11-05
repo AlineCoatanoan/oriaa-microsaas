@@ -60,6 +60,23 @@ describe('routes', () => {
     await expectPage('Utilisateurs');
   });
 
+  it('affiche le lien Utilisateurs à un administrateur', async () => {
+    mockSession(200, 'admin');
+    renderRoute('/');
+    expect(
+      await screen.findByRole('link', { name: 'Utilisateurs' }),
+    ).toBeInTheDocument();
+  });
+
+  it('masque le lien Utilisateurs aux autres utilisateurs', async () => {
+    mockSession(200, 'user');
+    renderRoute('/');
+    await expectPage('ORIAA');
+    expect(
+      screen.queryByRole('link', { name: 'Utilisateurs' }),
+    ).not.toBeInTheDocument();
+  });
+
   it('affiche une page 404 pour une route inconnue', async () => {
     renderRoute('/route-inconnue');
     await expectPage('Page introuvable');

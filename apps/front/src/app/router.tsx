@@ -1,5 +1,6 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { NotFoundPage } from '@/app/NotFoundPage';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RequireAdmin } from '@/features/auth/RequireAdmin';
 import { RequireAuth } from '@/features/auth/RequireAuth';
@@ -15,14 +16,19 @@ export const routes: RouteObject[] = [
   {
     element: <RequireAuth />,
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/beneficiaries', element: <BeneficiariesPage /> },
-      { path: '/beneficiaries/:id', element: <BeneficiaryPage /> },
-      { path: '/tasks', element: <TasksPage /> },
-      { path: '/planning', element: <PlanningPage /> },
       {
-        element: <RequireAdmin />,
-        children: [{ path: '/users', element: <UsersPage /> }],
+        element: <AppLayout />,
+        children: [
+          { path: '/', element: <HomePage /> },
+          { path: '/beneficiaries', element: <BeneficiariesPage /> },
+          { path: '/beneficiaries/:id', element: <BeneficiaryPage /> },
+          { path: '/tasks', element: <TasksPage /> },
+          { path: '/planning', element: <PlanningPage /> },
+          {
+            element: <RequireAdmin />,
+            children: [{ path: '/users', element: <UsersPage /> }],
+          },
+        ],
       },
     ],
   },
