@@ -10,7 +10,7 @@ import {
 import {
   DEFAULT_PATHWAY_STATUS,
   EXIT_PATHWAY_STATUS,
-} from '../config/statuses.js';
+} from '../config/constants.js';
 import type {
   CreateBeneficiaryInput,
   UpdateBeneficiaryInput,

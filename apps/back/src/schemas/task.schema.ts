@@ -7,7 +7,7 @@ import {
   optionalLongText,
   requiredText,
 } from './common.js';
-import { TASK_PRIORITIES, TASK_STATUSES } from '../config/statuses.js';
+import { TASK_PRIORITIES, TASK_STATUSES } from '../config/constants.js';
 
 const taskPriority = z.enum(TASK_PRIORITIES);
 const taskStatus = z.enum(TASK_STATUSES);

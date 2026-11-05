@@ -2,7 +2,7 @@ import prisma from '../../src/lib/prisma.js';
 import {
   DEFAULT_PATHWAY_STATUS,
   PREPARING_EXIT_PATHWAY_STATUS,
-} from '../../src/config/statuses.js';
+} from '../../src/config/constants.js';
 
 export async function seedBeneficiaries(userId: number) {
   const beneficiary1 = await prisma.beneficiary.create({

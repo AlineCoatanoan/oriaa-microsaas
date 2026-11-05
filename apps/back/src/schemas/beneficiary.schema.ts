@@ -7,7 +7,7 @@ import {
   optionalText,
   requiredText,
 } from './common.js';
-import { PATHWAY_STATUSES } from '../config/statuses.js';
+import { PATHWAY_STATUSES } from '../config/constants.js';
 
 /**
  * Données acceptées pour créer un bénéficiaire.

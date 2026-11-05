@@ -15,7 +15,7 @@ import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_STATUS,
   URGENT_TASK_PRIORITY,
-} from '../config/statuses.js';
+} from '../config/constants.js';
 import type {
   CreateTaskInput,
   ListTasksQuery,
