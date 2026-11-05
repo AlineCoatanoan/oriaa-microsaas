@@ -1,7 +1,3 @@
 export function HomePage() {
-  return (
-    <main>
-      <h1>ORIAA</h1>
-    </main>
-  );
+  return <h1>ORIAA</h1>;
 }
