@@ -123,9 +123,7 @@ describe('Documents d’un bénéficiaire', () => {
 
   it('refuse le téléchargement du document d’un autre bénéficiaire (404)', async () => {
     const { agent, user } = await loginAgent();
-    const beneficiary = await createBeneficiary(user.user_id, {
-      archivedAt: new Date(),
-    });
+    const beneficiary = await createBeneficiary(user.user_id);
     const other = await createBeneficiary(user.user_id);
     const document = await createDocument(other.beneficiary_id, user.user_id);
 
