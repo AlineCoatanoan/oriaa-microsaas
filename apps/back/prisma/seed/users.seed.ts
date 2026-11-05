@@ -1,9 +1,9 @@
-import bcrypt from 'bcrypt';
+import { hashPassword } from '../../src/lib/password.js';
 import prisma from '../../src/lib/prisma.js';
 import type { SeedRoles } from './types.js';
 
 export async function seedUsers(roles: SeedRoles) {
-  const password = await bcrypt.hash('Oriaa123!', 10);
+  const password = await hashPassword('Oriaa123!');
 
   const admin = await prisma.user.create({
     data: {
@@ -11,7 +11,7 @@ export async function seedUsers(roles: SeedRoles) {
       first_name: 'Aline',
       email: 'aline.coatanoan@oriaa.test',
       password,
-      job: 'Developpeuse',
+      job: 'Développeuse',
       role_id: roles.adminRole.role_id,
     },
   });

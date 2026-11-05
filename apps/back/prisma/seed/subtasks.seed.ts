@@ -30,7 +30,7 @@ export async function seedSubtasks(tasks: SeedTasks) {
     data: {
       label: 'Préparer la liste de courses',
       is_completed: true,
-      task_id: tasks.task4.task_id,
+      task_id: tasks.task3.task_id,
     },
   });
 }

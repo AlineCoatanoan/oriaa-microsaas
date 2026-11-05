@@ -7,24 +7,10 @@ import {
   optionalLongText,
   requiredText,
 } from './common.js';
+import { TASK_PRIORITIES, TASK_STATUSES } from '../config/constants.js';
 
-/** Statuts et priorités utilisés aussi par le service. */
-export const DEFAULT_TASK_STATUS = 'À faire';
-export const COMPLETED_TASK_STATUS = 'Terminée';
-export const DEFAULT_TASK_PRIORITY = 'Normale';
-export const URGENT_TASK_PRIORITY = 'Haute';
-
-const taskPriority = z.enum([
-  'Basse',
-  DEFAULT_TASK_PRIORITY,
-  URGENT_TASK_PRIORITY,
-]);
-
-const taskStatus = z.enum([
-  DEFAULT_TASK_STATUS,
-  'En cours',
-  COMPLETED_TASK_STATUS,
-]);
+const taskPriority = z.enum(TASK_PRIORITIES);
+const taskStatus = z.enum(TASK_STATUSES);
 
 /**
  * Données acceptées pour créer une tâche.

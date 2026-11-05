@@ -1,12 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { Role, User } from '@prisma/client';
 import prisma from '../lib/prisma.js';
-import { ConflictError, NotFoundError } from '../errors/app-error.js';
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from '../errors/app-error.js';
 import type {
   CreateUserInput,
   UpdateUserInput,
 } from '../schemas/user.schema.js';
-import { hashPassword, toPublicUser } from './auth.service.js';
+import { hashPassword } from '../lib/password.js';
+import { toPublicUser } from '../lib/dto.js';
 import type { RoleLabel } from '../config/roles.js';
 
 /** Format renvoyé au front. */
@@ -19,6 +24,14 @@ const toUserDto = (user: User & { role: Role }) => ({
 const toRoleLink = (label: RoleLabel) => ({
   connectOrCreate: { where: { label }, create: { label } },
 });
+
+/** Vérifie que ces utilisateurs existent et sont actifs, sinon 400. */
+export async function assertActiveUsers(ids: number[], message: string) {
+  const count = await prisma.user.count({
+    where: { user_id: { in: ids }, archived_at: null },
+  });
+  if (count !== ids.length) throw new BadRequestError(message);
+}
 
 /** Renvoie le compte avec son rôle, ou une 404 s'il n'existe pas ou a été supprimé. */
 async function findUserOrFail(id: number) {

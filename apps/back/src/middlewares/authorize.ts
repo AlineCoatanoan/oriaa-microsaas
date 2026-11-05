@@ -21,7 +21,3 @@ export function authorize(...allowedRoles: RoleLabel[]): RequestHandler {
     next();
   };
 }
-
-//allowedRoles permet de passer un ou plusieurs rôles : authorize('admin') ou authorize('admin', 'user').
-// C’est une fonction qui fabrique un middleware. authorize('admin') renvoie le middleware configuré pour « admin ».
-// C’est le même principe que validate({ body: ... })//

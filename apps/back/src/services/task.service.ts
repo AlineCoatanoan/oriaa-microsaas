@@ -4,7 +4,6 @@ import { formatDate, toDate, toDateOnly } from '../lib/dates.js';
 import {
   noteLinksInclude,
   personSelect,
-  toNoteLinks,
   toNoteSummary,
   toPerson,
   toSubtaskDto,
@@ -16,25 +15,30 @@ import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_STATUS,
   URGENT_TASK_PRIORITY,
-} from '../schemas/task.schema.js';
+} from '../config/constants.js';
 import type {
   CreateTaskInput,
   ListTasksQuery,
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
-import { assertActiveUsers } from './auth.service.js';
+import { assertActiveUsers } from './user.service.js';
 import {
-  allBeneficiariesArchivedWhere,
   areAllBeneficiariesArchived,
   beneficiaryLinksInclude,
-  newIds,
-  toBeneficiaryLinks,
+  toBeneficiaryScope,
   toBeneficiarySummary,
-  unique,
 } from '../lib/beneficiary-links.js';
+import {
+  newIds,
+  replaceLinks,
+  toAssigneeLinks,
+  toBeneficiaryLinks,
+  toNoteLinks,
+  unique,
+} from '../lib/links.js';
 import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
-const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
+export const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
@@ -82,8 +86,6 @@ function toTaskDto(task: TaskWithRelations) {
   };
 }
 
-const toAssigneeLinks = (ids: number[]) => ids.map((user_id) => ({ user_id }));
-
 /** Renvoie la tâche avec ses liens, ou une 404. */
 async function findTaskOrFail(id: number) {
   const task = await prisma.task.findUnique({
@@ -114,9 +116,7 @@ export async function findAll(filters: ListTasksQuery) {
       status,
       priority,
       assignees: assigneeId ? { some: { user_id: assigneeId } } : undefined,
-      ...(beneficiaryId
-        ? { beneficiaries: { some: { beneficiary_id: beneficiaryId } } }
-        : { NOT: allBeneficiariesArchivedWhere }),
+      ...toBeneficiaryScope(beneficiaryId),
     },
     include: taskInclude,
     orderBy: { due_date: { sort: 'asc', nulls: 'last' } },
@@ -196,19 +196,10 @@ export async function update(id: number, data: UpdateTaskInput) {
       due_date: toDate(data.dueDate),
       status: data.status,
       priority: data.priority,
-      // deleteMany + create : la liste envoyée remplace l'ancienne
-      assignees: assigneeIds && {
-        deleteMany: {},
-        create: toAssigneeLinks(assigneeIds),
-      },
-      beneficiaries: beneficiaryIds && {
-        deleteMany: {},
-        create: toBeneficiaryLinks(beneficiaryIds),
-      },
-      notes: noteIds && {
-        deleteMany: {},
-        create: toNoteLinks(noteIds),
-      },
+      assignees: assigneeIds && replaceLinks(toAssigneeLinks(assigneeIds)),
+      beneficiaries:
+        beneficiaryIds && replaceLinks(toBeneficiaryLinks(beneficiaryIds)),
+      notes: noteIds && replaceLinks(toNoteLinks(noteIds)),
     },
     include: taskInclude,
   });

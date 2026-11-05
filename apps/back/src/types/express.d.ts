@@ -1,6 +1,6 @@
 /** Ce fichier indique à TypeScript que res.locals.user existe, et quelle forme il a : */
 
-import type { PublicUser } from '../services/auth.service.js';
+import type { PublicUser } from '../lib/dto.js';
 
 declare global {
   namespace Express {

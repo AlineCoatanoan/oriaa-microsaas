@@ -15,7 +15,11 @@ export const archivedFilter = z.stringbool().default(false);
 /** Date au format ISO : 2026-10-25. */
 export const isoDate = z.iso.date();
 
-/** Texte obligatoire : au moins un caractère, max caractères au plus. */
+/**
+ * Texte obligatoire : au moins un caractère, max caractères au plus.
+ * Les max() reprennent la taille des colonnes Prisma (VarChar(50)…) :
+ * une valeur trop longue est refusée proprement (400) au lieu de faire planter la base (500).
+ */
 export const requiredText = (max: number) => z.string().trim().min(1).max(max);
 
 /** Texte facultatif : absent, null (pour le vider) ou max caractères. */

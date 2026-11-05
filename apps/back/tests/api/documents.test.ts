@@ -4,6 +4,7 @@ import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
 import { resetDatabase } from '../helpers/database.js';
 import { loginAgent } from '../helpers/users.js';
+import { createBeneficiary } from '../helpers/beneficiaries.js';
 
 const pdf = Buffer.from('%PDF-1.4\n% Document de test\n');
 
@@ -14,19 +15,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await prisma.$disconnect();
 });
-
-/** Crée directement un bénéficiaire en base. */
-async function createBeneficiary(userId: number, archivedAt?: Date) {
-  return prisma.beneficiary.create({
-    data: {
-      last_name: 'Martin',
-      first_name: 'Lucas',
-      entry_date: new Date('2026-10-01'),
-      archived_at: archivedAt,
-      user_id: userId,
-    },
-  });
-}
 
 /** Crée directement un document en base. */
 async function createDocument(beneficiaryId: number, userId: number) {
@@ -113,7 +101,9 @@ describe('Documents d’un bénéficiaire', () => {
 
   it('garde les documents d’un dossier archivé en lecture seule', async () => {
     const { agent, user } = await loginAgent();
-    const beneficiary = await createBeneficiary(user.user_id, new Date());
+    const beneficiary = await createBeneficiary(user.user_id, {
+      archivedAt: new Date(),
+    });
     const document = await createDocument(
       beneficiary.beneficiary_id,
       user.user_id,
@@ -152,7 +142,9 @@ describe('Documents d’un bénéficiaire', () => {
 
   it('supprime les documents avec le dossier (RGPD)', async () => {
     const { agent, user } = await loginAgent({ role: 'admin' });
-    const beneficiary = await createBeneficiary(user.user_id, new Date());
+    const beneficiary = await createBeneficiary(user.user_id, {
+      archivedAt: new Date(),
+    });
     await createDocument(beneficiary.beneficiary_id, user.user_id);
 
     const response = await agent.delete(

@@ -4,8 +4,10 @@ import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_STATUS,
+  IN_PROGRESS_TASK_STATUS,
+  LOW_TASK_PRIORITY,
   URGENT_TASK_PRIORITY,
-} from '../../src/schemas/task.schema.js';
+} from '../../src/config/constants.js';
 
 export async function seedTasks(
   users: SeedUsers,
@@ -45,28 +47,28 @@ export async function seedTasks(
     },
   });
 
-  const task3 = await prisma.task.create({
+  await prisma.task.create({
     data: {
       title: "Préparer la réunion d'équipe",
       description: 'Rassembler les éléments nécessaires pour la réunion.',
       due_date: new Date('2026-10-05'),
-      status: DEFAULT_TASK_STATUS,
+      status: IN_PROGRESS_TASK_STATUS,
       priority: DEFAULT_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.user.user_id,
     },
   });
 
-  const task4 = await prisma.task.create({
+  const task3 = await prisma.task.create({
     data: {
       title: 'Préparer un atelier cuisine',
       description:
-        'Trouver les bénéficaires intéressés, préparer la liste de courses.',
+        'Trouver les bénéficiaires intéressés, préparer la liste de courses.',
       due_date: new Date('2026-09-25'),
       created_at: new Date('2026-09-20'),
       updated_at: new Date('2026-09-25'),
       status: COMPLETED_TASK_STATUS,
-      priority: 'Basse',
+      priority: LOW_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
       beneficiaries: {
@@ -81,6 +83,5 @@ export async function seedTasks(
     task1,
     task2,
     task3,
-    task4,
   };
 }
