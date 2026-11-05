@@ -7,6 +7,17 @@
   --color-interaction: #234b54;
   --color-accent: #d29c1b;
 
+  --color-border: #dfe5e6;
+  --color-muted: #5b6f73;
+
+  --color-info-soft: #e9eff0;
+  --color-danger: #8f2a2a;
+  --color-danger-soft: #f6e1e1;
+  --color-warning: #7a5a10;
+  --color-warning-soft: #f7edd6;
+  --color-success: #2f6b4f;
+  --color-success-soft: #e5efe9;
+
   --font-title: 'Outfit Variable', sans-serif;
   --font-body: 'Inter Variable', sans-serif;
 }
