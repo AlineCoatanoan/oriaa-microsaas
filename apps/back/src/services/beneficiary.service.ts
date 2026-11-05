@@ -20,6 +20,7 @@ import type { Person } from '../lib/dto.js';
 
 const beneficiaryInclude = { user: personSelect };
 const UNKNOWN_REFERENT_MESSAGE = 'Référent introuvable.';
+const BENEFICIARY_NOT_FOUND_MESSAGE = 'Bénéficiaire introuvable.';
 
 /** Format renvoyé au front (camelCase, comme toPublicUser).
  * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
@@ -72,13 +73,12 @@ function toBeneficiaryData(data: UpdateBeneficiaryInput) {
   };
 }
 
-/** Renvoie le bénéficiaire brut (format base), ou une 404. */
+/** Renvoie le bénéficiaire, sans son référent, ou une 404. */
 export async function findBeneficiaryOrFail(id: number) {
   const beneficiary = await prisma.beneficiary.findUnique({
     where: { beneficiary_id: id },
-    include: beneficiaryInclude,
   });
-  if (!beneficiary) throw new NotFoundError('Bénéficiaire introuvable.');
+  if (!beneficiary) throw new NotFoundError(BENEFICIARY_NOT_FOUND_MESSAGE);
   return beneficiary;
 }
 
@@ -130,9 +130,14 @@ export async function create(
   return toBeneficiaryDto(beneficiary);
 }
 
-/** Renvoie un bénéficiaire, ou une 404. */
+/** Renvoie la fiche d'un bénéficiaire avec son référent, ou une 404. */
 export async function findById(id: number) {
-  return toBeneficiaryDto(await findBeneficiaryOrFail(id));
+  const beneficiary = await prisma.beneficiary.findUnique({
+    where: { beneficiary_id: id },
+    include: beneficiaryInclude,
+  });
+  if (!beneficiary) throw new NotFoundError(BENEFICIARY_NOT_FOUND_MESSAGE);
+  return toBeneficiaryDto(beneficiary);
 }
 
 /**

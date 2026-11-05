@@ -4,6 +4,7 @@ import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
 import { resetDatabase } from '../helpers/database.js';
 import { createUser, loginAgent } from '../helpers/users.js';
+import { createBeneficiary } from '../helpers/beneficiaries.js';
 
 const validBeneficiary = {
   lastName: 'Martin',
@@ -201,22 +202,6 @@ describe('GET /api/beneficiaries/:id/timeline', () => {
     expect(response.status).toBe(401);
   });
 });
-
-/** Crée directement un bénéficiaire en base (plus rapide que par l'API). */
-async function createBeneficiary(
-  userId: number,
-  data: { lastName: string; firstName?: string; archivedAt?: Date },
-) {
-  return prisma.beneficiary.create({
-    data: {
-      last_name: data.lastName,
-      first_name: data.firstName ?? 'Test',
-      entry_date: new Date('2026-10-01'),
-      archived_at: data.archivedAt,
-      user_id: userId,
-    },
-  });
-}
 
 describe('GET /api/beneficiaries', () => {
   it('liste les bénéficiaires actifs, triés par nom puis prénom', async () => {
