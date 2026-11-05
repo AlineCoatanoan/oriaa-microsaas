@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router';
 import { AppHeader } from './AppHeader';
-import { MainNav } from './MainNav';
+import { Sidebar } from './Sidebar';
 
 /** Structure commune des pages de l'application. */
 export function AppLayout() {
@@ -14,7 +14,7 @@ export function AppLayout() {
       </a>
       <AppHeader />
       <div className="flex flex-1 flex-col md:flex-row">
-        <MainNav />
+        <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col bg-page pb-16 text-structure md:mr-3 md:rounded-t-2xl md:pb-0">
           <main id="content" tabIndex={-1} className="flex-1 p-4 md:p-8">
             <Outlet />

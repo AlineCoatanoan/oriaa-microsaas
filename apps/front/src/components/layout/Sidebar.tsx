@@ -28,7 +28,7 @@ const adminNavItems: NavItem[] = [
 ];
 
 /** Barre fixe en bas sur téléphone, colonne à gauche à partir de la tablette. */
-export function MainNav() {
+export function Sidebar() {
   const { data: user } = useSession();
   const items =
     user?.role === 'admin' ? [...navItems, ...adminNavItems] : navItems;
