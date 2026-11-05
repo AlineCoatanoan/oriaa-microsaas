@@ -38,13 +38,14 @@ export const createTaskSchema = z.object({
   priority: taskPriority.optional(),
   assigneeIds: idList.min(1).optional(), // au moins un responsable
   beneficiaryIds: idList.optional(), // absent ou vide : tâche sans bénéficiaire
+  noteIds: idList.optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 
 /**
  * Données acceptées pour modifier une tâche (PATCH).
- * assigneeIds et beneficiaryIds remplacent les listes existantes.
+ * assigneeIds, beneficiaryIds et noteIds remplacent les listes existantes.
  */
 export const updateTaskSchema = atLeastOneField(
   createTaskSchema.extend({ status: taskStatus }).partial(),

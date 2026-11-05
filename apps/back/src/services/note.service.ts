@@ -2,7 +2,7 @@ import type { Note } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { personSelect, toPerson } from '../lib/dto.js';
 import type { Person } from '../lib/dto.js';
-import { NotFoundError } from '../errors/app-error.js';
+import { BadRequestError, NotFoundError } from '../errors/app-error.js';
 import type {
   CreateNoteInput,
   UpdateNoteInput,
@@ -36,6 +36,12 @@ async function assertNoteExists(beneficiaryId: number, noteId: number) {
     where: { note_id: noteId, beneficiary_id: beneficiaryId },
   });
   if (!note) throw new NotFoundError('Note introuvable.');
+}
+
+/** Les notes liées à une tâche ou à un rendez-vous doivent exister. */
+export async function assertNotesExist(ids: number[]) {
+  const count = await prisma.note.count({ where: { note_id: { in: ids } } });
+  if (count !== ids.length) throw new BadRequestError('Note introuvable.');
 }
 
 /** Liste les notes d'un bénéficiaire, de la plus récente à la plus ancienne. */

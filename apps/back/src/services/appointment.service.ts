@@ -9,7 +9,14 @@ import {
   toBeneficiarySummary,
   unique,
 } from '../lib/beneficiary-links.js';
-import { personSelect, toPerson } from '../lib/dto.js';
+import {
+  noteLinksInclude,
+  personSelect,
+  toNoteLinks,
+  toNoteSummary,
+  toPerson,
+} from '../lib/dto.js';
+import { assertNotesExist } from './note.service.js';
 import {
   BadRequestError,
   ConflictError,
@@ -29,7 +36,7 @@ const UNKNOWN_USER_MESSAGE = 'Personne en charge introuvable.';
 const appointmentInclude = {
   user: personSelect,
   beneficiaries: beneficiaryLinksInclude,
-  notes: { include: { note: { select: { note_id: true, title: true } } } },
+  notes: noteLinksInclude,
 } satisfies Prisma.AppointmentInclude;
 
 type AppointmentWithRelations = Prisma.AppointmentGetPayload<{
@@ -48,14 +55,9 @@ function toAppointmentDto(appointment: AppointmentWithRelations) {
     isArchived: areAllBeneficiariesArchived(appointment.beneficiaries),
     user: toPerson(appointment.user),
     beneficiaries: appointment.beneficiaries.map(toBeneficiarySummary),
-    notes: appointment.notes.map(({ note }) => ({
-      id: note.note_id,
-      title: note.title,
-    })),
+    notes: appointment.notes.map(toNoteSummary),
   };
 }
-
-const toNoteLinks = (ids: number[]) => ids.map((note_id) => ({ note_id }));
 
 /** La fin d'un rendez-vous doit être après son début. */
 function assertEndAfterStart(startAt: Date, endAt: Date) {
@@ -64,12 +66,6 @@ function assertEndAfterStart(startAt: Date, endAt: Date) {
       'La fin doit être après le début du rendez-vous.',
     );
   }
-}
-
-/** Les notes liées doivent exister. */
-async function assertNotesExist(ids: number[]) {
-  const count = await prisma.note.count({ where: { note_id: { in: ids } } });
-  if (count !== ids.length) throw new BadRequestError('Note introuvable.');
 }
 
 /** Renvoie le rendez-vous avec ses liens, ou une 404. */
