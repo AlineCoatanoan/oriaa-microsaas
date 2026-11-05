@@ -25,7 +25,7 @@ const setColor = (value) => {
 
 const services = [
   { name: 'back', path: 'apps/back/coverage/coverage-summary.json' },
-  // { name: 'front', path: 'apps/front/coverage/coverage-summary.json' }, // avec #139
+  { name: 'front', path: 'apps/front/coverage/coverage-summary.json' },
 ];
 
 fs.mkdirSync('badges', { recursive: true });
