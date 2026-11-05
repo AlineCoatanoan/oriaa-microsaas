@@ -22,10 +22,7 @@ const beneficiaryInclude = { user: personSelect };
 const UNKNOWN_REFERENT_MESSAGE = 'Référent introuvable.';
 const BENEFICIARY_NOT_FOUND_MESSAGE = 'Bénéficiaire introuvable.';
 
-/** Format renvoyé au front (camelCase, comme toPublicUser).
- * Le DTO (Data Transfer Object) joue le rôle d’un traducteur : la base parle snake_case (last_name), le front parle camelCase (lastName).
- * Si une colonne change un jour, seul ce fichier est modifié.
- */
+/** Format renvoyé au front : traduit le snake_case de la base en camelCase. */
 function toBeneficiaryDto(b: Beneficiary & { user: Person }) {
   return {
     id: b.beneficiary_id,

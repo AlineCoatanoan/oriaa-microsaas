@@ -11,7 +11,7 @@ import type {
   UpdateUserInput,
 } from '../schemas/user.schema.js';
 import { hashPassword } from '../lib/password.js';
-import { toPublicUser } from './auth.service.js';
+import { toPublicUser } from '../lib/dto.js';
 import type { RoleLabel } from '../config/roles.js';
 
 /** Format renvoyé au front. */

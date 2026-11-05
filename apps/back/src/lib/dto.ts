@@ -1,4 +1,4 @@
-import type { Subtask } from '@prisma/client';
+import type { Role, Subtask, User } from '@prisma/client';
 
 type Person = {
   user_id: number;
@@ -54,3 +54,17 @@ export const toNoteSummary = ({ note }: NoteLink) => ({
   id: note.note_id,
   title: note.title,
 });
+
+/** Informations de l'utilisateur exposées au front (jamais le mot de passe). */
+export function toPublicUser(user: User & { role: Role }) {
+  return {
+    id: user.user_id,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    job: user.job,
+    role: user.role.label,
+  };
+}
+
+export type PublicUser = ReturnType<typeof toPublicUser>;

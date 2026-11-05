@@ -2,7 +2,8 @@ import type { RequestHandler } from 'express';
 import { verifyAccessToken } from '../lib/jwt.js';
 import { AUTH_COOKIE_NAME } from '../config/auth-cookie.js';
 import { UnauthorizedError } from '../errors/app-error.js';
-import { findActiveUser, toPublicUser } from '../services/auth.service.js';
+import { findActiveUser } from '../services/auth.service.js';
+import { toPublicUser } from '../lib/dto.js';
 
 /**
  * Protège une route : la requête doit contenir un cookie de connexion valide,

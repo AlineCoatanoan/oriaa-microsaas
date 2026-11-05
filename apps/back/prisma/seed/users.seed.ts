@@ -11,7 +11,7 @@ export async function seedUsers(roles: SeedRoles) {
       first_name: 'Aline',
       email: 'aline.coatanoan@oriaa.test',
       password,
-      job: 'Developpeuse',
+      job: 'Développeuse',
       role_id: roles.adminRole.role_id,
     },
   });

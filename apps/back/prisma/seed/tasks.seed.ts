@@ -18,7 +18,7 @@ export async function seedTasks(
       title: 'Préparer le dossier CAF',
       description: 'Vérifier les documents nécessaires avant le rendez-vous.',
       due_date: new Date('2026-10-02'),
-      status: DEFAULT_TASK_STATUS,
+      status: IN_PROGRESS_TASK_STATUS,
       priority: URGENT_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
@@ -47,23 +47,11 @@ export async function seedTasks(
     },
   });
 
-  const task3 = await prisma.task.create({
-    data: {
-      title: "Préparer la réunion d'équipe",
-      description: 'Rassembler les éléments nécessaires pour la réunion.',
-      due_date: new Date('2026-10-05'),
-      status: IN_PROGRESS_TASK_STATUS,
-      priority: DEFAULT_TASK_PRIORITY,
-      assignees: { create: { user_id: users.user.user_id } },
-      user_id_created_by: users.user.user_id,
-    },
-  });
-
   const task4 = await prisma.task.create({
     data: {
       title: 'Préparer un atelier cuisine',
       description:
-        'Trouver les bénéficaires intéressés, préparer la liste de courses.',
+        'Trouver les bénéficiaires intéressés, préparer la liste de courses.',
       due_date: new Date('2026-09-25'),
       created_at: new Date('2026-09-20'),
       updated_at: new Date('2026-09-25'),
@@ -82,7 +70,6 @@ export async function seedTasks(
   return {
     task1,
     task2,
-    task3,
     task4,
   };
 }

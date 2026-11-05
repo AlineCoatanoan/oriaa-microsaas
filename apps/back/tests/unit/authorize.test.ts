@@ -3,7 +3,7 @@ import express from 'express';
 import request from 'supertest';
 import { authorize } from '../../src/middlewares/authorize.js';
 import { errorHandler } from '../../src/middlewares/error-handler.js';
-import type { PublicUser } from '../../src/services/auth.service.js';
+import type { PublicUser } from '../../src/lib/dto.js';
 
 /** Utilisateur connecté simulé, avec le rôle choisi. */
 function fakeUser(role: string): PublicUser {
