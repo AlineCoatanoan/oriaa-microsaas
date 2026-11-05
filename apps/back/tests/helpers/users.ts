@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import { hashPassword } from '../../src/lib/password.js';
 import request from 'supertest';
 import app from '../../src/app.js';
 import prisma from '../../src/lib/prisma.js';
@@ -22,7 +22,7 @@ export async function createUser(
       last_name: 'Dupont',
       first_name: 'Marie',
       email: options.email ?? 'marie.dupont@oriaa.test',
-      password: await bcrypt.hash(PASSWORD, 10),
+      password: await hashPassword(PASSWORD),
       job: 'Travailleuse sociale',
       role_id: role.role_id,
       archived_at: options.archivedAt,

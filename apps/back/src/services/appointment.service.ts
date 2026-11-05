@@ -1,18 +1,21 @@
 import type { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import {
-  allBeneficiariesArchivedWhere,
   areAllBeneficiariesArchived,
   beneficiaryLinksInclude,
-  newIds,
-  toBeneficiaryLinks,
+  toBeneficiaryScope,
   toBeneficiarySummary,
-  unique,
 } from '../lib/beneficiary-links.js';
+import {
+  newIds,
+  replaceLinks,
+  toBeneficiaryLinks,
+  toNoteLinks,
+  unique,
+} from '../lib/links.js';
 import {
   noteLinksInclude,
   personSelect,
-  toNoteLinks,
   toNoteSummary,
   toPerson,
 } from '../lib/dto.js';
@@ -27,7 +30,7 @@ import type {
   ListAppointmentsQuery,
   UpdateAppointmentInput,
 } from '../schemas/appointment.schema.js';
-import { assertActiveUsers } from './auth.service.js';
+import { assertActiveUsers } from './user.service.js';
 import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
 const UNKNOWN_USER_MESSAGE = 'Personne en charge introuvable.';
@@ -101,9 +104,7 @@ export async function findAll(filters: ListAppointmentsQuery) {
       user_id: userId,
       start_at: to ? { lt: new Date(to) } : undefined,
       end_at: from ? { gt: new Date(from) } : undefined,
-      ...(beneficiaryId
-        ? { beneficiaries: { some: { beneficiary_id: beneficiaryId } } }
-        : { NOT: allBeneficiariesArchivedWhere }),
+      ...toBeneficiaryScope(beneficiaryId),
     },
     include: appointmentInclude,
     orderBy: { start_at: 'asc' },
@@ -186,15 +187,9 @@ export async function update(id: number, data: UpdateAppointmentInput) {
       start_at: startAt,
       end_at: endAt,
       user_id: data.userId,
-      // deleteMany + create : la liste envoyée remplace l'ancienne
-      beneficiaries: beneficiaryIds && {
-        deleteMany: {},
-        create: toBeneficiaryLinks(beneficiaryIds),
-      },
-      notes: noteIds && {
-        deleteMany: {},
-        create: toNoteLinks(noteIds),
-      },
+      beneficiaries:
+        beneficiaryIds && replaceLinks(toBeneficiaryLinks(beneficiaryIds)),
+      notes: noteIds && replaceLinks(toNoteLinks(noteIds)),
     },
     include: appointmentInclude,
   });

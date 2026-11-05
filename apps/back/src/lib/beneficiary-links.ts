@@ -7,16 +7,6 @@ type BeneficiaryLink = {
   };
 };
 
-/** Enlève les doublons d'une liste d'identifiants. */
-export const unique = (ids: number[]) => [...new Set(ids)];
-
-/** Garde uniquement les identifiants absents de la liste actuelle. */
-export const newIds = (ids: number[], current: number[]) =>
-  ids.filter((id) => !current.includes(id));
-
-export const toBeneficiaryLinks = (ids: number[]) =>
-  ids.map((beneficiary_id) => ({ beneficiary_id }));
-
 /** Bénéficiaires liés à récupérer avec Prisma. */
 export const beneficiaryLinksInclude = {
   include: {
@@ -50,3 +40,13 @@ export const toBeneficiarySummary = ({ beneficiary }: BeneficiaryLink) => ({
   firstName: beneficiary.first_name,
   lastName: beneficiary.last_name,
 });
+
+/**
+ * Filtre des listes de tâches et de rendez-vous.
+ * Avec un bénéficiaire : tous ses éléments, même archivés.
+ * Sans bénéficiaire : les éléments courants uniquement.
+ */
+export const toBeneficiaryScope = (beneficiaryId?: number) =>
+  beneficiaryId
+    ? { beneficiaries: { some: { beneficiary_id: beneficiaryId } } }
+    : { NOT: allBeneficiariesArchivedWhere };

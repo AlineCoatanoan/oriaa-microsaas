@@ -1,6 +1,6 @@
 import prisma from '../lib/prisma.js';
 import type { SaveTaskFilterInput } from '../schemas/task-filter.schema.js';
-import { assertActiveUsers } from './auth.service.js';
+import { assertActiveUsers } from './user.service.js';
 import { UNKNOWN_ASSIGNEE_MESSAGE } from './task.service.js';
 
 const TASKS_LISTING = 'tasks';

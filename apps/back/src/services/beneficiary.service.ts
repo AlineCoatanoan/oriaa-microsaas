@@ -15,7 +15,7 @@ import type {
   CreateBeneficiaryInput,
   UpdateBeneficiaryInput,
 } from '../schemas/beneficiary.schema.js';
-import { assertActiveUsers } from './auth.service.js';
+import { assertActiveUsers } from './user.service.js';
 import type { Person } from '../lib/dto.js';
 
 const beneficiaryInclude = { user: personSelect };

@@ -1,15 +1,13 @@
-import bcrypt from 'bcrypt';
 import prisma from '../lib/prisma.js';
 import { signAccessToken } from '../lib/jwt.js';
 import { BadRequestError, UnauthorizedError } from '../errors/app-error.js';
 import type { Prisma, Role, User } from '@prisma/client';
 import type { ChangePasswordInput } from '../schemas/auth.schema.js';
+import { hashPassword, verifyPassword } from '../lib/password.js';
 
 // Même message dans tous les cas : on ne révèle jamais
 // si c'est l'email ou le mot de passe qui est faux.
 const INVALID_CREDENTIALS = 'Email ou mot de passe incorrect.';
-/** Calcule le hash d'un mot de passe. */
-export const hashPassword = (password: string) => bcrypt.hash(password, 10);
 
 /** Informations de l'utilisateur exposées au front (jamais le mot de passe). */
 export function toPublicUser(user: User & { role: Role }) {
@@ -33,14 +31,6 @@ export function findActiveUser(where: Prisma.UserWhereInput) {
   });
 }
 
-/** Vérifie que ces utilisateurs existent et sont actifs, sinon 400. */
-export async function assertActiveUsers(ids: number[], message: string) {
-  const count = await prisma.user.count({
-    where: { user_id: { in: ids }, archived_at: null },
-  });
-  if (count !== ids.length) throw new BadRequestError(message);
-}
-
 /**
  * Vérifie les identifiants et renvoie un token + les informations de l'utilisateur.
  */
@@ -50,7 +40,7 @@ export async function login(email: string, password: string) {
   if (!user) throw new UnauthorizedError(INVALID_CREDENTIALS);
 
   // Compare le mot de passe saisi avec le hash stocké en base
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) {
     throw new UnauthorizedError(INVALID_CREDENTIALS);
   }
@@ -71,7 +61,7 @@ export async function changePassword(
   const user = await findActiveUser({ user_id: userId });
   if (!user) throw new UnauthorizedError();
 
-  const isPasswordValid = await bcrypt.compare(
+  const isPasswordValid = await verifyPassword(
     data.currentPassword,
     user.password,
   );

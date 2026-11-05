@@ -49,9 +49,6 @@ export const noteLinksInclude = {
   include: { note: { select: { note_id: true, title: true } } },
 };
 
-export const toNoteLinks = (ids: number[]) =>
-  ids.map((note_id) => ({ note_id }));
-
 /** Format d'une note liée renvoyé au front. */
 export const toNoteSummary = ({ note }: NoteLink) => ({
   id: note.note_id,
