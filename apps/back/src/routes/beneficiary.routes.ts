@@ -21,12 +21,14 @@ import { authorize } from '../middlewares/authorize.js';
 import { ROLES } from '../config/roles.js';
 import noteRouter from './note.routes.js';
 import { idParamsSchema } from '../schemas/common.js';
+import documentRouter from './document.routes.js';
 
 const beneficiaryRouter = Router();
 
 // Toutes les routes bénéficiaires exigent d'être connecté (tous rôles)
 beneficiaryRouter.use(authenticate);
 beneficiaryRouter.use('/:id/notes', noteRouter);
+beneficiaryRouter.use('/:id/documents', documentRouter);
 
 beneficiaryRouter.get(
   '/',

@@ -1,40 +1,47 @@
 import prisma from '../../src/lib/prisma.js';
-import type { SeedBeneficiaries } from './types.js';
+import type { SeedBeneficiaries, SeedUsers } from './types.js';
 
-export async function seedDocuments(beneficiaries: SeedBeneficiaries) {
-  await prisma.document.create({
-    data: {
-      file_name: 'justificatif_identite.pdf',
-      category: 'Identité',
-      file_path: '/documents/beneficiary1/justificatif_identite.pdf',
+/** Petit PDF fictif, pour les données de démonstration. */
+const demoPdf = Buffer.from('%PDF-1.4\n% Document de démonstration\n');
+
+export async function seedDocuments(
+  users: SeedUsers,
+  beneficiaries: SeedBeneficiaries,
+) {
+  const documents = [
+    {
+      title: "Attestation d'hébergement",
+      file_name: 'attestation_hebergement.pdf',
+      category: 'Hébergement',
       beneficiary_id: beneficiaries.beneficiary1.beneficiary_id,
     },
-  });
-
-  await prisma.document.create({
-    data: {
-      file_name: 'attestation_domicile.pdf',
-      category: 'Domicile',
-      file_path: '/documents/beneficiary1/attestation_domicile.pdf',
+    {
+      title: 'Demande de logement',
+      file_name: 'demande_logement.pdf',
+      category: 'Logement',
       beneficiary_id: beneficiaries.beneficiary1.beneficiary_id,
     },
-  });
-
-  await prisma.document.create({
-    data: {
-      file_name: 'justificatifs_ressources.pdf',
-      category: 'Ressources',
-      file_path: '/documents/beneficiary2/justificatifs_ressources.pdf',
+    {
+      title: 'Attestation France Travail',
+      file_name: 'attestation_france_travail.pdf',
+      category: 'Emploi',
       beneficiary_id: beneficiaries.beneficiary2.beneficiary_id,
     },
-  });
-
-  await prisma.document.create({
-    data: {
+    {
+      title: 'Courrier administratif',
       file_name: 'courrier_administratif.pdf',
       category: 'Administratif',
-      file_path: '/documents/beneficiary3/courrier_administratif.pdf',
       beneficiary_id: beneficiaries.beneficiary3.beneficiary_id,
     },
+  ];
+
+  await prisma.document.createMany({
+    data: documents.map((document) => ({
+      ...document,
+      mime_type: 'application/pdf',
+      size_bytes: demoPdf.length,
+      content: demoPdf,
+      user_id: users.user.user_id,
+    })),
   });
 }

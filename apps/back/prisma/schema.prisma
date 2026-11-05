@@ -31,6 +31,7 @@ model User {
   tasks_created             Task[]             @relation("TaskCreatedBy")
   notes                     Note[]
   appointments              Appointment[]
+  documents                 Document[]
   filter_preferences_target FilterPreference[] @relation("FilterPreferenceTarget")
   filter_preferences_define FilterPreference[] @relation("FilterPreferenceDefine")
 }
@@ -110,13 +111,19 @@ model Appointment {
 }
 
 model Document {
-  document_id    Int    @id @default(autoincrement())
-  file_name      String @db.VarChar(255)
-  category       String @db.VarChar(50)
-  file_path      String @db.VarChar(500)
+  document_id    Int      @id @default(autoincrement())
+  title          String   @db.VarChar(100)
+  file_name      String   @db.VarChar(255)
+  category       String   @db.VarChar(50)
+  mime_type      String   @db.VarChar(50)
+  size_bytes     Int
+  content        Bytes
+  created_at     DateTime @default(now())
   beneficiary_id Int
+  user_id        Int
 
   beneficiary Beneficiary @relation(fields: [beneficiary_id], references: [beneficiary_id], onDelete: Cascade)
+  user        User        @relation(fields: [user_id], references: [user_id])
 }
 
 model Subtask {
