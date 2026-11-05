@@ -4,8 +4,10 @@ import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_STATUS,
+  IN_PROGRESS_TASK_STATUS,
+  LOW_TASK_PRIORITY,
   URGENT_TASK_PRIORITY,
-} from '../../src/schemas/task.schema.js';
+} from '../../src/config/statuses.js';
 
 export async function seedTasks(
   users: SeedUsers,
@@ -50,7 +52,7 @@ export async function seedTasks(
       title: "Préparer la réunion d'équipe",
       description: 'Rassembler les éléments nécessaires pour la réunion.',
       due_date: new Date('2026-10-05'),
-      status: DEFAULT_TASK_STATUS,
+      status: IN_PROGRESS_TASK_STATUS,
       priority: DEFAULT_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.user.user_id,
@@ -66,7 +68,7 @@ export async function seedTasks(
       created_at: new Date('2026-09-20'),
       updated_at: new Date('2026-09-25'),
       status: COMPLETED_TASK_STATUS,
-      priority: 'Basse',
+      priority: LOW_TASK_PRIORITY,
       assignees: { create: { user_id: users.user.user_id } },
       user_id_created_by: users.admin.user_id,
       beneficiaries: {

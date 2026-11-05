@@ -7,16 +7,7 @@ import {
   optionalText,
   requiredText,
 } from './common.js';
-
-/**
- * Schémas de validation des bénéficiaires.
- * Les max() reprennent la taille des colonnes Prisma (VarChar(50)…) :
- * une valeur trop longue est refusée proprement (400) au lieu de faire planter la base (500).
- */
-
-export const DEFAULT_PATHWAY_STATUS = 'En cours';
-export const PREPARING_EXIT_PATHWAY_STATUS = 'Préparation à la sortie';
-export const EXIT_PATHWAY_STATUS = 'Sortie';
+import { PATHWAY_STATUSES } from '../config/statuses.js';
 
 /**
  * Données acceptées pour créer un bénéficiaire.
@@ -48,13 +39,7 @@ export type CreateBeneficiaryInput = z.infer<typeof createBeneficiarySchema>;
  */
 export const updateBeneficiarySchema = atLeastOneField(
   createBeneficiarySchema
-    .extend({
-      pathwayStatus: z.enum([
-        DEFAULT_PATHWAY_STATUS,
-        PREPARING_EXIT_PATHWAY_STATUS,
-        EXIT_PATHWAY_STATUS,
-      ]),
-    })
+    .extend({ pathwayStatus: z.enum(PATHWAY_STATUSES) })
     .partial(),
 );
 
