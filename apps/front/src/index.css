@@ -1,1 +1,23 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@theme {
+  --color-page: #f7f7f7;
+  --color-surface: #fefefe;
+  --color-structure: #0c3135;
+  --color-interaction: #234b54;
+  --color-accent: #d29c1b;
+
+  --font-title: 'Outfit Variable', sans-serif;
+  --font-body: 'Inter Variable', sans-serif;
+}
+
+body {
+  background-color: var(--color-page);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-title);
+}

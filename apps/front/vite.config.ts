@@ -7,4 +7,10 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    // En développement, /api est transmis au back : même origine, donc cookie accepté
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
 });
