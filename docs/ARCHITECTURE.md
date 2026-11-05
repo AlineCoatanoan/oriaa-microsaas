@@ -136,3 +136,11 @@ Le découpage de l'application en couches indépendantes facilite également sa 
 | Tests            | Jest, Supertest, Playwright | Tests unitaires, API et end-to-end                   |
 | CI/CD            | GitHub Actions              | Automatisation des tests                             |
 | Conteneurisation | Docker                      | Reproductibilité des environnements                  |
+
+## Organisation du front
+
+- `src/app/` : routes et configuration globale
+- `src/components/ui/` : composants génériques
+- `src/components/layout/` : éléments communs de mise en page
+- `src/features/` : pages, composants et appels API de chaque fonctionnalité
+- `src/lib/` : client API et utilitaires
