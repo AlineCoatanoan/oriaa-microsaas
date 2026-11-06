@@ -1,4 +1,4 @@
-import { z } from 'zod/mini';
+import type { z } from 'zod/mini';
 
 export type FieldErrors = Record<string, string>;
 
