@@ -63,6 +63,19 @@ export async function api<T>(
   return response.status === 204 ? (undefined as T) : response.json();
 }
 
+/** Transforme des filtres en paramètres d'URL, en ignorant ceux qui sont vides. */
+export function toQueryString(
+  params: Record<string, string | number | undefined>,
+) {
+  const entries = Object.entries(params).filter(
+    (entry): entry is [string, string | number] => entry[1] !== undefined,
+  );
+  const query = new URLSearchParams(
+    entries.map(([key, value]) => [key, String(value)]),
+  ).toString();
+  return query ? `?${query}` : '';
+}
+
 /** Message à afficher : celui de l'API, ou un message générique pour une erreur imprévue. */
 export function getErrorMessage(error: unknown): string {
   return error instanceof ApiError

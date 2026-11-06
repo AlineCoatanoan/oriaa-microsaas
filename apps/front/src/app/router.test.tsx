@@ -11,10 +11,13 @@ function BrokenPage(): never {
 
 function mockSession(status: number, role?: string) {
   const body = role
-    ? { user: { id: 1, role } }
+    ? { user: { id: 1, firstName: 'Julia', role } }
     : { error: { message: 'Erreur' } };
-  vi.spyOn(globalThis, 'fetch').mockImplementation(
-    async () => new Response(JSON.stringify(body), { status }),
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) =>
+    String(input).includes('/auth/session')
+      ? new Response(JSON.stringify(body), { status })
+      : // Données vides pour les pages (tâches, rendez-vous…)
+        new Response(JSON.stringify({ tasks: [], appointments: [] })),
   );
 }
 
@@ -56,7 +59,7 @@ describe('routes', () => {
   it('redirige un utilisateur sans droits depuis la page admin', async () => {
     mockSession(200, 'user');
     renderRoute('/users');
-    await expectPage('ORIAA');
+    await expectPage('Bonjour Julia');
   });
 
   it('affiche la page admin à un administrateur', async () => {
@@ -76,7 +79,7 @@ describe('routes', () => {
   it('masque le lien Utilisateurs aux autres utilisateurs', async () => {
     mockSession(200, 'user');
     renderRoute('/');
-    await expectPage('ORIAA');
+    await expectPage('Bonjour Julia');
     expect(
       screen.queryByRole('link', { name: 'Utilisateurs' }),
     ).not.toBeInTheDocument();

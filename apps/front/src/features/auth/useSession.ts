@@ -32,3 +32,11 @@ export function useSession() {
     staleTime: 60_000,
   });
 }
+
+/** Utilisateur connecté, pour les pages placées sous RequireAuth. */
+export function useCurrentUser(): SessionUser {
+  const { data: user } = useSession();
+  if (!user)
+    throw new Error('useCurrentUser doit être utilisé sous RequireAuth.');
+  return user;
+}
