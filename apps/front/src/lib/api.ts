@@ -62,3 +62,10 @@ export async function api<T>(
   // 204 : succès, sans contenu à lire
   return response.status === 204 ? (undefined as T) : response.json();
 }
+
+/** Message à afficher : celui de l'API, ou un message générique pour une erreur imprévue. */
+export function getErrorMessage(error: unknown): string {
+  return error instanceof ApiError
+    ? error.message
+    : 'Une erreur inattendue est survenue.';
+}

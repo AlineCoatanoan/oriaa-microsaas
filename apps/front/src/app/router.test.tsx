@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { ErrorPage } from './ErrorPage';
 import { routes } from './router';
+
+function BrokenPage(): never {
+  throw new Error('Plantage');
+}
 
 function mockSession(status: number, role?: string) {
   const body = role
@@ -75,6 +80,23 @@ describe('routes', () => {
     expect(
       screen.queryByRole('link', { name: 'Utilisateurs' }),
     ).not.toBeInTheDocument();
+  });
+
+  it("affiche la page d'erreur si une page plante", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const router = createMemoryRouter(
+      [
+        {
+          errorElement: <ErrorPage />,
+          children: [{ path: '/', element: <BrokenPage /> }],
+        },
+      ],
+      { initialEntries: ['/'] },
+    );
+
+    render(<RouterProvider router={router} />);
+
+    await expectPage('Une erreur est survenue');
   });
 
   it('affiche une page 404 pour une route inconnue', async () => {
