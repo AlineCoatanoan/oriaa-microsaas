@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
 export type FieldErrors = Record<string, string>;
 
@@ -7,7 +7,7 @@ type FormResult<T> =
 
 /** Lit les champs d'un formulaire et les valide avec un schéma Zod. */
 export function validateForm<T>(
-  schema: z.ZodType<T>,
+  schema: z.ZodMiniType<T>,
   form: HTMLFormElement,
 ): FormResult<T> {
   const values = Object.fromEntries(new FormData(form));

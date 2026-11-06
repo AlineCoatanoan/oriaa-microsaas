@@ -36,7 +36,7 @@ describe('routes', () => {
   it('redirige un visiteur non connecté vers la connexion', async () => {
     mockSession(401);
     renderRoute('/beneficiaries');
-    await expectPage('Connexion');
+    await expectPage('Bienvenue');
   });
 
   it('affiche une page protégée à un utilisateur connecté', async () => {

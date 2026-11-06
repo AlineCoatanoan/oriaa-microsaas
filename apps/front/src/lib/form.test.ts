@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { validateForm } from './form';
 
 const schema = z.object({
   email: z.email('Adresse e-mail invalide.'),
-  password: z.string().min(1, 'Mot de passe requis.'),
+  password: z.string().check(z.minLength(1, 'Mot de passe requis.')),
 });
 
 function createForm(values: Record<string, string>) {
