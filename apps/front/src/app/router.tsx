@@ -8,6 +8,7 @@ import { RequireAuth } from '@/features/auth/RequireAuth';
 import { BeneficiariesPage } from '@/features/beneficiaries/BeneficiariesPage';
 import { BeneficiaryPage } from '@/features/beneficiaries/BeneficiaryPage';
 import { HomePage } from '@/features/home/HomePage';
+import { ProfilePage } from '@/features/profile/ProfilePage';
 import { PlanningPage } from '@/features/planning/PlanningPage';
 import { TaskPage } from '@/features/tasks/TaskPage';
 import { TasksPage } from '@/features/tasks/TasksPage';
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
               { path: '/tasks', element: <TasksPage /> },
               { path: '/tasks/:id', element: <TaskPage /> },
               { path: '/planning', element: <PlanningPage /> },
+              { path: '/profile', element: <ProfilePage /> },
               {
                 element: <RequireAdmin />,
                 children: [{ path: '/users', element: <UsersPage /> }],

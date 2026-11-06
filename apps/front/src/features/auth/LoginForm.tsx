@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react';
-import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { LockKeyhole, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { z } from 'zod/mini';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { getErrorMessage } from '@/lib/api';
 import { validateForm, type FieldErrors } from '@/lib/form';
 import { useLogin } from './useLogin';
@@ -16,13 +17,12 @@ const loginSchema = z.object({
 });
 
 const iconClass =
-  'pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted';
+  'pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted';
 
 export function LoginForm() {
   const navigate = useNavigate();
   const login = useLogin();
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [showPassword, setShowPassword] = useState(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,30 +68,13 @@ export function LoginForm() {
           {(control) => (
             <div className="relative">
               <LockKeyhole className={iconClass} aria-hidden="true" />
-              <Input
+              <PasswordInput
                 {...control}
                 name="password"
-                type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="Votre mot de passe"
-                className="pr-12 pl-10"
+                className="pl-10"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                aria-label={
-                  showPassword
-                    ? 'Masquer le mot de passe'
-                    : 'Afficher le mot de passe'
-                }
-                className="absolute top-0 right-0 flex size-11 items-center justify-center text-interaction"
-              >
-                {showPassword ? (
-                  <EyeOff className="size-5" aria-hidden="true" />
-                ) : (
-                  <Eye className="size-5" aria-hidden="true" />
-                )}
-              </button>
             </div>
           )}
         </Field>

@@ -11,7 +11,7 @@ export function AppHeader() {
       </Link>
 
       <div className="flex min-w-0 items-center gap-4">
-        {/* La recherche et le profil seront activés par leurs propres tickets */}
+        {/* La recherche sera activée par son propre ticket */}
         <div className="relative hidden w-72 md:block">
           <Search
             className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-interaction"
@@ -25,14 +25,13 @@ export function AppHeader() {
             className="w-full rounded-md bg-surface py-1.5 pr-3 pl-9 text-sm text-structure placeholder:text-interaction"
           />
         </div>
-        <button
-          type="button"
-          aria-label="Profil"
-          disabled
-          className="flex size-10 items-center justify-center"
+        <Link
+          to="/profile"
+          aria-label="Mon profil"
+          className="flex size-10 items-center justify-center rounded-full hover:bg-interaction"
         >
           <UserRound className="size-6" aria-hidden="true" />
-        </button>
+        </Link>
       </div>
     </header>
   );

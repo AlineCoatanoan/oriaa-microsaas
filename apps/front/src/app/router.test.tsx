@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { ErrorPage } from './ErrorPage';
@@ -68,20 +68,20 @@ describe('routes', () => {
     await expectPage('Utilisateurs');
   });
 
-  it('affiche le lien Utilisateurs à un administrateur', async () => {
+  it('affiche le lien Administration à un administrateur', async () => {
     mockSession(200, 'admin');
     renderRoute('/');
     expect(
-      await screen.findByRole('link', { name: 'Utilisateurs' }),
+      await screen.findByRole('link', { name: 'Administration' }),
     ).toBeInTheDocument();
   });
 
-  it('masque le lien Utilisateurs aux autres utilisateurs', async () => {
+  it('masque le lien Administration aux autres utilisateurs', async () => {
     mockSession(200, 'user');
     renderRoute('/');
     await expectPage('Bonjour Julia');
     expect(
-      screen.queryByRole('link', { name: 'Utilisateurs' }),
+      screen.queryByRole('link', { name: 'Administration' }),
     ).not.toBeInTheDocument();
   });
 
@@ -100,6 +100,19 @@ describe('routes', () => {
     render(<RouterProvider router={router} />);
 
     await expectPage('Une erreur est survenue');
+  });
+
+  it("déconnecte l'utilisateur et renvoie vers la connexion", async () => {
+    mockSession(200, 'user');
+    renderRoute('/profile');
+    await expectPage('Mon profil');
+
+    const [logoutButton] = screen.getAllByRole('button', {
+      name: 'Se déconnecter',
+    });
+    fireEvent.click(logoutButton);
+
+    await expectPage('Bienvenue');
   });
 
   it('affiche une page 404 pour une route inconnue', async () => {
