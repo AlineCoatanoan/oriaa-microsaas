@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { LoaderCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -25,20 +26,36 @@ const buttonVariants = cva(
 );
 
 type ButtonProps = ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants>;
+  VariantProps<typeof buttonVariants> & {
+    /** Requête en cours : le bouton est désactivé et affiche un indicateur. */
+    pending?: boolean;
+  };
 
 export function Button({
   className,
   variant,
   size,
   type = 'button',
+  pending = false,
+  disabled,
+  children,
   ...props
 }: ButtonProps) {
   return (
     <button
       type={type}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
-    />
+    >
+      {pending && (
+        <LoaderCircle
+          className="size-4 motion-safe:animate-spin"
+          aria-hidden="true"
+        />
+      )}
+      {children}
+    </button>
   );
 }
