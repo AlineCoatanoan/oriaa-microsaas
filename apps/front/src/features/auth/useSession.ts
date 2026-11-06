@@ -10,6 +10,8 @@ export type SessionUser = {
   role: string;
 };
 
+export const sessionQueryKey = ['session'];
+
 /** Renvoie l'utilisateur connecté, ou null si personne n'est connecté. */
 async function fetchSession(): Promise<SessionUser | null> {
   try {
@@ -23,7 +25,7 @@ async function fetchSession(): Promise<SessionUser | null> {
 
 export function useSession() {
   return useQuery({
-    queryKey: ['session'],
+    queryKey: sessionQueryKey,
     queryFn: fetchSession,
     retry: false,
     // Évite de redemander la session à chaque changement de page
