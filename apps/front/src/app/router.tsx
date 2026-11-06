@@ -1,4 +1,5 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
+import { ErrorPage } from '@/app/ErrorPage';
 import { NotFoundPage } from '@/app/NotFoundPage';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { LoginPage } from '@/features/auth/LoginPage';
@@ -12,27 +13,33 @@ import { TasksPage } from '@/features/tasks/TasksPage';
 import { UsersPage } from '@/features/users/UsersPage';
 
 export const routes: RouteObject[] = [
-  { path: '/login', element: <LoginPage /> },
   {
-    element: <RequireAuth />,
+    // Erreur imprévue dans une page : affiche ErrorPage au lieu d'un écran blanc
+    errorElement: <ErrorPage />,
     children: [
+      { path: '/login', element: <LoginPage /> },
       {
-        element: <AppLayout />,
+        element: <RequireAuth />,
         children: [
-          { path: '/', element: <HomePage /> },
-          { path: '/beneficiaries', element: <BeneficiariesPage /> },
-          { path: '/beneficiaries/:id', element: <BeneficiaryPage /> },
-          { path: '/tasks', element: <TasksPage /> },
-          { path: '/planning', element: <PlanningPage /> },
           {
-            element: <RequireAdmin />,
-            children: [{ path: '/users', element: <UsersPage /> }],
+            element: <AppLayout />,
+            children: [
+              { path: '/', element: <HomePage /> },
+              { path: '/beneficiaries', element: <BeneficiariesPage /> },
+              { path: '/beneficiaries/:id', element: <BeneficiaryPage /> },
+              { path: '/tasks', element: <TasksPage /> },
+              { path: '/planning', element: <PlanningPage /> },
+              {
+                element: <RequireAdmin />,
+                children: [{ path: '/users', element: <UsersPage /> }],
+              },
+            ],
           },
         ],
       },
+      { path: '*', element: <NotFoundPage /> },
     ],
   },
-  { path: '*', element: <NotFoundPage /> },
 ];
 
 export const router = createBrowserRouter(routes);
