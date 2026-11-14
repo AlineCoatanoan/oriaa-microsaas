@@ -30,7 +30,7 @@ export const beneficiaryFormSchema = z.object({
     .check(z.regex(/^\d*$/, 'Saisissez un nombre entier.')),
   householdComposition: optionalText(50),
   entryDate: z.string().check(z.minLength(1, "Saisissez la date d'entrée.")),
-  referentId: z.string(),
+  referentId: z.string().check(z.minLength(1, 'Choisissez un référent.')),
   pathwayStatus: z.optional(z.string()),
 });
 
