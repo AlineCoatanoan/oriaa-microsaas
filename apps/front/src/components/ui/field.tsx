@@ -11,17 +11,27 @@ type ControlProps = {
 type FieldProps = {
   label: string;
   error?: string;
+  /** Affiche un astérisque : penser aussi à l'attribut required sur le champ. */
+  required?: boolean;
   children: (control: ControlProps) => ReactNode;
 };
 
 /** Label, champ et message d'erreur, reliés pour les lecteurs d'écran. */
-export function Field({ label, error, children }: FieldProps) {
+export function Field({ label, error, required, children }: FieldProps) {
   const id = useId();
   const errorId = `${id}-error`;
 
   return (
     <div className="space-y-1">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>
+        {label}
+        {required && (
+          <span className="text-danger" aria-hidden="true">
+            {' '}
+            *
+          </span>
+        )}
+      </Label>
       {children({
         id,
         'aria-invalid': error ? true : undefined,

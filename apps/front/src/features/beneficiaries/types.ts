@@ -1,8 +1,13 @@
 import type { Tone } from '@/components/ui/tones';
 import type { Person } from '@/lib/types';
 
-export type PathwayStatus = 'En cours' | 'Préparation à la sortie' | 'Sortie';
+export const PATHWAY_STATUSES = [
+  'En cours',
+  'Préparation à la sortie',
+  'Sortie',
+] as const;
 
+export type PathwayStatus = (typeof PATHWAY_STATUSES)[number];
 export type Beneficiary = {
   id: number;
   lastName: string;
