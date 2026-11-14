@@ -24,3 +24,9 @@ export function formatShortDate(dateKey: string) {
   const [, month, day] = dateKey.split('-');
   return `${day}/${month}`;
 }
+
+/** « 04/02/2026 » à partir de « 2026-02-04 » */
+export function formatDate(dateKey: string) {
+  const [year, month, day] = dateKey.split('-');
+  return `${day}/${month}/${year}`;
+}

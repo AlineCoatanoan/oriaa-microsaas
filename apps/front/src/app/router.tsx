@@ -7,6 +7,7 @@ import { RequireAdmin } from '@/features/auth/RequireAdmin';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { BeneficiariesPage } from '@/features/beneficiaries/BeneficiariesPage';
 import { BeneficiaryPage } from '@/features/beneficiaries/BeneficiaryPage';
+import { BeneficiaryFormPage } from '@/features/beneficiaries/BeneficiaryFormPage';
 import { HomePage } from '@/features/home/HomePage';
 import { PlanningPage } from '@/features/planning/PlanningPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
@@ -28,7 +29,12 @@ export const routes: RouteObject[] = [
             children: [
               { path: '/', element: <HomePage /> },
               { path: '/beneficiaries', element: <BeneficiariesPage /> },
+              { path: '/beneficiaries/new', element: <BeneficiaryFormPage /> },
               { path: '/beneficiaries/:id', element: <BeneficiaryPage /> },
+              {
+                path: '/beneficiaries/:id/edit',
+                element: <BeneficiaryFormPage />,
+              },
               { path: '/tasks', element: <TasksPage /> },
               { path: '/tasks/:id', element: <TaskPage /> },
               { path: '/planning', element: <PlanningPage /> },
