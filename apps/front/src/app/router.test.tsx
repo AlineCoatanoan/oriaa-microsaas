@@ -17,7 +17,14 @@ function mockSession(status: number, role?: string) {
     String(input).includes('/auth/session')
       ? new Response(JSON.stringify(body), { status })
       : // Données vides pour les pages (tâches, rendez-vous…)
-        new Response(JSON.stringify({ tasks: [], appointments: [] })),
+        new Response(
+          JSON.stringify({
+            tasks: [],
+            appointments: [],
+            beneficiaries: [],
+            users: [],
+          }),
+        ),
   );
 }
 

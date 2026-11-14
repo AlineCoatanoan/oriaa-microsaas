@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { LoaderCircle } from 'lucide-react';
+import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -57,5 +58,23 @@ export function Button({
       )}
       {children}
     </button>
+  );
+}
+
+type ButtonLinkProps = ComponentProps<typeof Link> &
+  VariantProps<typeof buttonVariants>;
+
+/** Lien qui a l'apparence d'un bouton : il mène à une autre page. */
+export function ButtonLink({
+  className,
+  variant,
+  size,
+  ...props
+}: ButtonLinkProps) {
+  return (
+    <Link
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
   );
 }
