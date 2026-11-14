@@ -28,7 +28,6 @@ export const TASK_PRIORITIES = [
   URGENT_TASK_PRIORITY,
 ] as const;
 
-/** Page à laquelle s'applique un filtre enregistré. */
 /** Pages sur lesquelles un utilisateur peut enregistrer son filtre. */
 export const TASKS_LISTING = 'tasks';
 export const BENEFICIARIES_LISTING = 'beneficiaries';
