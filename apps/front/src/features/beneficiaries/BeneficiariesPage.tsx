@@ -21,6 +21,7 @@ import { formatDate } from '@/lib/dates';
 import { paginate } from '@/lib/paginate';
 import {
   filterBeneficiaries,
+  listReferents,
   sortBeneficiaries,
   type BeneficiarySort,
 } from './filter-beneficiaries';
@@ -87,9 +88,25 @@ export function BeneficiariesPage() {
     pageCount,
   } = paginate(filtered, Number(searchParams.get('page')) || 1, PAGE_SIZE);
 
+  // Seuls les référents qui suivent au moins un dossier de la vue sont proposés
+  const referents = listReferents(query.data ?? []);
+  const selectedReferentId =
+    referent === ALL_REFERENTS ? undefined : Number(referent);
+  const otherReferents = referents.filter(({ id }) => id !== user.id);
+  const showMyBeneficiaries =
+    selectedReferentId === user.id ||
+    referents.some(({ id }) => id === user.id);
+  // Référent choisi sans dossier dans cette vue : il reste sélectionnable pour voir le filtre actif
+  const isSelectedReferentMissing =
+    selectedReferentId !== undefined &&
+    selectedReferentId !== user.id &&
+    !otherReferents.some(({ id }) => id === selectedReferentId);
+
   /** Nom affiché d'un référent choisi dans le filtre. */
   function referentLabel(id: number) {
     if (id === user.id) return 'Mes bénéficiaires';
+    const person = referents.find((item) => item.id === id);
+    if (person) return person.name;
     const referentUser = usersQuery.data?.find((item) => item.id === id);
     return referentUser
       ? `${referentUser.firstName} ${referentUser.lastName}`
@@ -146,14 +163,19 @@ export function BeneficiariesPage() {
               onChange={(event) => updateParam('referent', event.target.value)}
             >
               <option value={ALL_REFERENTS}>Tous les référents</option>
-              <option value={user.id}>Mes bénéficiaires</option>
-              {usersQuery.data
-                ?.filter(({ id }) => id !== user.id)
-                .map(({ id, firstName, lastName }) => (
-                  <option key={id} value={id}>
-                    {firstName} {lastName}
-                  </option>
-                ))}
+              {showMyBeneficiaries && (
+                <option value={user.id}>Mes bénéficiaires</option>
+              )}
+              {isSelectedReferentMissing && (
+                <option value={selectedReferentId}>
+                  {referentLabel(selectedReferentId)}
+                </option>
+              )}
+              {otherReferents.map(({ id, name, status }) => (
+                <option key={id} value={id}>
+                  {status === 'archived' ? `${name} (compte archivé)` : name}
+                </option>
+              ))}
             </Select>
           </div>
           <div className="sm:w-52">

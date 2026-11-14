@@ -11,15 +11,16 @@ import {
   DEFAULT_PATHWAY_STATUS,
   EXIT_PATHWAY_STATUS,
 } from '../config/constants.js';
+import { ROLES } from '../config/roles.js';
 import type {
   CreateBeneficiaryInput,
   UpdateBeneficiaryInput,
 } from '../schemas/beneficiary.schema.js';
-import { assertActiveUsers } from './user.service.js';
 import type { Person } from '../lib/dto.js';
 
 const beneficiaryInclude = { user: personSelect };
-const UNKNOWN_REFERENT_MESSAGE = 'Référent introuvable.';
+const INVALID_REFERENT_MESSAGE =
+  'Choisissez un référent parmi les comptes actifs (hors admins).';
 const BENEFICIARY_NOT_FOUND_MESSAGE = 'Bénéficiaire introuvable.';
 
 /** Format renvoyé au front : traduit le snake_case de la base en camelCase. */
@@ -102,14 +103,28 @@ export async function assertActiveBeneficiaries(ids: number[]) {
   }
 }
 
-/** Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté. */
+/**
+ * Le référent doit être un compte actif avec le rôle « user » :
+ * les admins (direction, technique) ne suivent pas de dossier.
+ */
+async function assertValidReferent(id: number) {
+  const count = await prisma.user.count({
+    where: { user_id: id, archived_at: null, role: { label: ROLES.USER } },
+  });
+  if (count === 0) throw new BadRequestError(INVALID_REFERENT_MESSAGE);
+}
+
+/**
+ * Crée un bénéficiaire. Par défaut, le référent est l'utilisateur connecté
+ * (refusé s'il est admin : il doit alors choisir un référent).
+ */
 export async function create(
   data: CreateBeneficiaryInput,
   currentUserId: number,
 ) {
   const referentId = data.referentId ?? currentUserId;
 
-  await assertActiveUsers([referentId], UNKNOWN_REFERENT_MESSAGE);
+  await assertValidReferent(referentId);
 
   const beneficiary = await prisma.beneficiary.create({
     data: {
@@ -218,7 +233,7 @@ export async function update(id: number, data: UpdateBeneficiaryInput) {
   );
 
   if (data.referentId !== undefined) {
-    await assertActiveUsers([data.referentId], UNKNOWN_REFERENT_MESSAGE);
+    await assertValidReferent(data.referentId);
   }
 
   const beneficiary = await prisma.beneficiary.update({

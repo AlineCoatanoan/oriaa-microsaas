@@ -70,6 +70,31 @@ describe('POST /api/beneficiaries', () => {
     expect(await prisma.beneficiary.count()).toBe(0);
   });
 
+  it('refuse un admin comme référent (400)', async () => {
+    const { agent } = await loginAgent();
+    const admin = await createUser({
+      email: 'admin@oriaa.test',
+      role: 'admin',
+    });
+
+    const response = await agent
+      .post('/api/beneficiaries')
+      .send({ ...validBeneficiary, referentId: admin.user_id });
+
+    expect(response.status).toBe(400);
+    expect(await prisma.beneficiary.count()).toBe(0);
+  });
+
+  it("demande un référent quand c'est un admin qui crée le dossier (400)", async () => {
+    const { agent } = await loginAgent({ role: 'admin' });
+
+    const response = await agent
+      .post('/api/beneficiaries')
+      .send(validBeneficiary);
+
+    expect(response.status).toBe(400);
+  });
+
   it('refuse une requête sans être connecté', async () => {
     const response = await request(app)
       .post('/api/beneficiaries')

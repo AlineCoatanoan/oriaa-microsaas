@@ -40,14 +40,18 @@ export function BeneficiaryForm({ beneficiary }: BeneficiaryFormProps) {
   const save = useSaveBeneficiary(beneficiary?.id);
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  const referent = beneficiary?.referent ?? {
-    id: user.id,
-    name: `${user.firstName} ${user.lastName}`,
-  };
-  // Un référent archivé n'est plus dans la liste : il reste affiché tant qu'il n'est pas remplacé
-  const isReferentListed = usersQuery.data?.some(
-    ({ id }) => id === referent.id,
+  // Les admins ne suivent pas de dossier : seuls les comptes « user » peuvent être référents
+  const referentOptions = usersQuery.data?.filter(
+    ({ role }) => role === 'user',
   );
+  const currentReferent = beneficiary?.referent;
+  // Création : la personne connectée est référente par défaut, sauf un admin qui doit choisir
+  const defaultReferentId =
+    currentReferent?.id ?? (user.role === 'admin' ? '' : user.id);
+  // Un référent archivé n'est plus proposé : il reste affiché tant qu'il n'est pas remplacé
+  const isCurrentReferentListed =
+    !currentReferent ||
+    referentOptions?.some(({ id }) => id === currentReferent.id);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -236,16 +240,23 @@ export function BeneficiaryForm({ beneficiary }: BeneficiaryFormProps) {
             {(control) => (
               <Select
                 {...control}
+                // defaultValue n'est appliqué qu'au montage : on remonte la liste une fois les comptes chargés
+                key={referentOptions ? 'loaded' : 'loading'}
                 name="referentId"
-                defaultValue={referent.id}
+                defaultValue={defaultReferentId}
                 required
               >
-                {!isReferentListed && (
-                  <option value={referent.id}>
-                    {referent.name} (compte archivé)
+                {defaultReferentId === '' && (
+                  <option value="">Choisir un référent</option>
+                )}
+                {currentReferent && !isCurrentReferentListed && (
+                  <option value={currentReferent.id}>
+                    {currentReferent.status === 'archived'
+                      ? `${currentReferent.name} (compte archivé)`
+                      : currentReferent.name}
                   </option>
                 )}
-                {usersQuery.data?.map(({ id, firstName, lastName }) => (
+                {referentOptions?.map(({ id, firstName, lastName }) => (
                   <option key={id} value={id}>
                     {firstName} {lastName}
                   </option>
