@@ -1,24 +1,32 @@
 import {
   Archive,
+  ArchiveRestore,
   CalendarDays,
   ChevronLeft,
   FileText,
   ListTodo,
   NotebookPen,
   Pencil,
+  Trash2,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
-import { ButtonLink } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
 import { ErrorState } from '@/components/ui/error-state';
+import { FormAlert } from '@/components/ui/form-alert';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
+import { useCurrentUser } from '@/features/auth/useSession';
 import { PersonName } from '@/features/users/PersonName';
 import { ApiError, getErrorMessage } from '@/lib/api';
 import { computeAge, formatDate } from '@/lib/dates';
+import { ArchiveBeneficiaryDialog } from './ArchiveBeneficiaryDialog';
+import { DeleteBeneficiaryDialog } from './DeleteBeneficiaryDialog';
 import { pathwayStatusTones, type Beneficiary } from './types';
+import { useUnarchiveBeneficiary } from './useArchiveBeneficiary';
 import { useBeneficiary } from './useBeneficiary';
 
 const tabs = [
@@ -64,8 +72,30 @@ function BackLink() {
 }
 
 function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
+  const user = useCurrentUser();
+  const unarchive = useUnarchiveBeneficiary(beneficiary.id);
+  const [openDialog, setOpenDialog] = useState<'archive' | 'delete'>();
+  const [announcement, setAnnouncement] = useState('');
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
   const name = `${beneficiary.lastName} ${beneficiary.firstName}`;
   const isArchived = beneficiary.archivedAt !== null;
+
+  // Le bouton cliqué a disparu : on replace le focus sur le titre de la page
+  useEffect(() => {
+    if (announcement) headingRef.current?.focus();
+  }, [announcement]);
+
+  function handleArchived() {
+    setOpenDialog(undefined);
+    setAnnouncement('Dossier archivé.');
+  }
+
+  function handleUnarchive() {
+    unarchive.mutate(undefined, {
+      onSuccess: () => setAnnouncement('Dossier désarchivé.'),
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -74,7 +104,9 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1>{name}</h1>
+          <h1 ref={headingRef} tabIndex={-1} className="outline-none">
+            {name}
+          </h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted">
             <Badge tone={pathwayStatusTones[beneficiary.pathwayStatus]}>
               <span className="sr-only">Statut du parcours : </span>
@@ -94,24 +126,61 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
         </div>
         {/* Un dossier archivé est en lecture seule */}
         {!isArchived && (
-          <ButtonLink
-            variant="outline"
-            to={`/beneficiaries/${beneficiary.id}/edit`}
-          >
-            <Pencil className="size-4" aria-hidden="true" />
-            Modifier
-          </ButtonLink>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink
+              variant="outline"
+              to={`/beneficiaries/${beneficiary.id}/edit`}
+            >
+              <Pencil className="size-4" aria-hidden="true" />
+              Modifier
+            </ButtonLink>
+            <Button variant="outline" onClick={() => setOpenDialog('archive')}>
+              <Archive className="size-4" aria-hidden="true" />
+              Archiver
+            </Button>
+          </div>
         )}
       </div>
 
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
+
       {isArchived && (
-        <p className="flex items-center gap-2 rounded-lg bg-info-soft p-4 text-interaction">
-          <Archive className="size-5 shrink-0" aria-hidden="true" />
-          Dossier archivé
-          {beneficiary.exitDate &&
-            ` (sortie le ${formatDate(beneficiary.exitDate)})`}{' '}
-          : il est en lecture seule.
-        </p>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-info-soft p-4 text-interaction">
+            <p className="flex items-center gap-2">
+              <Archive className="size-5 shrink-0" aria-hidden="true" />
+              Dossier archivé
+              {beneficiary.exitDate &&
+                ` (sortie le ${formatDate(beneficiary.exitDate)})`}{' '}
+              : il est en lecture seule.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                onClick={handleUnarchive}
+                pending={unarchive.isPending}
+              >
+                <ArchiveRestore className="size-4" aria-hidden="true" />
+                Désarchiver
+              </Button>
+              {/* Suppression RGPD : réservée aux admins */}
+              {user.role === 'admin' && (
+                <Button
+                  variant="danger"
+                  onClick={() => setOpenDialog('delete')}
+                >
+                  <Trash2 className="size-4" aria-hidden="true" />
+                  Supprimer définitivement
+                </Button>
+              )}
+            </div>
+          </div>
+          {unarchive.isError && (
+            <FormAlert>{getErrorMessage(unarchive.error)}</FormAlert>
+          )}
+        </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -211,6 +280,18 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
           </Tabs>
         </Card>
       </div>
+
+      <ArchiveBeneficiaryDialog
+        beneficiary={beneficiary}
+        open={openDialog === 'archive'}
+        onClose={() => setOpenDialog(undefined)}
+        onArchived={handleArchived}
+      />
+      <DeleteBeneficiaryDialog
+        beneficiary={beneficiary}
+        open={openDialog === 'delete'}
+        onClose={() => setOpenDialog(undefined)}
+      />
     </div>
   );
 }

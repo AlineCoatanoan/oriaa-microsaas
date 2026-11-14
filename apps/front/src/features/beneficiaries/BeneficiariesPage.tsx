@@ -1,5 +1,5 @@
 import { Bookmark, BookmarkCheck, Eye, Pencil, Plus, X } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useLocation, useSearchParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { ButtonLink } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -54,6 +54,8 @@ export function BeneficiariesPage() {
 
   // Filtres gardés dans l'URL : ils sont conservés au retour depuis une fiche
   const [searchParams, setSearchParams] = useSearchParams();
+  // Message laissé par la page précédente (ex. : après une suppression)
+  const message = (useLocation().state as { message?: string } | null)?.message;
   const view: View =
     searchParams.get('view') === 'archived' ? 'archived' : 'active';
   const isArchivedView = view === 'archived';
@@ -118,6 +120,15 @@ export function BeneficiariesPage() {
           Ajouter un bénéficiaire
         </ButtonLink>
       </div>
+
+      {message && (
+        <p
+          role="status"
+          className="rounded-lg bg-success-soft p-3 text-success"
+        >
+          {message}
+        </p>
+      )}
 
       <div className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
