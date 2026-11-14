@@ -22,11 +22,19 @@ import { ROLES } from '../config/roles.js';
 import noteRouter from './note.routes.js';
 import { idParamsSchema } from '../schemas/common.js';
 import documentRouter from './document.routes.js';
+import { BENEFICIARIES_LISTING } from '../config/constants.js';
+import { createFilterPreferenceRouter } from './filter-preference.routes.js';
 
 const beneficiaryRouter = Router();
 
 // Toutes les routes bénéficiaires exigent d'être connecté (tous rôles)
 beneficiaryRouter.use(authenticate);
+
+// Avant /:id : sinon "filter-preference" serait pris pour un identifiant
+beneficiaryRouter.use(
+  '/filter-preference',
+  createFilterPreferenceRouter(BENEFICIARIES_LISTING),
+);
 beneficiaryRouter.use('/:id/notes', noteRouter);
 beneficiaryRouter.use('/:id/documents', documentRouter);
 

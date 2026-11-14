@@ -14,8 +14,9 @@ import {
   update,
 } from '../controllers/task.controller.js';
 import subtaskRouter from './subtask.routes.js';
-import taskFilterRouter from './task-filter.routes.js';
+import { createFilterPreferenceRouter } from './filter-preference.routes.js';
 import { idParamsSchema } from '../schemas/common.js';
+import { TASKS_LISTING } from '../config/constants.js';
 
 const taskRouter = Router();
 
@@ -25,7 +26,10 @@ taskRouter.use(authenticate);
 taskRouter.use('/:id/subtasks', subtaskRouter);
 
 // Avant /:id : sinon "filter-preference" serait pris pour un identifiant
-taskRouter.use('/filter-preference', taskFilterRouter);
+taskRouter.use(
+  '/filter-preference',
+  createFilterPreferenceRouter(TASKS_LISTING),
+);
 
 taskRouter.get('/', validate({ query: listTasksQuerySchema }), list);
 
