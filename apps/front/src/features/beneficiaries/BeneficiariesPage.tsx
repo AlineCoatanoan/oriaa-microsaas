@@ -1,4 +1,4 @@
-import { Eye, Pencil, Plus } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Eye, Pencil, Plus, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { ButtonLink } from '@/components/ui/button';
@@ -10,6 +10,10 @@ import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Select } from '@/components/ui/select';
 import { useCurrentUser } from '@/features/auth/useSession';
+import {
+  useFilterPreference,
+  useSaveFilterPreference,
+} from '@/features/filter-preference/useFilterPreference';
 import { PersonName } from '@/features/users/PersonName';
 import { useUsers } from '@/features/users/useUsers';
 import { getErrorMessage } from '@/lib/api';
@@ -24,6 +28,9 @@ import { pathwayStatusTones } from './types';
 import { useBeneficiaries } from './useBeneficiaries';
 
 type View = 'active' | 'archived';
+
+/** Valeur du filtre référent pour afficher tous les bénéficiaires. */
+const ALL_REFERENTS = 'all';
 
 const PAGE_SIZE = 10;
 
@@ -42,6 +49,8 @@ const iconLinkClass =
 export function BeneficiariesPage() {
   const user = useCurrentUser();
   const usersQuery = useUsers();
+  const preferenceQuery = useFilterPreference('beneficiaries');
+  const savePreference = useSaveFilterPreference('beneficiaries');
 
   // Filtres gardés dans l'URL : ils sont conservés au retour depuis une fiche
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,7 +58,13 @@ export function BeneficiariesPage() {
     searchParams.get('view') === 'archived' ? 'archived' : 'active';
   const isArchivedView = view === 'archived';
   const search = searchParams.get('search') ?? '';
-  const referent = searchParams.get('referent') ?? '';
+  // Sans choix dans l'URL, le filtre enregistré s'applique
+  const savedReferent = preferenceQuery.data
+    ? String(preferenceQuery.data.userId)
+    : ALL_REFERENTS;
+  const referent = searchParams.get('referent') ?? savedReferent;
+  const canSaveReferent =
+    referent !== ALL_REFERENTS && referent !== savedReferent;
   // Par défaut : la date la plus récente d'abord
   const sort: BeneficiarySort =
     searchParams.get('sort') === 'date-asc' ? 'date-asc' : 'date-desc';
@@ -59,7 +74,7 @@ export function BeneficiariesPage() {
   const filtered = sortBeneficiaries(
     filterBeneficiaries(query.data ?? [], {
       search,
-      referentId: referent ? Number(referent) : undefined,
+      referentId: referent === ALL_REFERENTS ? undefined : Number(referent),
     }),
     sort,
     isArchivedView,
@@ -69,6 +84,15 @@ export function BeneficiariesPage() {
     page,
     pageCount,
   } = paginate(filtered, Number(searchParams.get('page')) || 1, PAGE_SIZE);
+
+  /** Nom affiché d'un référent choisi dans le filtre. */
+  function referentLabel(id: number) {
+    if (id === user.id) return 'Mes bénéficiaires';
+    const referentUser = usersQuery.data?.find((item) => item.id === id);
+    return referentUser
+      ? `${referentUser.firstName} ${referentUser.lastName}`
+      : 'Référent';
+  }
 
   function updateParam(name: string, value: string) {
     setSearchParams(
@@ -95,60 +119,94 @@ export function BeneficiariesPage() {
         </ButtonLink>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:items-center">
-        <SearchInput
-          label="Rechercher un bénéficiaire"
-          placeholder="Nom ou prénom…"
-          value={search}
-          onChange={(event) => updateParam('search', event.target.value)}
-          className="lg:max-w-xs lg:flex-1"
-        />
-        <div className="lg:w-52">
-          <Select
-            aria-label="Filtrer par référent"
-            value={referent}
-            onChange={(event) => updateParam('referent', event.target.value)}
-          >
-            <option value="">Tous les référents</option>
-            <option value={user.id}>Mes bénéficiaires</option>
-            {usersQuery.data
-              ?.filter(({ id }) => id !== user.id)
-              .map(({ id, firstName, lastName }) => (
-                <option key={id} value={id}>
-                  {firstName} {lastName}
-                </option>
-              ))}
-          </Select>
-        </div>
-        <div className="lg:w-56">
-          <Select
-            aria-label="Trier"
-            value={sort}
-            onChange={(event) =>
-              updateParam(
-                'sort',
-                event.target.value === 'date-asc' ? event.target.value : '',
-              )
-            }
-          >
-            <option value="date-desc">{dateLabel} (plus récente)</option>
-            <option value="date-asc">{dateLabel} (plus ancienne)</option>
-          </Select>
-        </div>
-        <div className="lg:ml-auto">
-          <SegmentedControl
-            label="Bénéficiaires affichés"
-            options={viewOptions}
-            value={view}
-            onChange={(value) =>
-              updateParam('view', value === 'archived' ? value : '')
-            }
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <SearchInput
+            label="Rechercher un bénéficiaire"
+            placeholder="Nom ou prénom…"
+            value={search}
+            onChange={(event) => updateParam('search', event.target.value)}
+            className="sm:w-64"
           />
+          <div className="sm:w-52">
+            <Select
+              aria-label="Filtrer par référent"
+              value={referent}
+              onChange={(event) => updateParam('referent', event.target.value)}
+            >
+              <option value={ALL_REFERENTS}>Tous les référents</option>
+              <option value={user.id}>Mes bénéficiaires</option>
+              {usersQuery.data
+                ?.filter(({ id }) => id !== user.id)
+                .map(({ id, firstName, lastName }) => (
+                  <option key={id} value={id}>
+                    {firstName} {lastName}
+                  </option>
+                ))}
+            </Select>
+          </div>
+          <div className="sm:w-52">
+            <Select
+              aria-label="Trier"
+              value={sort}
+              onChange={(event) =>
+                updateParam(
+                  'sort',
+                  event.target.value === 'date-asc' ? event.target.value : '',
+                )
+              }
+            >
+              <option value="date-desc">{dateLabel} (plus récente)</option>
+              <option value="date-asc">{dateLabel} (plus ancienne)</option>
+            </Select>
+          </div>
+          <div className="sm:ml-auto">
+            <SegmentedControl
+              label="Bénéficiaires affichés"
+              options={viewOptions}
+              value={view}
+              onChange={(value) =>
+                updateParam('view', value === 'archived' ? value : '')
+              }
+            />
+          </div>
         </div>
+
+        {/* Filtre enregistré : appliqué à chaque ouverture de la page */}
+        {(preferenceQuery.data || canSaveReferent) && (
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            {preferenceQuery.data && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-info-soft py-1 pr-1 pl-3 text-interaction">
+                <BookmarkCheck className="size-4" aria-hidden="true" />
+                Filtre enregistré : {referentLabel(preferenceQuery.data.userId)}
+                <button
+                  type="button"
+                  aria-label="Retirer le filtre enregistré"
+                  disabled={savePreference.isPending}
+                  onClick={() => savePreference.mutate(null)}
+                  className="flex size-7 items-center justify-center rounded-full hover:bg-surface disabled:opacity-50"
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              </span>
+            )}
+            {canSaveReferent && (
+              <button
+                type="button"
+                disabled={savePreference.isPending}
+                onClick={() => savePreference.mutate(Number(referent))}
+                className="inline-flex min-h-9 items-center gap-2 font-medium text-interaction hover:underline disabled:opacity-50"
+              >
+                <Bookmark className="size-4" aria-hidden="true" />
+                Enregistrer ce filtre
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <Card className="p-0 md:p-0">
-        {query.isPending ? (
+        {query.isPending || preferenceQuery.isPending ? (
           <LoadingState />
         ) : query.error ? (
           <ErrorState

@@ -23,6 +23,7 @@ function mockSession(status: number, role?: string) {
             appointments: [],
             beneficiaries: [],
             users: [],
+            filterPreference: null,
           }),
         ),
   );
