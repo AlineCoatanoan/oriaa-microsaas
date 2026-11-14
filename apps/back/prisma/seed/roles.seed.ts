@@ -1,21 +1,14 @@
 import prisma from '../../src/lib/prisma.js';
 import { ROLES } from '../../src/config/roles.js';
+import type { SeedIds } from './helpers.js';
 
-export async function seedRoles() {
-  const adminRole = await prisma.role.create({
-    data: {
-      label: ROLES.ADMIN,
-    },
-  });
+export async function seedRoles(): Promise<SeedIds> {
+  const ids: SeedIds = {};
 
-  const userRole = await prisma.role.create({
-    data: {
-      label: ROLES.USER,
-    },
-  });
+  for (const label of Object.values(ROLES)) {
+    const role = await prisma.role.create({ data: { label } });
+    ids[label] = role.role_id;
+  }
 
-  return {
-    adminRole,
-    userRole,
-  };
+  return ids;
 }
