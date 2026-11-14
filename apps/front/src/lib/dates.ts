@@ -30,3 +30,12 @@ export function formatDate(dateKey: string) {
   const [year, month, day] = dateKey.split('-');
   return `${day}/${month}/${year}`;
 }
+
+/** Âge en années révolues à partir d'une date « 1987-03-14 ». */
+export function computeAge(dateKey: string, today = new Date()) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const hasHadBirthday =
+    today.getMonth() + 1 > month ||
+    (today.getMonth() + 1 === month && today.getDate() >= day);
+  return today.getFullYear() - year - (hasHadBirthday ? 0 : 1);
+}
