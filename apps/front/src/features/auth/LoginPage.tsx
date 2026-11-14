@@ -19,7 +19,7 @@ export function LoginPage() {
 
       <aside className="hidden w-2/5 max-w-lg flex-col justify-between bg-structure p-10 text-white lg:flex">
         <div className="flex items-center justify-center gap-3">
-          <img src={logo} alt="" width={44} height={38} />
+          <img src={logo} alt="" width={84} height={72} />
           <span className="font-title text-3xl font-semibold">Oriaa</span>
         </div>
 

@@ -6,7 +6,7 @@ export function AppHeader() {
   return (
     <header className="flex h-16 items-center justify-between gap-4 bg-structure px-4 text-white md:sticky md:top-0 md:z-10">
       <Link to="/" className="flex shrink-0 items-center gap-2 md:w-60">
-        <img src={logo} alt="" width={36} height={31} />
+        <img src={logo} alt="" width={66} height={57} />
         <span className="font-title text-2xl font-semibold">Oriaa</span>
       </Link>
 
