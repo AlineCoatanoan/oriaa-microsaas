@@ -2,6 +2,7 @@ import prisma from '../lib/prisma.js';
 import { NotFoundError } from '../errors/app-error.js';
 import { toSubtaskDto } from '../lib/dto.js';
 import { assertTaskEditable } from './task.service.js';
+import type { Viewer } from '../lib/task-visibility.js';
 import type {
   CreateSubtaskInput,
   UpdateSubtaskInput,
@@ -16,8 +17,12 @@ async function assertSubtaskExists(taskId: number, subtaskId: number) {
 }
 
 /** Ajoute une sous-tâche à une tâche. */
-export async function create(taskId: number, data: CreateSubtaskInput) {
-  await assertTaskEditable(taskId);
+export async function create(
+  taskId: number,
+  data: CreateSubtaskInput,
+  viewer: Viewer,
+) {
+  await assertTaskEditable(taskId, viewer);
 
   const subtask = await prisma.subtask.create({
     data: { label: data.label, task_id: taskId },
@@ -31,8 +36,9 @@ export async function update(
   taskId: number,
   subtaskId: number,
   data: UpdateSubtaskInput,
+  viewer: Viewer,
 ) {
-  await assertTaskEditable(taskId);
+  await assertTaskEditable(taskId, viewer);
   await assertSubtaskExists(taskId, subtaskId);
 
   const subtask = await prisma.subtask.update({
@@ -44,8 +50,12 @@ export async function update(
 }
 
 /** Supprime une sous-tâche. */
-export async function remove(taskId: number, subtaskId: number) {
-  await assertTaskEditable(taskId);
+export async function remove(
+  taskId: number,
+  subtaskId: number,
+  viewer: Viewer,
+) {
+  await assertTaskEditable(taskId, viewer);
   await assertSubtaskExists(taskId, subtaskId);
 
   await prisma.subtask.delete({ where: { subtask_id: subtaskId } });

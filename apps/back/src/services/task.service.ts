@@ -8,6 +8,7 @@ import {
   toPerson,
   toSubtaskDto,
 } from '../lib/dto.js';
+import { visibleTasksWhere, type Viewer } from '../lib/task-visibility.js';
 import { assertNotesExist } from './note.service.js';
 import { ConflictError, NotFoundError } from '../errors/app-error.js';
 import {
@@ -86,10 +87,10 @@ function toTaskDto(task: TaskWithRelations) {
   };
 }
 
-/** Renvoie la tâche avec ses liens, ou une 404. */
-async function findTaskOrFail(id: number) {
-  const task = await prisma.task.findUnique({
-    where: { task_id: id },
+/** Renvoie la tâche avec ses liens, ou une 404 si elle n'existe pas ou n'est pas visible. */
+async function findTaskOrFail(id: number, viewer: Viewer) {
+  const task = await prisma.task.findFirst({
+    where: { task_id: id, ...visibleTasksWhere(viewer) },
     include: taskInclude,
   });
   if (!task) throw new NotFoundError('Tâche introuvable.');
@@ -97,8 +98,8 @@ async function findTaskOrFail(id: number) {
 }
 
 /** Règle métier : une tâche archivée est en lecture seule. Renvoie la tâche. */
-export async function assertTaskEditable(id: number) {
-  const task = await findTaskOrFail(id);
+export async function assertTaskEditable(id: number, viewer: Viewer) {
+  const task = await findTaskOrFail(id, viewer);
   if (areAllBeneficiariesArchived(task.beneficiaries)) {
     throw new ConflictError(
       "Une tâche archivée ne peut pas être modifiée. Désarchivez d'abord un de ses bénéficiaires.",
@@ -108,15 +109,21 @@ export async function assertTaskEditable(id: number) {
 }
 
 /** Liste les tâches filtrées, de l'échéance la plus proche à la plus lointaine. */
-export async function findAll(filters: ListTasksQuery) {
+export async function findAll(filters: ListTasksQuery, viewer: Viewer) {
   const { beneficiaryId, assigneeId, status, priority } = filters;
 
   const tasks = await prisma.task.findMany({
     where: {
-      status,
-      priority,
-      assignees: assigneeId ? { some: { user_id: assigneeId } } : undefined,
-      ...toBeneficiaryScope(beneficiaryId),
+      // AND : la visibilité et le filtre responsable portent tous deux sur assignees
+      AND: [
+        visibleTasksWhere(viewer),
+        {
+          status,
+          priority,
+          assignees: assigneeId ? { some: { user_id: assigneeId } } : undefined,
+          ...toBeneficiaryScope(beneficiaryId),
+        },
+      ],
     },
     include: taskInclude,
     orderBy: { due_date: { sort: 'asc', nulls: 'last' } },
@@ -126,8 +133,8 @@ export async function findAll(filters: ListTasksQuery) {
 }
 
 /** Renvoie une tâche, ou une 404. */
-export async function findById(id: number) {
-  return toTaskDto(await findTaskOrFail(id));
+export async function findById(id: number, viewer: Viewer) {
+  return toTaskDto(await findTaskOrFail(id, viewer));
 }
 
 /** Crée une tâche. Par défaut, la personne connectée en est responsable. */
@@ -163,8 +170,12 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
  * Seuls les liens ajoutés sont vérifiés : un lien existant vers un bénéficiaire
  * archivé ou un collègue parti peut être conservé.
  */
-export async function update(id: number, data: UpdateTaskInput) {
-  const existing = await assertTaskEditable(id);
+export async function update(
+  id: number,
+  data: UpdateTaskInput,
+  viewer: Viewer,
+) {
+  const existing = await assertTaskEditable(id, viewer);
   const assigneeIds = data.assigneeIds && unique(data.assigneeIds);
   const beneficiaryIds = data.beneficiaryIds && unique(data.beneficiaryIds);
   const noteIds = data.noteIds && unique(data.noteIds);
@@ -208,8 +219,8 @@ export async function update(id: number, data: UpdateTaskInput) {
 }
 
 /** Supprime une tâche. Ses liens et ses sous-tâches sont supprimés en cascade. */
-export async function remove(id: number) {
-  await assertTaskEditable(id);
+export async function remove(id: number, viewer: Viewer) {
+  await assertTaskEditable(id, viewer);
 
   await prisma.task.delete({ where: { task_id: id } });
 }

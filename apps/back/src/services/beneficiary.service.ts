@@ -2,6 +2,7 @@ import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { toDate, toDateOnly } from '../lib/dates.js';
 import { personSelect, toPerson } from '../lib/dto.js';
+import { visibleTasksWhere, type Viewer } from '../lib/task-visibility.js';
 import {
   BadRequestError,
   ConflictError,
@@ -156,7 +157,7 @@ export async function findById(id: number) {
  * Chronologie d'un bénéficiaire, calculée à la demande :
  * ses notes, tâches et rendez-vous, du plus récent au plus ancien.
  */
-export async function findTimeline(id: number) {
+export async function findTimeline(id: number, viewer: Viewer) {
   await findBeneficiaryOrFail(id);
 
   const [notes, tasks, appointments] = await Promise.all([
@@ -165,7 +166,10 @@ export async function findTimeline(id: number) {
       include: { user: personSelect },
     }),
     prisma.task.findMany({
-      where: { beneficiaries: { some: { beneficiary_id: id } } },
+      where: {
+        beneficiaries: { some: { beneficiary_id: id } },
+        ...visibleTasksWhere(viewer),
+      },
       include: { created_by: personSelect },
     }),
     prisma.appointment.findMany({

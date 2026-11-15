@@ -4,14 +4,17 @@ import { getCurrentUser } from '../lib/current-user.js';
 
 /** GET /api/tasks (filtres : voir listTasksQuerySchema) */
 export async function list(_req: Request, res: Response) {
-  const tasks = await taskService.findAll(res.locals.validated.query);
+  const tasks = await taskService.findAll(
+    res.locals.validated.query,
+    getCurrentUser(res),
+  );
   res.status(200).json({ tasks });
 }
 
 /** GET /api/tasks/:id */
 export async function getById(_req: Request, res: Response) {
   const { id } = res.locals.validated.params;
-  const task = await taskService.findById(id);
+  const task = await taskService.findById(id, getCurrentUser(res));
   res.status(200).json({ task });
 }
 
@@ -26,13 +29,13 @@ export async function create(req: Request, res: Response) {
 /** PATCH /api/tasks/:id */
 export async function update(req: Request, res: Response) {
   const { id } = res.locals.validated.params;
-  const task = await taskService.update(id, req.body);
+  const task = await taskService.update(id, req.body, getCurrentUser(res));
   res.status(200).json({ task });
 }
 
 /** DELETE /api/tasks/:id */
 export async function remove(_req: Request, res: Response) {
   const { id } = res.locals.validated.params;
-  await taskService.remove(id);
+  await taskService.remove(id, getCurrentUser(res));
   res.status(204).end();
 }
