@@ -15,6 +15,7 @@ function createTask(overrides: Partial<Task>): Task {
     isOverdue: false,
     isUrgent: false,
     isArchived: false,
+    updatedAt: '2026-11-05T12:00:00Z',
     assignees: [],
     beneficiaries: [],
     ...overrides,

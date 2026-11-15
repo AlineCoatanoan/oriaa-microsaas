@@ -1,7 +1,9 @@
 import type { Tone } from '@/components/ui/tones';
 import type { BeneficiarySummary, Person } from '@/lib/types';
 
-export type TaskStatus = 'À faire' | 'En cours' | 'Terminée';
+/** Mêmes valeurs que l'API, dans l'ordre d'avancement. */
+export const TASK_STATUSES = ['À faire', 'En cours', 'Terminée'] as const;
+export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type TaskPriority = 'Basse' | 'Normale' | 'Haute';
 
 export const COMPLETED_TASK_STATUS: TaskStatus = 'Terminée';
@@ -16,6 +18,7 @@ export type Task = {
   isOverdue: boolean;
   isUrgent: boolean;
   isArchived: boolean;
+  updatedAt: string;
   assignees: Person[];
   beneficiaries: BeneficiarySummary[];
 };

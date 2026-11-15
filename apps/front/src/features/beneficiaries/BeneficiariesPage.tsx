@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck, Eye, Pencil, Plus, X } from 'lucide-react';
+import { Eye, Pencil, Plus } from 'lucide-react';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { ButtonLink } from '@/components/ui/button';
@@ -9,19 +9,19 @@ import { Pagination } from '@/components/ui/pagination';
 import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Select } from '@/components/ui/select';
-import { useCurrentUser } from '@/features/auth/useSession';
 import {
-  useFilterPreference,
-  useSaveFilterPreference,
-} from '@/features/filter-preference/useFilterPreference';
+  PersonFilterSelect,
+  SavedPersonFilter,
+} from '@/features/filter-preference/PersonFilter';
+import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
 import { PersonName } from '@/features/users/PersonName';
-import { useUsers } from '@/features/users/useUsers';
 import { getErrorMessage } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { paginate } from '@/lib/paginate';
+import { uniquePeople } from '@/lib/people';
+import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import {
   filterBeneficiaries,
-  listReferents,
   sortBeneficiaries,
   type BeneficiarySort,
 } from './filter-beneficiaries';
@@ -29,9 +29,6 @@ import { pathwayStatusTones } from './types';
 import { useBeneficiaries } from './useBeneficiaries';
 
 type View = 'active' | 'archived';
-
-/** Valeur du filtre référent pour afficher tous les bénéficiaires. */
-const ALL_REFERENTS = 'all';
 
 const PAGE_SIZE = 10;
 
@@ -48,36 +45,32 @@ const iconLinkClass =
   'relative z-10 flex size-11 items-center justify-center rounded-lg text-interaction hover:bg-page';
 
 export function BeneficiariesPage() {
-  const user = useCurrentUser();
-  const usersQuery = useUsers();
-  const preferenceQuery = useFilterPreference('beneficiaries');
-  const savePreference = useSaveFilterPreference('beneficiaries');
-
   // Filtres gardés dans l'URL : ils sont conservés au retour depuis une fiche
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const updateParam = useUpdateSearchParam();
   // Message laissé par la page précédente (ex. : après une suppression)
   const message = (useLocation().state as { message?: string } | null)?.message;
   const view: View =
     searchParams.get('view') === 'archived' ? 'archived' : 'active';
   const isArchivedView = view === 'archived';
   const search = searchParams.get('search') ?? '';
-  // Sans choix dans l'URL, le filtre enregistré s'applique
-  const savedReferent = preferenceQuery.data
-    ? String(preferenceQuery.data.userId)
-    : ALL_REFERENTS;
-  const referent = searchParams.get('referent') ?? savedReferent;
-  const canSaveReferent =
-    referent !== ALL_REFERENTS && referent !== savedReferent;
   // Par défaut : la date la plus récente d'abord
   const sort: BeneficiarySort =
     searchParams.get('sort') === 'date-asc' ? 'date-asc' : 'date-desc';
   const dateLabel = isArchivedView ? 'Sortie' : 'Entrée';
 
   const query = useBeneficiaries({ archived: isArchivedView });
+  // Seuls les référents qui suivent au moins un dossier de la vue sont proposés
+  const referentFilter = usePersonFilter({
+    listing: 'beneficiaries',
+    param: 'referent',
+    people: uniquePeople((query.data ?? []).map(({ referent }) => referent)),
+    mineLabel: 'Mes bénéficiaires',
+  });
   const filtered = sortBeneficiaries(
     filterBeneficiaries(query.data ?? [], {
       search,
-      referentId: referent === ALL_REFERENTS ? undefined : Number(referent),
+      referentId: referentFilter.selectedId,
     }),
     sort,
     isArchivedView,
@@ -87,44 +80,6 @@ export function BeneficiariesPage() {
     page,
     pageCount,
   } = paginate(filtered, Number(searchParams.get('page')) || 1, PAGE_SIZE);
-
-  // Seuls les référents qui suivent au moins un dossier de la vue sont proposés
-  const referents = listReferents(query.data ?? []);
-  const selectedReferentId =
-    referent === ALL_REFERENTS ? undefined : Number(referent);
-  const otherReferents = referents.filter(({ id }) => id !== user.id);
-  const showMyBeneficiaries =
-    selectedReferentId === user.id ||
-    referents.some(({ id }) => id === user.id);
-  // Référent choisi sans dossier dans cette vue : il reste sélectionnable pour voir le filtre actif
-  const isSelectedReferentMissing =
-    selectedReferentId !== undefined &&
-    selectedReferentId !== user.id &&
-    !otherReferents.some(({ id }) => id === selectedReferentId);
-
-  /** Nom affiché d'un référent choisi dans le filtre. */
-  function referentLabel(id: number) {
-    if (id === user.id) return 'Mes bénéficiaires';
-    const person = referents.find((item) => item.id === id);
-    if (person) return person.name;
-    const referentUser = usersQuery.data?.find((item) => item.id === id);
-    return referentUser
-      ? `${referentUser.firstName} ${referentUser.lastName}`
-      : 'Référent';
-  }
-
-  function updateParam(name: string, value: string) {
-    setSearchParams(
-      (params) => {
-        if (value) params.set(name, value);
-        else params.delete(name);
-        // Un nouveau filtre ramène à la première page
-        if (name !== 'page') params.delete('page');
-        return params;
-      },
-      { replace: true },
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -157,26 +112,12 @@ export function BeneficiariesPage() {
             className="sm:w-64"
           />
           <div className="sm:w-52">
-            <Select
-              aria-label="Filtrer par référent"
-              value={referent}
-              onChange={(event) => updateParam('referent', event.target.value)}
-            >
-              <option value={ALL_REFERENTS}>Tous les référents</option>
-              {showMyBeneficiaries && (
-                <option value={user.id}>Mes bénéficiaires</option>
-              )}
-              {isSelectedReferentMissing && (
-                <option value={selectedReferentId}>
-                  {referentLabel(selectedReferentId)}
-                </option>
-              )}
-              {otherReferents.map(({ id, name, status }) => (
-                <option key={id} value={id}>
-                  {status === 'archived' ? `${name} (compte archivé)` : name}
-                </option>
-              ))}
-            </Select>
+            <PersonFilterSelect
+              filter={referentFilter}
+              label="Filtrer par référent"
+              allLabel="Tous les référents"
+              onChange={(value) => updateParam('referent', value)}
+            />
           </div>
           <div className="sm:w-52">
             <Select
@@ -205,41 +146,11 @@ export function BeneficiariesPage() {
           </div>
         </div>
 
-        {/* Filtre enregistré : appliqué à chaque ouverture de la page */}
-        {(preferenceQuery.data || canSaveReferent) && (
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            {preferenceQuery.data && (
-              <span className="inline-flex items-center gap-2 rounded-full bg-info-soft py-1 pr-1 pl-3 text-interaction">
-                <BookmarkCheck className="size-4" aria-hidden="true" />
-                Filtre enregistré : {referentLabel(preferenceQuery.data.userId)}
-                <button
-                  type="button"
-                  aria-label="Retirer le filtre enregistré"
-                  disabled={savePreference.isPending}
-                  onClick={() => savePreference.mutate(null)}
-                  className="flex size-7 items-center justify-center rounded-full hover:bg-surface disabled:opacity-50"
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              </span>
-            )}
-            {canSaveReferent && (
-              <button
-                type="button"
-                disabled={savePreference.isPending}
-                onClick={() => savePreference.mutate(Number(referent))}
-                className="inline-flex min-h-9 items-center gap-2 font-medium text-interaction hover:underline disabled:opacity-50"
-              >
-                <Bookmark className="size-4" aria-hidden="true" />
-                Enregistrer ce filtre
-              </button>
-            )}
-          </div>
-        )}
+        <SavedPersonFilter filter={referentFilter} />
       </div>
 
       <Card className="p-0 md:p-0">
-        {query.isPending || preferenceQuery.isPending ? (
+        {query.isPending || referentFilter.isPending ? (
           <LoadingState />
         ) : query.error ? (
           <ErrorState

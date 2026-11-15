@@ -1,5 +1,4 @@
 import { normalizeText } from '@/lib/search';
-import type { Person } from '@/lib/types';
 import type { Beneficiary } from './types';
 
 export type BeneficiarySort = 'date-desc' | 'date-asc';
@@ -45,15 +44,4 @@ export function sortBeneficiaries(
     const order = dateOf(a).localeCompare(dateOf(b));
     return sort === 'date-asc' ? order : -order;
   });
-}
-
-/** Référents qui suivent au moins un des bénéficiaires, sans doublon, triés par nom. */
-export function listReferents(beneficiaries: Beneficiary[]) {
-  const referents = new Map<number, Person>();
-  for (const { referent } of beneficiaries) {
-    referents.set(referent.id, referent);
-  }
-  return [...referents.values()].sort((a, b) =>
-    a.name.localeCompare(b.name, 'fr'),
-  );
 }

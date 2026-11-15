@@ -40,7 +40,7 @@ export function Sidebar() {
     <div className="md:sticky md:top-16 md:flex md:h-[calc(100dvh-4rem)] md:w-64 md:shrink-0 md:flex-col md:self-start md:p-4">
       <nav
         aria-label="Navigation principale"
-        className="fixed inset-x-0 bottom-0 z-10 bg-structure md:static"
+        className="fixed inset-x-0 bottom-0 z-20 bg-structure md:static"
       >
         <ul className="flex md:flex-col md:gap-2">
           {items.map(({ to, label, icon: Icon }) => (

@@ -39,3 +39,15 @@ export function computeAge(dateKey: string, today = new Date()) {
     (today.getMonth() + 1 === month && today.getDate() >= day);
   return today.getFullYear() - year - (hasHadBirthday ? 0 : 1);
 }
+
+/** Jours entre aujourd'hui et une date « 2026-11-20 » (négatif si elle est passée). */
+export function daysUntil(dateKey: string, today = new Date()) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const target = Date.UTC(year, month - 1, day);
+  const start = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  return Math.round((target - start) / 86_400_000);
+}
