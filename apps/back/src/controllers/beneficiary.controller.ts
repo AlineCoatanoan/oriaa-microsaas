@@ -21,7 +21,10 @@ export async function getById(_req: Request, res: Response) {
 /** GET /api/beneficiaries/:id/timeline */
 export async function getTimeline(_req: Request, res: Response) {
   const { id } = res.locals.validated.params;
-  const timeline = await beneficiaryService.findTimeline(id);
+  const timeline = await beneficiaryService.findTimeline(
+    id,
+    getCurrentUser(res),
+  );
   res.status(200).json({ timeline });
 }
 

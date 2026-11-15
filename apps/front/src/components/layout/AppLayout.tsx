@@ -8,7 +8,7 @@ export function AppLayout() {
     <div className="flex min-h-dvh flex-col bg-structure">
       <a
         href="#content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-20 focus:bg-surface focus:p-3 focus:text-structure"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-30 focus:bg-surface focus:p-3 focus:text-structure"
       >
         Aller au contenu
       </a>

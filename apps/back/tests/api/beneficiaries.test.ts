@@ -161,6 +161,7 @@ describe('GET /api/beneficiaries/:id/timeline', () => {
         title: 'Tâche',
         created_at: new Date('2026-10-20'),
         user_id_created_by: user.user_id,
+        assignees: { create: { user_id: user.user_id } },
         beneficiaries: { create: { beneficiary_id: beneficiaryId } },
       },
     });
