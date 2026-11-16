@@ -7,6 +7,22 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              // Bibliothèques utilisées par toutes les pages, rarement mises à jour :
+              // fichier à part, gardé en cache par le navigateur d'une version à l'autre
+              name: 'vendor',
+              test: /node_modules[\\/](react|react-dom|react-router|scheduler|@tanstack)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     // En développement, /api est transmis au back : même origine, donc cookie accepté
     proxy: {

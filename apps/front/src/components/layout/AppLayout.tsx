@@ -1,11 +1,22 @@
-import { Outlet } from 'react-router';
+import { Outlet, useNavigation } from 'react-router';
 import { AppHeader } from './AppHeader';
 import { Sidebar } from './Sidebar';
 
 /** Structure commune des pages de l'application. */
 export function AppLayout() {
+  // Page chargée à la demande (lazy) : son code est en cours de téléchargement
+  const isLoadingPage = useNavigation().state === 'loading';
   return (
     <div className="flex min-h-dvh flex-col bg-structure">
+      {isLoadingPage && (
+        <div
+          className="fixed inset-x-0 top-0 z-30 h-1 bg-accent motion-safe:animate-pulse"
+          aria-hidden="true"
+        />
+      )}
+      <p role="status" className="sr-only">
+        {isLoadingPage ? 'Chargement de la page…' : ''}
+      </p>
       <a
         href="#content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-30 focus:bg-surface focus:p-3 focus:text-structure"
