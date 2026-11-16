@@ -1,5 +1,5 @@
 import { Eye, Pencil, Plus } from 'lucide-react';
-import { Link, useLocation, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { ButtonLink } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,6 +19,7 @@ import { getErrorMessage } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
 import { paginate } from '@/lib/paginate';
 import { uniquePeople } from '@/lib/people';
+import { useNavigationMessage } from '@/lib/useNavigationMessage';
 import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import {
   filterBeneficiaries,
@@ -49,7 +50,7 @@ export function BeneficiariesPage() {
   const [searchParams] = useSearchParams();
   const updateParam = useUpdateSearchParam();
   // Message laissé par la page précédente (ex. : après une suppression)
-  const message = (useLocation().state as { message?: string } | null)?.message;
+  const message = useNavigationMessage();
   const view: View =
     searchParams.get('view') === 'archived' ? 'archived' : 'active';
   const isArchivedView = view === 'archived';

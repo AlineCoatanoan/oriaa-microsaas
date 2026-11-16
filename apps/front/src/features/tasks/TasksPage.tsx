@@ -1,10 +1,13 @@
 import { Eye } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
 import { LoadingState } from '@/components/ui/loading-state';
+import {
+  ResultMessage,
+  type ActionResult,
+} from '@/components/ui/result-message';
 import { Pagination } from '@/components/ui/pagination';
 import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
@@ -17,6 +20,7 @@ import { getErrorMessage } from '@/lib/api';
 import { formatBeneficiaries } from '@/lib/format';
 import { paginate } from '@/lib/paginate';
 import { uniquePeople } from '@/lib/people';
+import { useNavigationMessage } from '@/lib/useNavigationMessage';
 import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import { cn } from '@/lib/utils';
 import {
@@ -26,8 +30,7 @@ import {
   sortByLastUpdate,
 } from './filter-tasks';
 import { TaskDueDate } from './TaskDueDate';
-import { TaskStatusSelect } from './TaskStatusSelect';
-import { taskPriorityTones } from './types';
+import { TaskFieldSelect } from './TaskFieldSelect';
 import { useTasks } from './useTasks';
 
 type View = 'todo' | 'done';
@@ -41,7 +44,7 @@ const viewOptions: { value: View; label: string }[] = [
 
 // Mêmes colonnes pour l'en-tête et les lignes, à partir de la tablette
 const columns =
-  'md:grid md:grid-cols-[2fr_1.5fr_1.3fr_9rem_6rem_auto] md:items-center md:gap-4';
+  'md:grid md:grid-cols-[2fr_1.5fr_1.3fr_9rem_8rem_auto] md:items-center md:gap-4';
 
 export function TasksPage() {
   // Une seule requête : la vue, la recherche et les filtres sont appliqués ici
@@ -53,8 +56,13 @@ export function TasksPage() {
   const updateParam = useUpdateSearchParam();
   const view: View = searchParams.get('view') === 'done' ? 'done' : 'todo';
   const search = searchParams.get('search') ?? '';
-  const [result, setResult] = useState<{ message: string; isError: boolean }>();
-
+  // Message laissé par la fiche (ex. : après une suppression)
+  const navigationMessage = useNavigationMessage();
+  const [result, setResult] = useState<ActionResult | undefined>(
+    navigationMessage
+      ? { message: navigationMessage, isError: false }
+      : undefined,
+  );
   // Seuls les responsables d'au moins une tâche sont proposés
   const assigneeFilter = usePersonFilter({
     listing: 'tasks',
@@ -151,17 +159,7 @@ export function TasksPage() {
       </div>
 
       {/* Retour du changement de statut : la tâche peut quitter la vue affichée */}
-      <p
-        role="status"
-        className={cn(
-          result && 'rounded-lg p-3',
-          result?.isError
-            ? 'bg-danger-soft text-danger'
-            : 'bg-success-soft text-success',
-        )}
-      >
-        {result?.message}
-      </p>
+      <ResultMessage result={result} />
 
       <Card className="p-0 md:p-0">
         {query.isPending || assigneeFilter.isPending ? (
@@ -221,18 +219,20 @@ export function TasksPage() {
                           <TaskDueDate task={task} />
                         </p>
                         <div className="flex flex-wrap items-center gap-2 md:contents">
-                          {/* Au-dessus du lien de la ligne pour rester cliquable */}
-                          <div className="relative z-10 w-36">
-                            <TaskStatusSelect
+                          {/* Au-dessus du lien de la ligne pour rester cliquables */}
+                          <div className="relative z-10 w-32">
+                            <TaskFieldSelect
                               task={task}
+                              field="status"
                               onResult={setResult}
                             />
                           </div>
-                          <div>
-                            <Badge tone={taskPriorityTones[task.priority]}>
-                              <span className="sr-only">Priorité : </span>
-                              {task.priority}
-                            </Badge>
+                          <div className="relative z-10 w-28">
+                            <TaskFieldSelect
+                              task={task}
+                              field="priority"
+                              onResult={setResult}
+                            />
                           </div>
                         </div>
                       </div>
