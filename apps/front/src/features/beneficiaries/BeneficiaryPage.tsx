@@ -2,7 +2,6 @@ import {
   Archive,
   ArchiveRestore,
   CalendarDays,
-  ChevronLeft,
   FileText,
   ListTodo,
   NotebookPen,
@@ -10,7 +9,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
+import { BackLink } from '@/components/ui/back-link';
 import { Badge } from '@/components/ui/badge';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -46,7 +46,7 @@ export function BeneficiaryPage() {
       query.error instanceof ApiError && query.error.status === 404;
     return (
       <div className="space-y-4">
-        <BackLink />
+        <BackLink to="/beneficiaries">Bénéficiaires</BackLink>
         <ErrorState
           message={getErrorMessage(query.error)}
           // Réessayer ne sert à rien si le dossier n'existe pas
@@ -57,18 +57,6 @@ export function BeneficiaryPage() {
   }
 
   return <BeneficiaryDetails beneficiary={query.data} />;
-}
-
-function BackLink() {
-  return (
-    <Link
-      to="/beneficiaries"
-      className="inline-flex items-center gap-1 text-sm font-medium text-interaction hover:underline"
-    >
-      <ChevronLeft className="size-4" aria-hidden="true" />
-      Bénéficiaires
-    </Link>
-  );
 }
 
 function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
@@ -100,7 +88,7 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
   return (
     <div className="space-y-6">
       <title>{`${name} – Oriaa`}</title>
-      <BackLink />
+      <BackLink to="/beneficiaries">Bénéficiaires</BackLink>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
