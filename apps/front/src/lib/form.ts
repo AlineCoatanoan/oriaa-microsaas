@@ -23,3 +23,9 @@ export function validateForm<T>(
   }
   return { success: false, errors };
 }
+
+/** Place le curseur sur le premier champ à corriger. */
+export function focusFirstError(form: HTMLFormElement, errors: FieldErrors) {
+  const [firstField] = Object.keys(errors);
+  (form.elements.namedItem(firstField) as HTMLElement | null)?.focus();
+}

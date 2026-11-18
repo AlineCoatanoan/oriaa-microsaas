@@ -1,5 +1,6 @@
 import { Bookmark, BookmarkCheck, X } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import { useSaveFilterPreference } from './useFilterPreference';
 import { ALL_PEOPLE, type PersonFilterState } from './usePersonFilter';
 
@@ -7,7 +8,6 @@ type PersonFilterSelectProps = {
   filter: PersonFilterState;
   label: string;
   allLabel: string;
-  onChange: (value: string) => void;
 };
 
 /** Liste déroulante : tout le monde, moi, ou une personne de la liste. */
@@ -15,8 +15,8 @@ export function PersonFilterSelect({
   filter,
   label,
   allLabel,
-  onChange,
 }: PersonFilterSelectProps) {
+  const updateParam = useUpdateSearchParam();
   const { people, currentUserId, selectedId } = filter;
   const others = people.filter(({ id }) => id !== currentUserId);
   const showMine =
@@ -32,7 +32,7 @@ export function PersonFilterSelect({
     <Select
       aria-label={label}
       value={selectedId === undefined ? ALL_PEOPLE : String(selectedId)}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => updateParam(filter.param, event.target.value)}
     >
       <option value={ALL_PEOPLE}>{allLabel}</option>
       {showMine && <option value={currentUserId}>{filter.mineLabel}</option>}

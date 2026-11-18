@@ -15,13 +15,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
-import { ErrorState } from '@/components/ui/error-state';
+import { DetailQuery } from '@/components/ui/detail-query';
 import { FormAlert } from '@/components/ui/form-alert';
-import { LoadingState } from '@/components/ui/loading-state';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { PersonName } from '@/features/users/PersonName';
-import { ApiError, getErrorMessage } from '@/lib/api';
+import { getErrorMessage } from '@/lib/api';
 import { computeAge, formatDate } from '@/lib/dates';
 import { formatBeneficiaryName } from '@/lib/format';
 import { ArchiveBeneficiaryDialog } from './ArchiveBeneficiaryDialog';
@@ -41,23 +40,15 @@ export function BeneficiaryPage() {
   const id = Number(useParams().id);
   const query = useBeneficiary(id);
 
-  if (query.isPending) return <LoadingState />;
-  if (query.error) {
-    const isNotFound =
-      query.error instanceof ApiError && query.error.status === 404;
-    return (
-      <div className="space-y-4">
-        <BackLink to="/beneficiaries">Bénéficiaires</BackLink>
-        <ErrorState
-          message={getErrorMessage(query.error)}
-          // Réessayer ne sert à rien si le dossier n'existe pas
-          onRetry={isNotFound ? undefined : () => query.refetch()}
-        />
-      </div>
-    );
-  }
-
-  return <BeneficiaryDetails beneficiary={query.data} />;
+  return (
+    <DetailQuery
+      query={query}
+      backTo="/beneficiaries"
+      backLabel="Bénéficiaires"
+    >
+      {(data) => <BeneficiaryDetails beneficiary={data} />}
+    </DetailQuery>
+  );
 }
 
 function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {

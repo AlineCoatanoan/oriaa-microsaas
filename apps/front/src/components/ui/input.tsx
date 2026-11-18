@@ -1,5 +1,8 @@
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
+/** Icône placée au début d'un champ (le champ prend alors la classe pl-10). */
+export const inputIconClass =
+  'pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted';
 
 export function Input({ className, ...props }: ComponentProps<'input'>) {
   return (

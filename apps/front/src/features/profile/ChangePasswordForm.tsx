@@ -3,9 +3,10 @@ import { z } from 'zod/mini';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { FormAlert } from '@/components/ui/form-alert';
+import { ResultMessage } from '@/components/ui/result-message';
 import { PasswordInput } from '@/components/ui/password-input';
 import { getErrorMessage } from '@/lib/api';
-import { validateForm, type FieldErrors } from '@/lib/form';
+import { focusFirstError, validateForm, type FieldErrors } from '@/lib/form';
 import { useChangePassword } from './useChangePassword';
 
 /** Mêmes règles que le back : 12 caractères au moins, 72 au plus. */
@@ -43,8 +44,7 @@ export function ChangePasswordForm() {
 
     if (!result.success) {
       setErrors(result.errors);
-      const [firstField] = Object.keys(result.errors);
-      (form.elements.namedItem(firstField) as HTMLElement | null)?.focus();
+      focusFirstError(form, result.errors);
       return;
     }
 
@@ -61,14 +61,13 @@ export function ChangePasswordForm() {
       {changePassword.isError && (
         <FormAlert>{getErrorMessage(changePassword.error)}</FormAlert>
       )}
-      {changePassword.isSuccess && (
-        <p
-          role="status"
-          className="rounded-lg bg-success-soft p-3 text-success"
-        >
-          Votre mot de passe a été modifié.
-        </p>
-      )}
+      <ResultMessage
+        result={
+          changePassword.isSuccess
+            ? { message: 'Votre mot de passe a été modifié.', isError: false }
+            : undefined
+        }
+      />
 
       <fieldset disabled={changePassword.isPending} className="space-y-5">
         <Field label="Mot de passe actuel" error={errors.currentPassword}>

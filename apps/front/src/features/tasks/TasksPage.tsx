@@ -141,7 +141,6 @@ export function TasksPage() {
               filter={assigneeFilter}
               label="Filtrer par responsable"
               allLabel="Tous les responsables"
-              onChange={(value) => updateParam('assignee', value)}
             />
           </div>
           <div className="sm:ml-auto">

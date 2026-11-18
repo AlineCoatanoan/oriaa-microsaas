@@ -1,6 +1,7 @@
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
+import { DetailList } from '@/components/ui/detail-list';
 import { useLogout } from '@/features/auth/useLogout';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -30,14 +31,7 @@ export function ProfilePage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="space-y-4">
           <CardTitle>Mes informations</CardTitle>
-          <dl className="divide-y divide-border">
-            {details.map(({ label, value }) => (
-              <div key={label} className="py-3">
-                <dt className="text-sm text-muted">{label}</dt>
-                <dd className="font-medium break-words">{value}</dd>
-              </div>
-            ))}
-          </dl>
+          <DetailList details={details} />
         </Card>
 
         <Card className="space-y-4">
