@@ -14,3 +14,8 @@ export function formatBeneficiaries(beneficiaries: BeneficiarySummary[]) {
   if (beneficiaries.length > 1) return `${beneficiaries.length} bénéficiaires`;
   return formatBeneficiaryName(beneficiaries[0]);
 }
+
+/** Accorde un mot régulier avec un nombre : « 1 tâche », « 2 tâches ». */
+export function plural(count: number, word: string) {
+  return count > 1 ? `${word}s` : word;
+}

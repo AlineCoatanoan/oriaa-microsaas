@@ -1,11 +1,16 @@
 import { Eye, Pencil, Plus } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { ButtonLink } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ErrorState } from '@/components/ui/error-state';
-import { LoadingState } from '@/components/ui/loading-state';
+import {
+  DataList,
+  DataListRow,
+  IconLink,
+  RowLink,
+} from '@/components/ui/data-list';
 import { Pagination } from '@/components/ui/pagination';
+import { QueryState } from '@/components/ui/query-state';
 import { ResultMessage } from '@/components/ui/result-message';
 import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
@@ -16,9 +21,8 @@ import {
 } from '@/features/filter-preference/PersonFilter';
 import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
 import { PersonName } from '@/features/users/PersonName';
-import { getErrorMessage } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
-import { formatBeneficiaryName } from '@/lib/format';
+import { formatBeneficiaryName, plural } from '@/lib/format';
 import { paginate } from '@/lib/paginate';
 import { uniquePeople } from '@/lib/people';
 import { useNavigationMessage } from '@/lib/useNavigationMessage';
@@ -43,9 +47,6 @@ const viewOptions: { value: View; label: string }[] = [
 // Mêmes colonnes pour l'en-tête et les lignes, à partir de la tablette
 const columns =
   'md:grid md:grid-cols-[2fr_1.5fr_1.5fr_1fr_auto] md:items-center md:gap-4';
-
-const iconLinkClass =
-  'relative z-10 flex size-11 items-center justify-center rounded-lg text-interaction hover:bg-page';
 
 export function BeneficiariesPage() {
   // Filtres gardés dans l'URL : ils sont conservés au retour depuis une fiche
@@ -83,6 +84,12 @@ export function BeneficiariesPage() {
     page,
     pageCount,
   } = paginate(filtered, Number(searchParams.get('page')) || 1, PAGE_SIZE);
+
+  const viewLabel = plural(
+    filtered.length,
+    isArchivedView ? 'archivé' : 'actif',
+  );
+  const status = `${filtered.length} ${plural(filtered.length, 'bénéficiaire')} ${viewLabel}`;
 
   return (
     <div className="space-y-6">
@@ -147,107 +154,80 @@ export function BeneficiariesPage() {
       </div>
 
       <Card className="p-0 md:p-0">
-        {query.isPending || referentFilter.isPending ? (
-          <LoadingState />
-        ) : query.error ? (
-          <ErrorState
-            message={getErrorMessage(query.error)}
-            onRetry={() => query.refetch()}
-          />
-        ) : (
-          <>
-            <p role="status" className="px-4 pt-4 text-sm text-muted md:px-6">
-              {filtered.length} bénéficiaire
-              {filtered.length > 1 && 's'}{' '}
-              {isArchivedView ? 'archivé' : 'actif'}
-              {filtered.length > 1 && 's'}
-              {pageCount > 1 && ` · page ${page} sur ${pageCount}`}
-            </p>
-
-            {beneficiaries.length === 0 ? (
-              <p className="px-4 py-8 text-center text-muted md:px-6">
-                Aucun bénéficiaire ne correspond à ces critères.
-              </p>
-            ) : (
+        <QueryState
+          query={query}
+          isPending={query.isPending || referentFilter.isPending}
+        >
+          <DataList
+            status={status}
+            page={page}
+            pageCount={pageCount}
+            isEmpty={beneficiaries.length === 0}
+            emptyMessage="Aucun bénéficiaire ne correspond à ces critères."
+            columns={columns}
+            headers={
               <>
-                <div
-                  aria-hidden="true"
-                  className={`${columns} mt-2 hidden border-b border-border px-6 pb-2 text-xs font-semibold tracking-wide text-muted uppercase`}
-                >
-                  <span>Nom</span>
-                  <span>Statut du parcours</span>
-                  <span>Référent</span>
-                  <span>{dateLabel}</span>
-                  <span className="w-[5.5rem]" />
-                </div>
-                <ul className="divide-y divide-border">
-                  {beneficiaries.map((beneficiary) => {
-                    const name = formatBeneficiaryName(beneficiary);
-                    const date = isArchivedView
-                      ? beneficiary.exitDate
-                      : beneficiary.entryDate;
-
-                    return (
-                      <li
-                        key={beneficiary.id}
-                        className={`${columns} relative grid grid-cols-[1fr_auto] gap-x-2 gap-y-2 px-4 py-3 hover:bg-page md:px-6`}
-                      >
-                        <div className="min-w-0 space-y-2 md:contents md:space-y-0">
-                          {/* Le lien couvre toute la ligne grâce à after:inset-0 */}
-                          <Link
-                            to={`/beneficiaries/${beneficiary.id}`}
-                            className="block font-medium after:absolute after:inset-0 hover:underline"
-                          >
-                            {name}
-                          </Link>
-                          <div>
-                            <Badge
-                              tone={
-                                pathwayStatusTones[beneficiary.pathwayStatus]
-                              }
-                            >
-                              <span className="sr-only">
-                                Statut du parcours :{' '}
-                              </span>
-                              {beneficiary.pathwayStatus}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted md:text-base md:text-structure">
-                            <span className="md:sr-only">Référent : </span>
-                            <PersonName person={beneficiary.referent} />
-                          </p>
-                          <p className="text-sm text-muted md:text-base md:text-structure">
-                            <span className="md:sr-only">{dateLabel} le </span>
-                            {date ? formatDate(date) : '–'}
-                          </p>
-                        </div>
-                        <div className="flex items-start md:items-center">
-                          <Link
-                            to={`/beneficiaries/${beneficiary.id}`}
-                            aria-label={`Voir la fiche de ${name}`}
-                            className={iconLinkClass}
-                          >
-                            <Eye className="size-5" aria-hidden="true" />
-                          </Link>
-                          {/* Un dossier archivé est en lecture seule */}
-                          {!isArchivedView && (
-                            <Link
-                              to={`/beneficiaries/${beneficiary.id}/edit`}
-                              aria-label={`Modifier ${name}`}
-                              className={iconLinkClass}
-                            >
-                              <Pencil className="size-5" aria-hidden="true" />
-                            </Link>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <span>Nom</span>
+                <span>Statut du parcours</span>
+                <span>Référent</span>
+                <span>{dateLabel}</span>
+                <span className="w-[5.5rem]" />
               </>
-            )}
-          </>
-        )}
+            }
+          >
+            {beneficiaries.map((beneficiary) => {
+              const name = formatBeneficiaryName(beneficiary);
+              const date = isArchivedView
+                ? beneficiary.exitDate
+                : beneficiary.entryDate;
+
+              return (
+                <DataListRow
+                  key={beneficiary.id}
+                  columns={columns}
+                  actions={
+                    <>
+                      <IconLink
+                        to={`/beneficiaries/${beneficiary.id}`}
+                        label={`Voir la fiche de ${name}`}
+                        icon={Eye}
+                      />
+                      {/* Un dossier archivé est en lecture seule */}
+                      {!isArchivedView && (
+                        <IconLink
+                          to={`/beneficiaries/${beneficiary.id}/edit`}
+                          label={`Modifier ${name}`}
+                          icon={Pencil}
+                        />
+                      )}
+                    </>
+                  }
+                >
+                  <RowLink
+                    to={`/beneficiaries/${beneficiary.id}`}
+                    className="block"
+                  >
+                    {name}
+                  </RowLink>
+                  <div>
+                    <Badge tone={pathwayStatusTones[beneficiary.pathwayStatus]}>
+                      <span className="sr-only">Statut du parcours : </span>
+                      {beneficiary.pathwayStatus}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted md:text-base md:text-structure">
+                    <span className="md:sr-only">Référent : </span>
+                    <PersonName person={beneficiary.referent} />
+                  </p>
+                  <p className="text-sm text-muted md:text-base md:text-structure">
+                    <span className="md:sr-only">{dateLabel} le </span>
+                    {date ? formatDate(date) : '–'}
+                  </p>
+                </DataListRow>
+              );
+            })}
+          </DataList>
+        </QueryState>
       </Card>
 
       <Pagination
