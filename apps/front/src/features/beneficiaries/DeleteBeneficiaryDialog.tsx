@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { formatBeneficiaryName } from '@/lib/format';
 import type { Beneficiary } from './types';
 import { useDeleteBeneficiary } from './useDeleteBeneficiary';
 
@@ -17,7 +18,7 @@ export function DeleteBeneficiaryDialog({
 }: DeleteBeneficiaryDialogProps) {
   const navigate = useNavigate();
   const remove = useDeleteBeneficiary(beneficiary.id);
-  const name = `${beneficiary.lastName} ${beneficiary.firstName}`;
+  const name = formatBeneficiaryName(beneficiary);
 
   return (
     <ConfirmDialog

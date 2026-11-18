@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# Oriaa – front
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web d'Oriaa : React 19, TypeScript, Vite, Tailwind CSS 4, React Router et TanStack Query.
 
-Currently, two official plugins are available:
+## Commandes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+À lancer depuis la racine du dépôt :
 
-## React Compiler
+| Commande                    | Rôle                                                            |
+| --------------------------- | --------------------------------------------------------------- |
+| `pnpm dev:front`            | Serveur de développement (l'API doit tourner : `pnpm dev:back`) |
+| `pnpm test:front`           | Tests (Vitest + Testing Library)                                |
+| `pnpm --filter front build` | Build de production dans `dist/`                                |
+| `pnpm lint`                 | ESLint sur tout le dépôt                                        |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+En développement, les appels à `/api` sont transmis au back (`http://localhost:3000`) : même origine, donc le cookie de session est accepté.
 
-## Expanding the ESLint configuration
+## Organisation de `src/`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Dossier               | Contenu                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| `app/`                | Routeur, client TanStack Query, pages d'erreur et 404                                                |
+| `components/ui/`      | Composants d'interface réutilisables (boutons, champs, cartes…)                                      |
+| `components/layout/`  | Structure commune : en-tête, menu, mise en page                                                      |
+| `features/<domaine>/` | Une fonctionnalité par dossier (bénéficiaires, tâches…) : pages, composants, hooks de données, types |
+| `lib/`                | Utilitaires sans interface : appels API, dates, formatage, recherche                                 |
+| `test/`               | Configuration des tests                                                                              |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Conventions
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
-```
+- Composants en PascalCase, hooks en `useX`, utilitaires en kebab-case ; les composants de `components/ui/` sont en kebab-case (convention shadcn/ui)
+- Les tests sont à côté du fichier testé (`X.test.tsx`)
+- Les pages métier sont chargées à la demande (`lazy` dans `app/router.tsx`)
+- Les filtres des listes sont gardés dans l'URL

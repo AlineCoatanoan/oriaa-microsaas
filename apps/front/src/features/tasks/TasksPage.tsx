@@ -78,13 +78,13 @@ export function TasksPage() {
   const openTasks = assigneeTasks.filter((task) => !isCompleted(task));
   const counters = [
     {
-      label: (count: number) => (count > 1 ? 'urgentes' : 'urgente'),
-      count: openTasks.filter((task) => task.isUrgent).length,
+      label: () => 'en retard',
+      count: openTasks.filter((task) => task.isOverdue).length,
       dot: 'bg-danger',
     },
     {
-      label: () => 'en retard',
-      count: openTasks.filter((task) => task.isOverdue).length,
+      label: (count: number) => (count > 1 ? 'urgentes' : 'urgente'),
+      count: openTasks.filter((task) => task.isUrgent).length,
       dot: 'bg-warning',
     },
     {
@@ -171,7 +171,7 @@ export function TasksPage() {
           />
         ) : (
           <>
-            <p className="px-4 pt-4 text-sm text-muted md:px-6">
+            <p role="status" className="px-4 pt-4 text-sm text-muted md:px-6">
               {sorted.length} tâche{sorted.length > 1 && 's'}{' '}
               {view === 'done' ? 'terminée' : 'à faire'}
               {sorted.length > 1 && view === 'done' && 's'}

@@ -57,7 +57,7 @@ export function HomePage() {
               to="/tasks"
               icon={Flag}
               value={alerts?.urgent}
-              label="Tâches prioritaires"
+              label="Tâches urgentes"
               tone="warning"
             />
           </li>
