@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { TaskDetails } from './types';
-
-// Commence par 'tasks' : invalider ['tasks'] recharge aussi la fiche
-export const taskQueryKey = (id: number) => ['tasks', id];
 
 export function useTask(id: number) {
   return useQuery({
-    queryKey: taskQueryKey(id),
+    queryKey: queryKeys.tasks.detail(id),
     queryFn: async () => {
       const { task } = await api<{ task: TaskDetails }>(`/tasks/${id}`);
       return task;

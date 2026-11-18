@@ -8,31 +8,42 @@ import {
   taskPriorityTones,
   taskStatusTones,
   type Task,
+  type TaskPriority,
+  type TaskStatus,
 } from './types';
-import { useUpdateTask } from './useUpdateTask';
+import { useUpdateTask, type TaskUpdate } from './useUpdateTask';
 
-type Field = 'status' | 'priority';
+type EditableFields = Pick<TaskUpdate, 'status' | 'priority'>;
 
-/** Champs modifiables directement, sans passer par le formulaire. */
-const fields: Record<
-  Field,
-  { label: string; options: readonly string[]; tones: Record<string, Tone> }
-> = {
-  status: {
-    label: 'Statut',
-    options: TASK_STATUSES,
-    tones: taskStatusTones,
-  },
-  priority: {
-    label: 'Priorité',
-    options: TASK_PRIORITIES,
-    tones: taskPriorityTones,
-  },
+/** Un champ modifiable directement, sans passer par le formulaire. */
+type FieldConfig<V extends string> = {
+  label: string;
+  options: readonly V[];
+  tones: Record<V, Tone>;
+  /** Lit la valeur du champ dans une tâche ou une modification. */
+  read: (data: EditableFields) => V | undefined;
+  /** Construit la modification à envoyer à l'API. */
+  toUpdate: (value: V) => TaskUpdate;
 };
 
-type TaskFieldSelectProps = {
+const statusField: FieldConfig<TaskStatus> = {
+  label: 'Statut',
+  options: TASK_STATUSES,
+  tones: taskStatusTones,
+  read: (data) => data.status,
+  toUpdate: (status) => ({ status }),
+};
+
+const priorityField: FieldConfig<TaskPriority> = {
+  label: 'Priorité',
+  options: TASK_PRIORITIES,
+  tones: taskPriorityTones,
+  read: (data) => data.priority,
+  toUpdate: (priority) => ({ priority }),
+};
+
+type SelectProps = {
   task: Task;
-  field: Field;
   disabled?: boolean;
   /** Message à annoncer après la modification (réussie ou non). */
   onResult: (result: ActionResult) => void;
@@ -40,36 +51,48 @@ type TaskFieldSelectProps = {
 
 /** Change le statut ou la priorité d'une tâche (liste et fiche). */
 export function TaskFieldSelect({
-  task,
   field,
+  ...props
+}: SelectProps & { field: 'status' | 'priority' }) {
+  return field === 'status' ? (
+    <FieldSelect config={statusField} {...props} />
+  ) : (
+    <FieldSelect config={priorityField} {...props} />
+  );
+}
+
+function FieldSelect<V extends string>({
+  config,
+  task,
   disabled = false,
   onResult,
-}: TaskFieldSelectProps) {
+}: SelectProps & { config: FieldConfig<V> }) {
   const update = useUpdateTask(task.id);
-  const { label, options, tones } = fields[field];
+  const { label, options, tones } = config;
   // Pendant l'envoi, on affiche déjà la nouvelle valeur
-  const value = (update.isPending && update.variables[field]) || task[field];
+  const pendingValue = update.isPending && config.read(update.variables);
+  const value = pendingValue || config.read(task);
 
   return (
     <Select
       aria-label={`${label} de la tâche « ${task.title} »`}
-      tone={tones[value]}
+      tone={value && tones[value]}
       value={value}
       disabled={disabled || update.isPending}
       onChange={(event) => {
-        const newValue = event.target.value;
-        update.mutate(
-          { [field]: newValue },
-          {
-            onSuccess: () =>
-              onResult({
-                message: `Tâche « ${task.title} » : ${label.toLowerCase()} ${newValue}.`,
-                isError: false,
-              }),
-            onError: (error) =>
-              onResult({ message: getErrorMessage(error), isError: true }),
-          },
+        const newValue = options.find(
+          (option) => option === event.target.value,
         );
+        if (!newValue) return;
+        update.mutate(config.toUpdate(newValue), {
+          onSuccess: () =>
+            onResult({
+              message: `Tâche « ${task.title} » : ${label.toLowerCase()} ${newValue}.`,
+              isError: false,
+            }),
+          onError: (error) =>
+            onResult({ message: getErrorMessage(error), isError: true }),
+        });
       }}
     >
       {options.map((option) => (

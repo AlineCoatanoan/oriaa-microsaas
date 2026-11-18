@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { Task, TaskPriority, TaskStatus } from './types';
 
 /** Champs modifiables d'une tâche : seuls ceux envoyés changent. */
@@ -25,6 +26,7 @@ export function useUpdateTask(id: number) {
       return task;
     },
     // Recharge toutes les listes de tâches (page Tâches, accueil, fiches)
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all }),
   });
 }

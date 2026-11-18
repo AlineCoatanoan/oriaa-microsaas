@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 /** Après chaque changement : recharge la fiche et les listes de tâches. */
 function useRefreshTasks() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ['tasks'] });
+  return () => queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
 }
 
 export function useAddSubtask(taskId: number) {

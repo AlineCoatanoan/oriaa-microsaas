@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
-export type ChangePasswordInput = {
+type ChangePasswordInput = {
   currentPassword: string;
   newPassword: string;
 };

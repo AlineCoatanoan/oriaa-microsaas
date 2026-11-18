@@ -1,15 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { Beneficiary } from './types';
-import { beneficiaryQueryKey } from './useBeneficiary';
 
 /** Met à jour la fiche en cache et fait recharger les listes. */
 function useOnBeneficiaryChange() {
   const queryClient = useQueryClient();
 
   return (beneficiary: Beneficiary) => {
-    queryClient.setQueryData(beneficiaryQueryKey(beneficiary.id), beneficiary);
-    queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+    queryClient.setQueryData(
+      queryKeys.beneficiaries.detail(beneficiary.id),
+      beneficiary,
+    );
+    queryClient.invalidateQueries({ queryKey: queryKeys.beneficiaries.lists });
   };
 }
 

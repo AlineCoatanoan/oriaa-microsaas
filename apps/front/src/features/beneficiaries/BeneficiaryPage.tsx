@@ -18,6 +18,7 @@ import { DetailList } from '@/components/ui/detail-list';
 import { DetailQuery } from '@/components/ui/detail-query';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
+import { isAdmin } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
@@ -146,7 +147,7 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
                 Désarchiver
               </Button>
               {/* Suppression RGPD : réservée aux admins */}
-              {user.role === 'admin' && (
+              {isAdmin(user) && (
                 <Button
                   variant="danger"
                   onClick={() => setOpenDialog('delete')}

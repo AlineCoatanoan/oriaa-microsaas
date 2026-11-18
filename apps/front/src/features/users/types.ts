@@ -1,9 +1,6 @@
-export type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  job: string;
-  role: string;
+import type { SessionUser } from '@/features/auth/useSession';
+
+/** Compte utilisateur : mêmes informations que la session, plus l'archivage. */
+export type User = SessionUser & {
   archivedAt: string | null;
 };

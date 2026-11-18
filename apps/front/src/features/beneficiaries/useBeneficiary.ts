@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { Beneficiary } from './types';
-
-export const beneficiaryQueryKey = (id: number) => ['beneficiary', id];
 
 export function useBeneficiary(id: number) {
   return useQuery({
-    queryKey: beneficiaryQueryKey(id),
+    queryKey: queryKeys.beneficiaries.detail(id),
     queryFn: async () => {
       const { beneficiary } = await api<{ beneficiary: Beneficiary }>(
         `/beneficiaries/${id}`,

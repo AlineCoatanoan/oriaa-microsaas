@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { NavLink } from 'react-router';
+import { isAdmin } from '@/features/auth/roles';
 import { useLogout } from '@/features/auth/useLogout';
 import { useSession } from '@/features/auth/useSession';
 import { cn } from '@/lib/utils';
@@ -33,8 +34,7 @@ const adminNavItems: NavItem[] = [
 export function Sidebar() {
   const { data: user } = useSession();
   const logout = useLogout();
-  const items =
-    user?.role === 'admin' ? [...navItems, ...adminNavItems] : navItems;
+  const items = isAdmin(user) ? [...navItems, ...adminNavItems] : navItems;
 
   return (
     <div className="md:sticky md:top-16 md:flex md:h-[calc(100dvh-4rem)] md:w-64 md:shrink-0 md:flex-col md:self-start md:p-4">
