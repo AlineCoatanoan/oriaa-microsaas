@@ -1,11 +1,11 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-import { sessionQueryKey } from '@/features/auth/useSession';
+import { queryKeys } from '@/lib/query-keys';
 import { ApiError } from '@/lib/api';
 
 /** Session expirée : l'utilisateur est oublié et RequireAuth renvoie vers la connexion. */
 function handleApiError(error: Error) {
   if (error instanceof ApiError && error.status === 401) {
-    queryClient.setQueryData(sessionQueryKey, null);
+    queryClient.setQueryData(queryKeys.session, null);
   }
 }
 

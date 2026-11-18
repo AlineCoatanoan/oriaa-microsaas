@@ -6,6 +6,7 @@ import { Field } from '@/components/ui/field';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { isAdmin, ROLES } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { useUsers } from '@/features/users/useUsers';
 import { getErrorMessage } from '@/lib/api';
@@ -42,12 +43,12 @@ export function BeneficiaryForm({ beneficiary }: BeneficiaryFormProps) {
 
   // Les admins ne suivent pas de dossier : seuls les comptes « user » peuvent être référents
   const referentOptions = usersQuery.data?.filter(
-    ({ role }) => role === 'user',
+    ({ role }) => role === ROLES.USER,
   );
   const currentReferent = beneficiary?.referent;
   // Création : la personne connectée est référente par défaut, sauf un admin qui doit choisir
   const defaultReferentId =
-    currentReferent?.id ?? (user.role === 'admin' ? '' : user.id);
+    currentReferent?.id ?? (isAdmin(user) ? '' : user.id);
   // Un référent archivé n'est plus proposé : il reste affiché tant qu'il n'est pas remplacé
   const isCurrentReferentListed =
     !currentReferent ||

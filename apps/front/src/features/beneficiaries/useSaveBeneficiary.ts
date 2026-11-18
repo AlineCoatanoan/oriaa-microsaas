@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { BeneficiaryPayload } from './beneficiary-form';
 import type { Beneficiary } from './types';
-import { beneficiaryQueryKey } from './useBeneficiary';
 
 /** Crée un bénéficiaire, ou le modifie si un identifiant est fourni. */
 export function useSaveBeneficiary(id?: number) {
@@ -18,11 +18,13 @@ export function useSaveBeneficiary(id?: number) {
     },
     onSuccess: (beneficiary) => {
       queryClient.setQueryData(
-        beneficiaryQueryKey(beneficiary.id),
+        queryKeys.beneficiaries.detail(beneficiary.id),
         beneficiary,
       );
       // La liste devra être rechargée à la prochaine visite
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.beneficiaries.lists,
+      });
     },
   });
 }

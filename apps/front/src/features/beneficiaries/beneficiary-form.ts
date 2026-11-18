@@ -1,5 +1,5 @@
 import { z } from 'zod/mini';
-import type { PathwayStatus } from './types';
+import { PATHWAY_STATUSES, type PathwayStatus } from './types';
 
 const tooLong = (max: number) => `${max} caractères maximum.`;
 
@@ -31,10 +31,10 @@ export const beneficiaryFormSchema = z.object({
   householdComposition: optionalText(50),
   entryDate: z.string().check(z.minLength(1, "Saisissez la date d'entrée.")),
   referentId: z.string().check(z.minLength(1, 'Choisissez un référent.')),
-  pathwayStatus: z.optional(z.string()),
+  pathwayStatus: z.optional(z.enum(PATHWAY_STATUSES)),
 });
 
-export type BeneficiaryFormValues = z.infer<typeof beneficiaryFormSchema>;
+type BeneficiaryFormValues = z.infer<typeof beneficiaryFormSchema>;
 
 export type BeneficiaryPayload = {
   lastName: string;
@@ -82,8 +82,6 @@ export function toBeneficiaryPayload(
     householdComposition: orNull(values.householdComposition),
     entryDate: values.entryDate,
     ...(referentId !== initialReferentId && { referentId }),
-    ...(values.pathwayStatus && {
-      pathwayStatus: values.pathwayStatus as PathwayStatus,
-    }),
+    ...(values.pathwayStatus && { pathwayStatus: values.pathwayStatus }),
   };
 }

@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { sessionQueryKey, type SessionUser } from './useSession';
+import { queryKeys } from '@/lib/query-keys';
+import type { SessionUser } from './useSession';
 
-export type LoginInput = {
+type LoginInput = {
   email: string;
   password: string;
 };
@@ -18,7 +19,7 @@ export function useLogin() {
         body: input,
       }),
     onSuccess: ({ user }) => {
-      queryClient.setQueryData(sessionQueryKey, user);
+      queryClient.setQueryData(queryKeys.session, user);
     },
   });
 }

@@ -1,18 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 /** Listes sur lesquelles l'utilisateur peut enregistrer son filtre. */
 export type Listing = 'tasks' | 'beneficiaries';
 
 /** Filtre enregistré : l'utilisateur à afficher par défaut. */
-export type FilterPreference = { userId: number };
+type FilterPreference = { userId: number };
 
-const queryKey = (listing: Listing) => ['filter-preference', listing];
 const path = (listing: Listing) => `/${listing}/filter-preference`;
 
 export function useFilterPreference(listing: Listing) {
   return useQuery({
-    queryKey: queryKey(listing),
+    queryKey: queryKeys.filterPreference(listing),
     queryFn: async () => {
       const { filterPreference } = await api<{
         filterPreference: FilterPreference | null;
@@ -38,7 +38,10 @@ export function useSaveFilterPreference(listing: Listing) {
       return filterPreference;
     },
     onSuccess: (filterPreference) => {
-      queryClient.setQueryData(queryKey(listing), filterPreference);
+      queryClient.setQueryData(
+        queryKeys.filterPreference(listing),
+        filterPreference,
+      );
     },
   });
 }

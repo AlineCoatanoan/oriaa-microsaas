@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 export function useDeleteTask(id: number) {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export function useDeleteTask(id: number) {
     // renverrait une 404. Les listes se rechargent à leur prochain affichage.
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: ['tasks'],
+        queryKey: queryKeys.tasks.all,
         refetchType: 'none',
       }),
   });

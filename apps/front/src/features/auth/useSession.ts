@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
+import type { Role } from './roles';
 
 export type SessionUser = {
   id: number;
@@ -7,10 +9,8 @@ export type SessionUser = {
   lastName: string;
   email: string;
   job: string;
-  role: string;
+  role: Role;
 };
-
-export const sessionQueryKey = ['session'];
 
 /** Renvoie l'utilisateur connecté, ou null si personne n'est connecté. */
 async function fetchSession(): Promise<SessionUser | null> {
@@ -25,7 +25,7 @@ async function fetchSession(): Promise<SessionUser | null> {
 
 export function useSession() {
   return useQuery({
-    queryKey: sessionQueryKey,
+    queryKey: queryKeys.session,
     queryFn: fetchSession,
     retry: false,
     // Évite de redemander la session à chaque changement de page

@@ -2,14 +2,10 @@ import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
+import { roleLabels } from '@/features/auth/roles';
 import { useLogout } from '@/features/auth/useLogout';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { ChangePasswordForm } from './ChangePasswordForm';
-
-const roleLabels: Record<string, string> = {
-  admin: 'Administrateur',
-  user: 'Utilisateur',
-};
 
 export function ProfilePage() {
   const user = useCurrentUser();
@@ -20,7 +16,7 @@ export function ProfilePage() {
     { label: 'Nom', value: user.lastName },
     { label: 'Adresse e-mail', value: user.email },
     { label: 'Fonction', value: user.job },
-    { label: 'Rôle', value: roleLabels[user.role] ?? user.role },
+    { label: 'Rôle', value: roleLabels[user.role] },
   ];
 
   return (

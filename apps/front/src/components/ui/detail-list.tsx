@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export type Detail = {
+type Detail = {
   label: string;
   /** Vide : « Non renseigné » est affiché à la place. */
   value: ReactNode;

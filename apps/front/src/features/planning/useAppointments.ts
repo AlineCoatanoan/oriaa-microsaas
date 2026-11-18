@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api, toQueryString } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import type { Appointment } from './types';
 
 export type AppointmentFilters = {
@@ -11,7 +12,7 @@ export type AppointmentFilters = {
 
 export function useAppointments(filters: AppointmentFilters) {
   return useQuery({
-    queryKey: ['appointments', filters],
+    queryKey: queryKeys.appointments.list(filters),
     queryFn: async () => {
       const { appointments } = await api<{ appointments: Appointment[] }>(
         `/appointments${toQueryString(filters)}`,
