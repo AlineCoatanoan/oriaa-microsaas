@@ -13,7 +13,7 @@ import {
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
 import { formatDate, toDateKey } from '@/lib/dates';
-import { formatBeneficiaryName } from '@/lib/format';
+import { formatBeneficiaryName, plural } from '@/lib/format';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
 import { isCompleted } from './filter-tasks';
 import { SubtaskList } from './SubtaskList';
@@ -163,8 +163,7 @@ function TaskView({ task }: { task: TaskDetails }) {
                 },
                 { label: 'Échéance', value: <TaskDueDate task={task} /> },
                 {
-                  label:
-                    task.assignees.length > 1 ? 'Responsables' : 'Responsable',
+                  label: plural(task.assignees.length, 'Responsable'),
                   value: (
                     <ul>
                       {task.assignees.map((person) => (

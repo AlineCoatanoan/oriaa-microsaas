@@ -1,14 +1,19 @@
 import { Eye } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { Card } from '@/components/ui/card';
-import { ErrorState } from '@/components/ui/error-state';
-import { LoadingState } from '@/components/ui/loading-state';
+import {
+  DataList,
+  DataListRow,
+  IconLink,
+  RowLink,
+} from '@/components/ui/data-list';
 import {
   ResultMessage,
   type ActionResult,
 } from '@/components/ui/result-message';
 import { Pagination } from '@/components/ui/pagination';
+import { QueryState } from '@/components/ui/query-state';
 import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import {
@@ -16,8 +21,7 @@ import {
   SavedPersonFilter,
 } from '@/features/filter-preference/PersonFilter';
 import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
-import { getErrorMessage } from '@/lib/api';
-import { formatBeneficiaries } from '@/lib/format';
+import { formatBeneficiaries, plural } from '@/lib/format';
 import { paginate } from '@/lib/paginate';
 import { uniquePeople } from '@/lib/people';
 import { useNavigationMessage } from '@/lib/useNavigationMessage';
@@ -83,7 +87,7 @@ export function TasksPage() {
       dot: 'bg-danger',
     },
     {
-      label: (count: number) => (count > 1 ? 'urgentes' : 'urgente'),
+      label: (count: number) => plural(count, 'urgente'),
       count: openTasks.filter((task) => task.isUrgent).length,
       dot: 'bg-warning',
     },
@@ -105,6 +109,10 @@ export function TasksPage() {
     page,
     pageCount,
   } = paginate(sorted, Number(searchParams.get('page')) || 1, PAGE_SIZE);
+
+  const viewLabel =
+    view === 'done' ? plural(sorted.length, 'terminée') : 'à faire';
+  const status = `${sorted.length} ${plural(sorted.length, 'tâche')} ${viewLabel}`;
 
   return (
     <div className="space-y-6">
@@ -161,96 +169,71 @@ export function TasksPage() {
       <ResultMessage result={result} />
 
       <Card className="p-0 md:p-0">
-        {query.isPending || assigneeFilter.isPending ? (
-          <LoadingState />
-        ) : query.error ? (
-          <ErrorState
-            message={getErrorMessage(query.error)}
-            onRetry={() => query.refetch()}
-          />
-        ) : (
-          <>
-            <p role="status" className="px-4 pt-4 text-sm text-muted md:px-6">
-              {sorted.length} tâche{sorted.length > 1 && 's'}{' '}
-              {view === 'done' ? 'terminée' : 'à faire'}
-              {sorted.length > 1 && view === 'done' && 's'}
-              {pageCount > 1 && ` · page ${page} sur ${pageCount}`}
-            </p>
-
-            {pageTasks.length === 0 ? (
-              <p className="px-4 py-8 text-center text-muted md:px-6">
-                Aucune tâche ne correspond à ces critères.
-              </p>
-            ) : (
+        <QueryState
+          query={query}
+          isPending={query.isPending || assigneeFilter.isPending}
+        >
+          <DataList
+            status={status}
+            page={page}
+            pageCount={pageCount}
+            isEmpty={pageTasks.length === 0}
+            emptyMessage="Aucune tâche ne correspond à ces critères."
+            columns={columns}
+            headers={
               <>
-                <div
-                  aria-hidden="true"
-                  className={`${columns} mt-2 hidden border-b border-border px-6 pb-2 text-xs font-semibold tracking-wide text-muted uppercase`}
-                >
-                  <span>Titre</span>
-                  <span>Bénéficiaire</span>
-                  <span>Échéance</span>
-                  <span>Statut</span>
-                  <span>Priorité</span>
-                  <span className="w-11" />
-                </div>
-                <ul className="divide-y divide-border">
-                  {pageTasks.map((task) => (
-                    <li
-                      key={task.id}
-                      className={`${columns} relative grid grid-cols-[1fr_auto] gap-x-2 gap-y-2 px-4 py-3 hover:bg-page md:px-6`}
-                    >
-                      <div className="min-w-0 space-y-2 md:contents md:space-y-0">
-                        {/* Le lien couvre toute la ligne grâce à after:inset-0 */}
-                        <Link
-                          to={`/tasks/${task.id}`}
-                          className="block font-medium after:absolute after:inset-0 hover:underline"
-                        >
-                          {task.title}
-                        </Link>
-                        <p className="text-sm text-muted md:text-base md:text-structure">
-                          {formatBeneficiaries(task.beneficiaries)}
-                        </p>
-                        <p className="text-sm md:text-base">
-                          <span className="text-muted md:sr-only">
-                            Échéance :{' '}
-                          </span>
-                          <TaskDueDate task={task} />
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 md:contents">
-                          {/* Au-dessus du lien de la ligne pour rester cliquables */}
-                          <div className="relative z-10 w-32">
-                            <TaskFieldSelect
-                              task={task}
-                              field="status"
-                              onResult={setResult}
-                            />
-                          </div>
-                          <div className="relative z-10 w-28">
-                            <TaskFieldSelect
-                              task={task}
-                              field="priority"
-                              onResult={setResult}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-start md:items-center">
-                        <Link
-                          to={`/tasks/${task.id}`}
-                          aria-label={`Voir la tâche « ${task.title} »`}
-                          className="relative z-10 flex size-11 items-center justify-center rounded-lg text-interaction hover:bg-page"
-                        >
-                          <Eye className="size-5" aria-hidden="true" />
-                        </Link>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <span>Titre</span>
+                <span>Bénéficiaire</span>
+                <span>Échéance</span>
+                <span>Statut</span>
+                <span>Priorité</span>
+                <span className="w-11" />
               </>
-            )}
-          </>
-        )}
+            }
+          >
+            {pageTasks.map((task) => (
+              <DataListRow
+                key={task.id}
+                columns={columns}
+                actions={
+                  <IconLink
+                    to={`/tasks/${task.id}`}
+                    label={`Voir la tâche « ${task.title} »`}
+                    icon={Eye}
+                  />
+                }
+              >
+                <RowLink to={`/tasks/${task.id}`} className="block">
+                  {task.title}
+                </RowLink>
+                <p className="text-sm text-muted md:text-base md:text-structure">
+                  {formatBeneficiaries(task.beneficiaries)}
+                </p>
+                <p className="text-sm md:text-base">
+                  <span className="text-muted md:sr-only">Échéance : </span>
+                  <TaskDueDate task={task} />
+                </p>
+                <div className="flex flex-wrap items-center gap-2 md:contents">
+                  {/* Au-dessus du lien de la ligne pour rester cliquables */}
+                  <div className="relative z-10 w-32">
+                    <TaskFieldSelect
+                      task={task}
+                      field="status"
+                      onResult={setResult}
+                    />
+                  </div>
+                  <div className="relative z-10 w-28">
+                    <TaskFieldSelect
+                      task={task}
+                      field="priority"
+                      onResult={setResult}
+                    />
+                  </div>
+                </div>
+              </DataListRow>
+            ))}
+          </DataList>
+        </QueryState>
       </Card>
 
       <Pagination
