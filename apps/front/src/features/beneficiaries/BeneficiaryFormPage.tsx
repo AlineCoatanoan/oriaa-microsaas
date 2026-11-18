@@ -2,7 +2,8 @@ import { ChevronLeft } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { ErrorState } from '@/components/ui/error-state';
 import { LoadingState } from '@/components/ui/loading-state';
-import { getErrorMessage } from '@/lib/api';
+import { ApiError, getErrorMessage } from '@/lib/api';
+import { formatBeneficiaryName } from '@/lib/format';
 import { BeneficiaryForm } from './BeneficiaryForm';
 import { useBeneficiary } from './useBeneficiary';
 
@@ -40,16 +41,22 @@ function EditBeneficiary({ id }: { id: number }) {
 
   if (query.isPending) return <LoadingState />;
   if (query.error) {
+    const isNotFound =
+      query.error instanceof ApiError && query.error.status === 404;
     return (
-      <ErrorState
-        message={getErrorMessage(query.error)}
-        onRetry={() => query.refetch()}
-      />
+      <div className="space-y-4">
+        <BackLink to="/beneficiaries" label="Bénéficiaires" />
+        <ErrorState
+          message={getErrorMessage(query.error)}
+          // Réessayer ne sert à rien si le dossier n'existe pas
+          onRetry={isNotFound ? undefined : () => query.refetch()}
+        />
+      </div>
     );
   }
 
   const beneficiary = query.data;
-  const name = `${beneficiary.lastName} ${beneficiary.firstName}`;
+  const name = formatBeneficiaryName(beneficiary);
 
   return (
     <div className="space-y-6">

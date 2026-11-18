@@ -18,7 +18,7 @@ export function selectTodayTasks(tasks: Task[], today: string) {
     );
 }
 
-/** Nombre de tâches en retard et de tâches prioritaires non terminées. */
+/** Nombre de tâches en retard et de tâches urgentes non terminées. */
 export function countTaskAlerts(tasks: Task[]) {
   return {
     overdue: tasks.filter((task) => task.isOverdue).length,

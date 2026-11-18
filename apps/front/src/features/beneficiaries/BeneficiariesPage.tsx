@@ -17,6 +17,7 @@ import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
 import { formatDate } from '@/lib/dates';
+import { formatBeneficiaryName } from '@/lib/format';
 import { paginate } from '@/lib/paginate';
 import { uniquePeople } from '@/lib/people';
 import { useNavigationMessage } from '@/lib/useNavigationMessage';
@@ -186,7 +187,7 @@ export function BeneficiariesPage() {
                 </div>
                 <ul className="divide-y divide-border">
                   {beneficiaries.map((beneficiary) => {
-                    const name = `${beneficiary.lastName} ${beneficiary.firstName}`;
+                    const name = formatBeneficiaryName(beneficiary);
                     const date = isArchivedView
                       ? beneficiary.exitDate
                       : beneficiary.entryDate;

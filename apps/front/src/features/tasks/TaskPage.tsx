@@ -14,6 +14,7 @@ import {
 import { PersonName } from '@/features/users/PersonName';
 import { ApiError, getErrorMessage } from '@/lib/api';
 import { formatDate, toDateKey } from '@/lib/dates';
+import { formatBeneficiaryName } from '@/lib/format';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
 import { isCompleted } from './filter-tasks';
 import { SubtaskList } from './SubtaskList';
@@ -160,13 +161,13 @@ function TaskView({ task }: { task: TaskDetails }) {
                   label: 'Bénéficiaires',
                   value: task.beneficiaries.length > 0 && (
                     <ul>
-                      {task.beneficiaries.map(({ id, firstName, lastName }) => (
-                        <li key={id}>
+                      {task.beneficiaries.map((beneficiary) => (
+                        <li key={beneficiary.id}>
                           <Link
-                            to={`/beneficiaries/${id}`}
+                            to={`/beneficiaries/${beneficiary.id}`}
                             className="text-interaction hover:underline"
                           >
-                            {lastName} {firstName}
+                            {formatBeneficiaryName(beneficiary)}
                           </Link>
                         </li>
                       ))}

@@ -23,6 +23,7 @@ import { useCurrentUser } from '@/features/auth/useSession';
 import { PersonName } from '@/features/users/PersonName';
 import { ApiError, getErrorMessage } from '@/lib/api';
 import { computeAge, formatDate } from '@/lib/dates';
+import { formatBeneficiaryName } from '@/lib/format';
 import { ArchiveBeneficiaryDialog } from './ArchiveBeneficiaryDialog';
 import { DeleteBeneficiaryDialog } from './DeleteBeneficiaryDialog';
 import { pathwayStatusTones, type Beneficiary } from './types';
@@ -66,7 +67,7 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
   const [announcement, setAnnouncement] = useState('');
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const name = `${beneficiary.lastName} ${beneficiary.firstName}`;
+  const name = formatBeneficiaryName(beneficiary);
   const isArchived = beneficiary.archivedAt !== null;
 
   // Le bouton cliqué a disparu : on replace le focus sur le titre de la page
