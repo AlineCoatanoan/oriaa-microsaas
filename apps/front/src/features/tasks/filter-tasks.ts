@@ -1,7 +1,7 @@
 import { normalizeText } from '@/lib/search';
 import { COMPLETED_TASK_STATUS, type Task } from './types';
 
-type TaskFilters = {
+type TaskListFilters = {
   search: string;
   assigneeId?: number;
 };
@@ -9,7 +9,7 @@ type TaskFilters = {
 /** Recherche dans le titre et filtre par responsable. */
 export function filterTasks(
   tasks: Task[],
-  { search, assigneeId }: TaskFilters,
+  { search, assigneeId }: TaskListFilters,
 ) {
   const term = normalizeText(search.trim());
 

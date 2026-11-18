@@ -5,14 +5,13 @@ import { BackLink } from '@/components/ui/back-link';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
-import { ErrorState } from '@/components/ui/error-state';
-import { LoadingState } from '@/components/ui/loading-state';
+import { DetailQuery } from '@/components/ui/detail-query';
 import {
   ResultMessage,
   type ActionResult,
 } from '@/components/ui/result-message';
 import { PersonName } from '@/features/users/PersonName';
-import { ApiError, getErrorMessage } from '@/lib/api';
+import { getErrorMessage } from '@/lib/api';
 import { formatDate, toDateKey } from '@/lib/dates';
 import { formatBeneficiaryName } from '@/lib/format';
 import { DeleteTaskDialog } from './DeleteTaskDialog';
@@ -28,23 +27,11 @@ export function TaskPage() {
   const id = Number(useParams().id);
   const query = useTask(id);
 
-  if (query.isPending) return <LoadingState />;
-  if (query.error) {
-    const isNotFound =
-      query.error instanceof ApiError && query.error.status === 404;
-    return (
-      <div className="space-y-4">
-        <BackLink to="/tasks">Tâches</BackLink>
-        <ErrorState
-          message={getErrorMessage(query.error)}
-          // Réessayer ne sert à rien si la tâche n'existe pas
-          onRetry={isNotFound ? undefined : () => query.refetch()}
-        />
-      </div>
-    );
-  }
-
-  return <TaskView task={query.data} />;
+  return (
+    <DetailQuery query={query} backTo="/tasks" backLabel="Tâches">
+      {(data) => <TaskView task={data} />}
+    </DetailQuery>
+  );
 }
 
 function TaskView({ task }: { task: TaskDetails }) {

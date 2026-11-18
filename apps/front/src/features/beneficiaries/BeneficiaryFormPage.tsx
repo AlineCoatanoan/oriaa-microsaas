@@ -1,10 +1,9 @@
-import { ChevronLeft } from 'lucide-react';
-import { Link, useParams } from 'react-router';
-import { ErrorState } from '@/components/ui/error-state';
-import { LoadingState } from '@/components/ui/loading-state';
-import { ApiError, getErrorMessage } from '@/lib/api';
+import { useParams } from 'react-router';
+import { BackLink } from '@/components/ui/back-link';
+import { DetailQuery } from '@/components/ui/detail-query';
 import { formatBeneficiaryName } from '@/lib/format';
 import { BeneficiaryForm } from './BeneficiaryForm';
+import type { Beneficiary } from './types';
 import { useBeneficiary } from './useBeneficiary';
 
 export function BeneficiaryFormPage() {
@@ -13,23 +12,11 @@ export function BeneficiaryFormPage() {
   return id ? <EditBeneficiary id={Number(id)} /> : <CreateBeneficiary />;
 }
 
-function BackLink({ to, label }: { to: string; label: string }) {
-  return (
-    <Link
-      to={to}
-      className="inline-flex items-center gap-1 text-sm font-medium text-interaction hover:underline"
-    >
-      <ChevronLeft className="size-4" aria-hidden="true" />
-      {label}
-    </Link>
-  );
-}
-
 function CreateBeneficiary() {
   return (
     <div className="space-y-6">
       <title>Nouveau bénéficiaire – Oriaa</title>
-      <BackLink to="/beneficiaries" label="Bénéficiaires" />
+      <BackLink to="/beneficiaries">Bénéficiaires</BackLink>
       <h1>Nouveau bénéficiaire</h1>
       <BeneficiaryForm />
     </div>
@@ -39,29 +26,24 @@ function CreateBeneficiary() {
 function EditBeneficiary({ id }: { id: number }) {
   const query = useBeneficiary(id);
 
-  if (query.isPending) return <LoadingState />;
-  if (query.error) {
-    const isNotFound =
-      query.error instanceof ApiError && query.error.status === 404;
-    return (
-      <div className="space-y-4">
-        <BackLink to="/beneficiaries" label="Bénéficiaires" />
-        <ErrorState
-          message={getErrorMessage(query.error)}
-          // Réessayer ne sert à rien si le dossier n'existe pas
-          onRetry={isNotFound ? undefined : () => query.refetch()}
-        />
-      </div>
-    );
-  }
+  return (
+    <DetailQuery
+      query={query}
+      backTo="/beneficiaries"
+      backLabel="Bénéficiaires"
+    >
+      {(beneficiary) => <EditBeneficiaryForm beneficiary={beneficiary} />}
+    </DetailQuery>
+  );
+}
 
-  const beneficiary = query.data;
+function EditBeneficiaryForm({ beneficiary }: { beneficiary: Beneficiary }) {
   const name = formatBeneficiaryName(beneficiary);
 
   return (
     <div className="space-y-6">
       <title>{`Modifier ${name} – Oriaa`}</title>
-      <BackLink to={`/beneficiaries/${id}`} label={name} />
+      <BackLink to={`/beneficiaries/${beneficiary.id}`}>{name}</BackLink>
       <h1>Modifier {name}</h1>
       {/* Règle métier : un dossier archivé est en lecture seule */}
       {beneficiary.archivedAt ? (

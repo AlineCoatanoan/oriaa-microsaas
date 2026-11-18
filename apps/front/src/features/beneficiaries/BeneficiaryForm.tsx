@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/select';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { useUsers } from '@/features/users/useUsers';
 import { getErrorMessage } from '@/lib/api';
-import { validateForm, type FieldErrors } from '@/lib/form';
+import { focusFirstError, validateForm, type FieldErrors } from '@/lib/form';
 import {
   beneficiaryFormSchema,
   toBeneficiaryPayload,
@@ -60,8 +60,7 @@ export function BeneficiaryForm({ beneficiary }: BeneficiaryFormProps) {
 
     if (!result.success) {
       setErrors(result.errors);
-      const [firstField] = Object.keys(result.errors);
-      (form.elements.namedItem(firstField) as HTMLElement | null)?.focus();
+      focusFirstError(form, result.errors);
       return;
     }
 

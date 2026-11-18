@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { ErrorState } from '@/components/ui/error-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Pagination } from '@/components/ui/pagination';
+import { ResultMessage } from '@/components/ui/result-message';
 import { SearchInput } from '@/components/ui/search-input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Select } from '@/components/ui/select';
@@ -95,14 +96,9 @@ export function BeneficiariesPage() {
         </ButtonLink>
       </div>
 
-      {message && (
-        <p
-          role="status"
-          className="rounded-lg bg-success-soft p-3 text-success"
-        >
-          {message}
-        </p>
-      )}
+      <ResultMessage
+        result={message ? { message, isError: false } : undefined}
+      />
 
       <div className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -118,7 +114,6 @@ export function BeneficiariesPage() {
               filter={referentFilter}
               label="Filtrer par référent"
               allLabel="Tous les référents"
-              onChange={(value) => updateParam('referent', value)}
             />
           </div>
           <div className="sm:w-52">
