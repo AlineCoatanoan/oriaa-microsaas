@@ -62,7 +62,10 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
   const name = formatBeneficiaryName(beneficiary);
   const isArchived = beneficiary.archivedAt !== null;
 
-  // Le bouton cliqué a disparu : on replace le focus sur le titre de la page
+  // Le bouton cliqué a disparu : on replace le focus sur le titre de la page.
+  // Effet nécessaire : tant que la fenêtre de confirmation est ouverte, le reste
+  // de la page est inerte. On attend donc qu'elle soit fermée (TaskPage, sans
+  // fenêtre, le fait directement dans onSuccess).
   useEffect(() => {
     if (announcement) headingRef.current?.focus();
   }, [announcement]);

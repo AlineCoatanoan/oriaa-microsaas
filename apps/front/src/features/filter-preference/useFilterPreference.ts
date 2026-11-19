@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 
 /** Listes sur lesquelles l'utilisateur peut enregistrer son filtre. */
 export type Listing = 'tasks' | 'beneficiaries';

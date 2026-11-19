@@ -1,9 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { Beneficiary } from './types';
 
-/** Met à jour la fiche en cache et fait recharger les listes. */
+/**
+ * Met à jour la fiche en cache et fait recharger les listes.
+ * Les tâches aussi : celles dont tous les bénéficiaires sont archivés
+ * passent en lecture seule.
+ */
 function useOnBeneficiaryChange() {
   const queryClient = useQueryClient();
 
@@ -13,6 +17,7 @@ function useOnBeneficiaryChange() {
       beneficiary,
     );
     queryClient.invalidateQueries({ queryKey: queryKeys.beneficiaries.lists });
+    queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
   };
 }
 

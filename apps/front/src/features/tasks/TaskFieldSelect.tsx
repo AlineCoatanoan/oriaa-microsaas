@@ -42,7 +42,7 @@ const priorityField: FieldConfig<TaskPriority> = {
   toUpdate: (priority) => ({ priority }),
 };
 
-type SelectProps = {
+type FieldSelectProps = {
   task: Task;
   disabled?: boolean;
   /** Message à annoncer après la modification (réussie ou non). */
@@ -53,7 +53,7 @@ type SelectProps = {
 export function TaskFieldSelect({
   field,
   ...props
-}: SelectProps & { field: 'status' | 'priority' }) {
+}: FieldSelectProps & { field: 'status' | 'priority' }) {
   return field === 'status' ? (
     <FieldSelect config={statusField} {...props} />
   ) : (
@@ -66,7 +66,7 @@ function FieldSelect<V extends string>({
   task,
   disabled = false,
   onResult,
-}: SelectProps & { config: FieldConfig<V> }) {
+}: FieldSelectProps & { config: FieldConfig<V> }) {
   const update = useUpdateTask(task.id);
   const { label, options, tones } = config;
   // Pendant l'envoi, on affiche déjà la nouvelle valeur

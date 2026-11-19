@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api, ApiError } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { Role } from './roles';
 
 export type SessionUser = {

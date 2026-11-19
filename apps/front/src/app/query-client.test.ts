@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { queryClient } from './query-client';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/app/query-keys';
 import { ApiError } from '@/lib/api';
 
 describe('queryClient', () => {

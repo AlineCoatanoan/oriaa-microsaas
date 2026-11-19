@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { BeneficiaryPayload } from './beneficiary-form';
 import type { Beneficiary } from './types';
 
