@@ -1,0 +1,57 @@
+name: Bug
+description: Signaler un comportement anormal d'Oriaa
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ce ticket sert aussi à créer automatiquement un cas de test de non-régression dans Squash.
+        Garde les étapes courtes : une action par ligne, numérotée.
+
+  - type: textarea
+    id: prerequis
+    attributes:
+      label: Prérequis
+      description: Ce qu'il faut avant de commencer (rôle connecté, données existantes…)
+      placeholder: |
+        Être connecté en tant qu'utilisateur (non admin)
+        Avoir au moins un bénéficiaire actif
+    validations:
+      required: true
+
+  - type: textarea
+    id: etapes
+    attributes:
+      label: Étapes pour reproduire
+      description: Une action par ligne, numérotée
+      placeholder: |
+        1. Aller sur la liste des bénéficiaires
+        2. Cliquer sur l'icône crayon d'un bénéficiaire
+        3. Vider le champ "Nom" et enregistrer
+    validations:
+      required: true
+
+  - type: textarea
+    id: resultat-attendu
+    attributes:
+      label: Résultat attendu
+      placeholder: Un message d'erreur indique que le nom est obligatoire
+    validations:
+      required: true
+
+  - type: textarea
+    id: resultat-obtenu
+    attributes:
+      label: Résultat obtenu
+      placeholder: Le bénéficiaire est enregistré sans nom
+    validations:
+      required: true
+
+  - type: textarea
+    id: complements
+    attributes:
+      label: Informations complémentaires
+      description: Captures d'écran, message d'erreur, navigateur… (facultatif)
+    validations:
+      required: false
