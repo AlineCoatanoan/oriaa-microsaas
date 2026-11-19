@@ -1,5 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-keys';
+import { queryKeys } from '@/app/query-keys';
 import { ApiError } from '@/lib/api';
 
 /** Session expirée : l'utilisateur est oublié et RequireAuth renvoie vers la connexion. */

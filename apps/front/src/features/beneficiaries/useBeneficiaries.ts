@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api, toQueryString } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { Beneficiary } from './types';
 
 export function useBeneficiaries({ archived }: { archived: boolean }) {

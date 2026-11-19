@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 
 /** Déconnecte l'utilisateur et efface les données gardées en cache. */
 export function useLogout() {

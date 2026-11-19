@@ -19,7 +19,7 @@ En développement, les appels à `/api` sont transmis au back (`http://localhost
 
 | Dossier               | Contenu                                                                                              |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
-| `app/`                | Routeur, client TanStack Query, pages d'erreur et 404                                                |
+| `app/`                | Routeur, client TanStack Query et clés du cache, pages d'erreur et 404                               |
 | `components/ui/`      | Composants d'interface réutilisables (boutons, champs, cartes…)                                      |
 | `components/layout/`  | Structure commune : en-tête, menu, mise en page                                                      |
 | `features/<domaine>/` | Une fonctionnalité par dossier (bénéficiaires, tâches…) : pages, composants, hooks de données, types |

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 
 /** Supprime définitivement un bénéficiaire archivé (RGPD, admin). */
 export function useDeleteBeneficiary(id: number) {

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { Task, TaskPriority, TaskStatus } from './types';
 
 /** Champs modifiables d'une tâche : seuls ceux envoyés changent. */

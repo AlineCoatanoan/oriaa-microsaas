@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
-import { queryKeys } from '@/lib/query-keys';
 import type { User } from './types';
 
 /** Comptes actifs, pour les filtres et les listes de sélection. */
