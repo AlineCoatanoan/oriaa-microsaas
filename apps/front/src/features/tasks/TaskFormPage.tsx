@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { BackLink } from '@/components/ui/back-link';
 import { DetailQuery } from '@/components/ui/detail-query';
 import { TaskForm } from './TaskForm';
@@ -12,12 +12,22 @@ export function TaskFormPage() {
 }
 
 function CreateTask() {
+  // Depuis la fiche d'un bénéficiaire : il est coché par défaut
+  const [searchParams] = useSearchParams();
+  const beneficiaryId = Number(searchParams.get('beneficiaryId')) || undefined;
+  const backTo = beneficiaryId ? `/beneficiaries/${beneficiaryId}` : '/tasks';
+
   return (
     <div className="space-y-6">
       <title>Nouvelle tâche – Oriaa</title>
-      <BackLink to="/tasks">Tâches</BackLink>
+      <BackLink to={backTo}>
+        {beneficiaryId ? 'Fiche du bénéficiaire' : 'Tâches'}
+      </BackLink>
       <h1>Nouvelle tâche</h1>
-      <TaskForm />
+      <TaskForm
+        defaultBeneficiaryIds={beneficiaryId ? [beneficiaryId] : undefined}
+        cancelTo={backTo}
+      />
     </div>
   );
 }
@@ -45,7 +55,7 @@ function EditTaskForm({ task }: { task: TaskDetails }) {
           est en lecture seule.
         </p>
       ) : (
-        <TaskForm task={task} />
+        <TaskForm task={task} cancelTo={`/tasks/${task.id}`} />
       )}
     </div>
   );

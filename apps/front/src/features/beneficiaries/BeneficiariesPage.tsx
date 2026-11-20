@@ -44,9 +44,9 @@ const viewOptions: { value: View; label: string }[] = [
   { value: 'archived', label: 'Archivés' },
 ];
 
-// Mêmes colonnes pour l'en-tête et les lignes, à partir de la tablette
+// Mêmes colonnes pour l'en-tête et les lignes, quand la liste est assez large
 const columns =
-  'md:grid md:grid-cols-[2fr_1.5fr_1.5fr_1fr_auto] md:items-center md:gap-4';
+  '@3xl:grid @3xl:grid-cols-[2fr_1.5fr_1.5fr_1fr_auto] @3xl:items-center @3xl:gap-4';
 
 export function BeneficiariesPage() {
   // Filtres gardés dans l'URL : ils sont conservés au retour depuis une fiche
@@ -215,12 +215,12 @@ export function BeneficiariesPage() {
                       {beneficiary.pathwayStatus}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted md:text-base md:text-structure">
-                    <span className="md:sr-only">Référent : </span>
+                  <p className="text-sm text-muted @3xl:text-base @3xl:text-structure">
+                    <span className="@3xl:sr-only">Référent : </span>
                     <PersonName person={beneficiary.referent} />
                   </p>
-                  <p className="text-sm text-muted md:text-base md:text-structure">
-                    <span className="md:sr-only">{dateLabel} le </span>
+                  <p className="text-sm text-muted @3xl:text-base @3xl:text-structure">
+                    <span className="@3xl:sr-only">{dateLabel} le </span>
                     {date ? formatDate(date) : '–'}
                   </p>
                 </DataListRow>
