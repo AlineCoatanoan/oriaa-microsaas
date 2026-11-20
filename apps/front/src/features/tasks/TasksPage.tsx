@@ -1,6 +1,7 @@
-import { Eye } from 'lucide-react';
+import { Eye, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { ButtonLink } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
   DataList,
@@ -133,6 +134,10 @@ export function TasksPage() {
             ))}
           </ul>
         )}
+        <ButtonLink to="/tasks/new" className="sm:ml-auto">
+          <Plus className="size-4" aria-hidden="true" />
+          Ajouter une tâche
+        </ButtonLink>
       </div>
 
       <div className="space-y-3">
@@ -187,7 +192,7 @@ export function TasksPage() {
                 <span>Échéance</span>
                 <span>Statut</span>
                 <span>Priorité</span>
-                <span className="w-11" />
+                <span className="w-[5.5rem]" />
               </>
             }
           >
@@ -196,11 +201,18 @@ export function TasksPage() {
                 key={task.id}
                 columns={columns}
                 actions={
-                  <IconLink
-                    to={`/tasks/${task.id}`}
-                    label={`Voir la tâche « ${task.title} »`}
-                    icon={Eye}
-                  />
+                  <>
+                    <IconLink
+                      to={`/tasks/${task.id}`}
+                      label={`Voir la tâche « ${task.title} »`}
+                      icon={Eye}
+                    />
+                    <IconLink
+                      to={`/tasks/${task.id}/edit`}
+                      label={`Modifier la tâche « ${task.title} »`}
+                      icon={Pencil}
+                    />
+                  </>
                 }
               >
                 <RowLink to={`/tasks/${task.id}`} className="block">

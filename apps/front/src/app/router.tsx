@@ -13,6 +13,11 @@ const lazyBeneficiaryFormPage = () =>
     ({ BeneficiaryFormPage }) => ({ Component: BeneficiaryFormPage }),
   );
 
+const lazyTaskFormPage = () =>
+  import('@/features/tasks/TaskFormPage').then(({ TaskFormPage }) => ({
+    Component: TaskFormPage,
+  }));
+
 /*
  * Éco-conception : chaque page métier est chargée à la demande (option lazy).
  * Son code n'est téléchargé qu'à sa première visite, au lieu d'être livré
@@ -72,11 +77,19 @@ export const routes: RouteObject[] = [
                   ),
               },
               {
+                path: '/tasks/new',
+                lazy: lazyTaskFormPage,
+              },
+              {
                 path: '/tasks/:id',
                 lazy: () =>
                   import('@/features/tasks/TaskPage').then(({ TaskPage }) => ({
                     Component: TaskPage,
                   })),
+              },
+              {
+                path: '/tasks/:id/edit',
+                lazy: lazyTaskFormPage,
               },
               {
                 path: '/planning',

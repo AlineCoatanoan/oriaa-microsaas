@@ -11,7 +11,7 @@ import {
   type TaskPriority,
   type TaskStatus,
 } from './types';
-import { useUpdateTask, type TaskUpdate } from './useUpdateTask';
+import { useSaveTask, type TaskUpdate } from './useSaveTask';
 
 type EditableFields = Pick<TaskUpdate, 'status' | 'priority'>;
 
@@ -67,7 +67,7 @@ function FieldSelect<V extends string>({
   disabled = false,
   onResult,
 }: FieldSelectProps & { config: FieldConfig<V> }) {
-  const update = useUpdateTask(task.id);
+  const update = useSaveTask(task.id);
   const { label, options, tones } = config;
   // Pendant l'envoi, on affiche déjà la nouvelle valeur
   const pendingValue = update.isPending && config.read(update.variables);

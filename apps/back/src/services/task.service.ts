@@ -10,7 +10,12 @@ import {
 } from '../lib/dto.js';
 import { visibleTasksWhere, type Viewer } from '../lib/task-visibility.js';
 import { assertNotesExist } from './note.service.js';
-import { ConflictError, NotFoundError } from '../errors/app-error.js';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from '../errors/app-error.js';
+import { ROLES } from '../config/roles.js';
 import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
@@ -40,6 +45,8 @@ import {
 import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
 export const UNKNOWN_ASSIGNEE_MESSAGE = 'Responsable introuvable.';
+export const ADMIN_ASSIGNEE_MESSAGE =
+  'Une tâche ne peut pas être confiée à un administrateur.';
 
 /** Données liées à récupérer avec chaque tâche. */
 const taskInclude = {
@@ -108,6 +115,20 @@ export async function assertTaskEditable(id: number, viewer: Viewer) {
   return task;
 }
 
+/**
+ * Vérifie les responsables ajoutés : des comptes actifs, et jamais un admin
+ * quand la personne connectée est un simple utilisateur.
+ */
+async function assertValidAssignees(ids: number[], viewer: Viewer) {
+  await assertActiveUsers(ids, UNKNOWN_ASSIGNEE_MESSAGE);
+  if (viewer.role === ROLES.ADMIN) return;
+
+  const adminCount = await prisma.user.count({
+    where: { user_id: { in: ids }, role: { label: ROLES.ADMIN } },
+  });
+  if (adminCount > 0) throw new ForbiddenError(ADMIN_ASSIGNEE_MESSAGE);
+}
+
 /** Liste les tâches filtrées, de l'échéance la plus proche à la plus lointaine. */
 export async function findAll(filters: ListTasksQuery, viewer: Viewer) {
   const { beneficiaryId, assigneeId, status, priority } = filters;
@@ -138,12 +159,15 @@ export async function findById(id: number, viewer: Viewer) {
 }
 
 /** Crée une tâche. Par défaut, la personne connectée en est responsable. */
-export async function create(data: CreateTaskInput, currentUserId: number) {
-  const assigneeIds = unique(data.assigneeIds ?? [currentUserId]);
+export async function create(
+  data: CreateTaskInput,
+  currentUser: Viewer & { id: number },
+) {
+  const assigneeIds = unique(data.assigneeIds ?? [currentUser.id]);
   const beneficiaryIds = unique(data.beneficiaryIds ?? []);
   const noteIds = unique(data.noteIds ?? []);
 
-  await assertActiveUsers(assigneeIds, UNKNOWN_ASSIGNEE_MESSAGE);
+  await assertValidAssignees(assigneeIds, currentUser);
   await assertActiveBeneficiaries(beneficiaryIds);
   await assertNotesExist(noteIds);
 
@@ -154,7 +178,7 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
       due_date: toDate(data.dueDate),
       status: DEFAULT_TASK_STATUS,
       priority: data.priority ?? DEFAULT_TASK_PRIORITY,
-      user_id_created_by: currentUserId,
+      user_id_created_by: currentUser.id,
       assignees: { create: toAssigneeLinks(assigneeIds) },
       beneficiaries: { create: toBeneficiaryLinks(beneficiaryIds) },
       notes: { create: toNoteLinks(noteIds) },
@@ -168,7 +192,7 @@ export async function create(data: CreateTaskInput, currentUserId: number) {
 /**
  * Modifie une tâche. Seuls les champs envoyés sont modifiés.
  * Seuls les liens ajoutés sont vérifiés : un lien existant vers un bénéficiaire
- * archivé ou un collègue parti peut être conservé.
+ * archivé, un collègue parti ou un admin déjà responsable peut être conservé.
  */
 export async function update(
   id: number,
@@ -181,12 +205,12 @@ export async function update(
   const noteIds = data.noteIds && unique(data.noteIds);
 
   if (assigneeIds) {
-    await assertActiveUsers(
+    await assertValidAssignees(
       newIds(
         assigneeIds,
         existing.assignees.map((link) => link.user_id),
       ),
-      UNKNOWN_ASSIGNEE_MESSAGE,
+      viewer,
     );
   }
   if (beneficiaryIds) {

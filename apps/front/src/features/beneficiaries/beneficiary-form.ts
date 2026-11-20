@@ -1,15 +1,6 @@
 import { z } from 'zod/mini';
+import { optionalText, orNull, requiredText } from '@/lib/form';
 import { PATHWAY_STATUSES, type PathwayStatus } from './types';
-
-const tooLong = (max: number) => `${max} caractères maximum.`;
-
-const requiredText = (max: number, message: string) =>
-  z
-    .string()
-    .check(z.trim(), z.minLength(1, message), z.maxLength(max, tooLong(max)));
-
-const optionalText = (max: number) =>
-  z.string().check(z.trim(), z.maxLength(max, tooLong(max)));
 
 /** Mêmes règles que le back : champs obligatoires et longueurs maximales. */
 export const beneficiaryFormSchema = z.object({
@@ -52,9 +43,6 @@ export type BeneficiaryPayload = {
   referentId?: number;
   pathwayStatus?: PathwayStatus;
 };
-
-/** Champ vide = null : en modification, il vide la valeur enregistrée. */
-const orNull = (value: string) => value || null;
 
 /**
  * Prépare les données pour l'API.
