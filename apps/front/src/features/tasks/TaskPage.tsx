@@ -1,8 +1,8 @@
-import { Archive, Check, Trash2 } from 'lucide-react';
+import { Archive, Check, Pencil, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { BackLink } from '@/components/ui/back-link';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { DetailList } from '@/components/ui/detail-list';
 import { DetailQuery } from '@/components/ui/detail-query';
@@ -21,7 +21,7 @@ import { TaskDueDate } from './TaskDueDate';
 import { TaskFieldSelect } from './TaskFieldSelect';
 import { COMPLETED_TASK_STATUS, type TaskDetails } from './types';
 import { useTask } from './useTask';
-import { useUpdateTask } from './useUpdateTask';
+import { useSaveTask } from './useSaveTask';
 
 export function TaskPage() {
   const id = Number(useParams().id);
@@ -35,7 +35,7 @@ export function TaskPage() {
 }
 
 function TaskView({ task }: { task: TaskDetails }) {
-  const update = useUpdateTask(task.id);
+  const update = useSaveTask(task.id);
   const [result, setResult] = useState<ActionResult | undefined>();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -102,6 +102,10 @@ function TaskView({ task }: { task: TaskDetails }) {
                 Marquer terminée
               </Button>
             )}
+            <ButtonLink variant="outline" to={`/tasks/${task.id}/edit`}>
+              <Pencil className="size-4" aria-hidden="true" />
+              Modifier
+            </ButtonLink>
             <Button
               variant="danger"
               size="icon"

@@ -20,9 +20,7 @@ export async function getById(_req: Request, res: Response) {
 
 /** POST /api/tasks */
 export async function create(req: Request, res: Response) {
-  const user = getCurrentUser(res);
-
-  const task = await taskService.create(req.body, user.id);
+  const task = await taskService.create(req.body, getCurrentUser(res));
   res.status(201).json({ task });
 }
 
