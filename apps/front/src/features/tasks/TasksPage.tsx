@@ -1,14 +1,9 @@
-import { Eye, Pencil, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ButtonLink } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  DataList,
-  DataListRow,
-  IconLink,
-  RowLink,
-} from '@/components/ui/data-list';
+import { DataList } from '@/components/ui/data-list';
 import {
   ResultMessage,
   type ActionResult,
@@ -34,8 +29,7 @@ import {
   sortByDueDate,
   sortByLastUpdate,
 } from './filter-tasks';
-import { TaskDueDate } from './TaskDueDate';
-import { TaskFieldSelect } from './TaskFieldSelect';
+import { TaskHeaders, TaskRow, taskColumns } from './TaskRow';
 import { useTasks } from './useTasks';
 
 type View = 'todo' | 'done';
@@ -46,10 +40,6 @@ const viewOptions: { value: View; label: string }[] = [
   { value: 'todo', label: 'À faire' },
   { value: 'done', label: 'Terminées' },
 ];
-
-// Mêmes colonnes pour l'en-tête et les lignes, à partir de la tablette
-const columns =
-  'md:grid md:grid-cols-[2fr_1.5fr_1.3fr_9rem_8rem_auto] md:items-center md:gap-4';
 
 export function TasksPage() {
   // Une seule requête : la vue, la recherche et les filtres sont appliqués ici
@@ -184,65 +174,16 @@ export function TasksPage() {
             pageCount={pageCount}
             isEmpty={pageTasks.length === 0}
             emptyMessage="Aucune tâche ne correspond à ces critères."
-            columns={columns}
-            headers={
-              <>
-                <span>Titre</span>
-                <span>Bénéficiaire</span>
-                <span>Échéance</span>
-                <span>Statut</span>
-                <span>Priorité</span>
-                <span className="w-[5.5rem]" />
-              </>
-            }
+            columns={taskColumns}
+            headers={<TaskHeaders details="Bénéficiaire" />}
           >
             {pageTasks.map((task) => (
-              <DataListRow
+              <TaskRow
                 key={task.id}
-                columns={columns}
-                actions={
-                  <>
-                    <IconLink
-                      to={`/tasks/${task.id}`}
-                      label={`Voir la tâche « ${task.title} »`}
-                      icon={Eye}
-                    />
-                    <IconLink
-                      to={`/tasks/${task.id}/edit`}
-                      label={`Modifier la tâche « ${task.title} »`}
-                      icon={Pencil}
-                    />
-                  </>
-                }
-              >
-                <RowLink to={`/tasks/${task.id}`} className="block">
-                  {task.title}
-                </RowLink>
-                <p className="text-sm text-muted md:text-base md:text-structure">
-                  {formatBeneficiaries(task.beneficiaries)}
-                </p>
-                <p className="text-sm md:text-base">
-                  <span className="text-muted md:sr-only">Échéance : </span>
-                  <TaskDueDate task={task} />
-                </p>
-                <div className="flex flex-wrap items-center gap-2 md:contents">
-                  {/* Au-dessus du lien de la ligne pour rester cliquables */}
-                  <div className="relative z-10 w-32">
-                    <TaskFieldSelect
-                      task={task}
-                      field="status"
-                      onResult={setResult}
-                    />
-                  </div>
-                  <div className="relative z-10 w-28">
-                    <TaskFieldSelect
-                      task={task}
-                      field="priority"
-                      onResult={setResult}
-                    />
-                  </div>
-                </div>
-              </DataListRow>
+                task={task}
+                details={formatBeneficiaries(task.beneficiaries)}
+                onResult={setResult}
+              />
             ))}
           </DataList>
         </QueryState>

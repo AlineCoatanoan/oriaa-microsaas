@@ -46,9 +46,17 @@ function withCurrent<T extends { id: number }>(
 type TaskFormProps = {
   /** Absent : création d'une nouvelle tâche. */
   task?: TaskDetails;
+  /** Création depuis la fiche d'un bénéficiaire : il est coché par défaut. */
+  defaultBeneficiaryIds?: number[];
+  /** Page où revenir avec « Annuler ». */
+  cancelTo: string;
 };
 
-export function TaskForm({ task }: TaskFormProps) {
+export function TaskForm({
+  task,
+  defaultBeneficiaryIds = [],
+  cancelTo,
+}: TaskFormProps) {
   const navigate = useNavigate();
   const user = useCurrentUser();
   const usersQuery = useUsers();
@@ -210,7 +218,9 @@ export function TaskForm({ task }: TaskFormProps) {
               legend="Bénéficiaires concernés (facultatif)"
               name="beneficiaryIds"
               options={beneficiaryOptions}
-              defaultChecked={task?.beneficiaries.map(({ id }) => id) ?? []}
+              defaultChecked={
+                task?.beneficiaries.map(({ id }) => id) ?? defaultBeneficiaryIds
+              }
               searchLabel="Rechercher un bénéficiaire"
               emptyMessage="Aucun bénéficiaire actif."
             />
@@ -219,10 +229,7 @@ export function TaskForm({ task }: TaskFormProps) {
       </fieldset>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <ButtonLink
-          variant="outline"
-          to={task ? `/tasks/${task.id}` : '/tasks'}
-        >
+        <ButtonLink variant="outline" to={cancelTo}>
           Annuler
         </ButtonLink>
         <Button type="submit" pending={save.isPending}>

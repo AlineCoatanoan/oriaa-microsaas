@@ -20,6 +20,7 @@ import { FormAlert } from '@/components/ui/form-alert';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { isAdmin } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
+import { BeneficiaryTasks } from '@/features/tasks/BeneficiaryTasks';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
 import { computeAge, formatDate } from '@/lib/dates';
@@ -253,14 +254,19 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
                 </TabsTab>
               ))}
             </TabsList>
-            {/* Contenu ajouté par #90 (tâches), #89 (notes), #91 (rendez-vous) et #134 (documents) */}
-            {tabs.map(({ value, label }) => (
-              <TabsPanel key={value} value={value} className="p-4 md:p-6">
-                <p className="text-muted">
-                  {label} de ce bénéficiaire : bientôt disponible.
-                </p>
-              </TabsPanel>
-            ))}
+            <TabsPanel value="tasks">
+              <BeneficiaryTasks beneficiary={beneficiary} />
+            </TabsPanel>
+            {/* Contenu ajouté par #89 (notes), #91 (rendez-vous) et #134 (documents) */}
+            {tabs
+              .filter(({ value }) => value !== 'tasks')
+              .map(({ value, label }) => (
+                <TabsPanel key={value} value={value} className="p-4 md:p-6">
+                  <p className="text-muted">
+                    {label} de ce bénéficiaire : bientôt disponible.
+                  </p>
+                </TabsPanel>
+              ))}
           </Tabs>
         </Card>
       </div>

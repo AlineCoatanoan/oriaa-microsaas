@@ -10,14 +10,18 @@ type DataListProps = {
   pageCount: number;
   isEmpty: boolean;
   emptyMessage: string;
-  /** Grille partagée par l'en-tête et les lignes, à partir de la tablette. */
+  /** Grille partagée par l'en-tête et les lignes, quand la liste est assez large. */
   columns: string;
-  /** Titres des colonnes, masqués sur téléphone. */
+  /** Titres des colonnes, masqués quand la liste est étroite. */
   headers: ReactNode;
   children: ReactNode;
 };
 
-/** Liste en tableau : une ligne par élément, en cartes sur téléphone. */
+/**
+ * Liste en tableau : une ligne par élément, en cartes quand la place manque.
+ * La mise en page suit la largeur de la liste (@container), pas celle de
+ * l'écran : un onglet de fiche est plus étroit que la page Tâches.
+ */
 export function DataList({
   status,
   page,
@@ -29,7 +33,7 @@ export function DataList({
   children,
 }: DataListProps) {
   return (
-    <>
+    <div className="@container">
       <p role="status" className="px-4 pt-4 text-sm text-muted md:px-6">
         {status}
         {pageCount > 1 && ` · page ${page} sur ${pageCount}`}
@@ -53,7 +57,7 @@ export function DataList({
           <ul className="divide-y divide-border">{children}</ul>
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -72,10 +76,10 @@ export function DataListRow({ columns, actions, children }: DataListRowProps) {
         'relative grid grid-cols-[1fr_auto] gap-x-2 gap-y-2 px-4 py-3 hover:bg-page md:px-6',
       )}
     >
-      <div className="min-w-0 space-y-2 md:contents md:space-y-0">
+      <div className="min-w-0 space-y-2 @3xl:contents @3xl:space-y-0">
         {children}
       </div>
-      <div className="flex items-start md:items-center">{actions}</div>
+      <div className="flex items-start @3xl:items-center">{actions}</div>
     </li>
   );
 }
