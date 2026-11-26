@@ -2,7 +2,11 @@ import type { Beneficiary } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { toDate, toDateOnly } from '../lib/dates.js';
 import { personSelect, toPerson } from '../lib/dto.js';
-import { visibleTasksWhere, type Viewer } from '../lib/task-visibility.js';
+import {
+  visibleAppointmentsWhere,
+  visibleTasksWhere,
+  type Viewer,
+} from '../lib/visibility.js';
 import {
   BadRequestError,
   ConflictError,
@@ -173,7 +177,10 @@ export async function findTimeline(id: number, viewer: Viewer) {
       include: { created_by: personSelect },
     }),
     prisma.appointment.findMany({
-      where: { beneficiaries: { some: { beneficiary_id: id } } },
+      where: {
+        beneficiaries: { some: { beneficiary_id: id } },
+        ...visibleAppointmentsWhere(viewer),
+      },
       include: { user: personSelect },
     }),
   ]);

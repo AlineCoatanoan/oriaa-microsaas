@@ -6,7 +6,7 @@ import { filterPreferenceController } from '../controllers/filter-preference.con
 
 /**
  * Routes du filtre enregistré d'une liste.
- * Montées sur /api/tasks/filter-preference et /api/beneficiaries/filter-preference.
+ * Montées sur /api/tasks, /api/beneficiaries et /api/appointments (/filter-preference).
  */
 export function createFilterPreferenceRouter(listing: Listing) {
   const router = Router();

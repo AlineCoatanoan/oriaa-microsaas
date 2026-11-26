@@ -3,7 +3,7 @@ import { queryKeys } from '@/app/query-keys';
 import { api } from '@/lib/api';
 
 /** Listes sur lesquelles l'utilisateur peut enregistrer son filtre. */
-export type Listing = 'tasks' | 'beneficiaries';
+export type Listing = 'tasks' | 'beneficiaries' | 'appointments';
 
 /** Filtre enregistré : l'utilisateur à afficher par défaut. */
 type FilterPreference = { userId: number };

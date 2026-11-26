@@ -30,10 +30,20 @@ import type {
   ListAppointmentsQuery,
   UpdateAppointmentInput,
 } from '../schemas/appointment.schema.js';
-import { assertActiveUsers } from './user.service.js';
+import { assertAssignableUsers } from './user.service.js';
+import { visibleAppointmentsWhere, type Viewer } from '../lib/visibility.js';
 import { assertActiveBeneficiaries } from './beneficiary.service.js';
 
 const UNKNOWN_USER_MESSAGE = 'Personne en charge introuvable.';
+export const ADMIN_USER_MESSAGE =
+  'Un rendez-vous ne peut pas être attribué à un administrateur.';
+
+/** Personne en charge : compte actif, jamais un admin pour un user. */
+const assertValidUser = (userId: number, viewer: Viewer) =>
+  assertAssignableUsers([userId], viewer, {
+    unknown: UNKNOWN_USER_MESSAGE,
+    admin: ADMIN_USER_MESSAGE,
+  });
 
 /** Données liées à récupérer avec chaque rendez-vous. */
 const appointmentInclude = {
@@ -71,10 +81,10 @@ function assertEndAfterStart(startAt: Date, endAt: Date) {
   }
 }
 
-/** Renvoie le rendez-vous avec ses liens, ou une 404. */
-async function findAppointmentOrFail(id: number) {
-  const appointment = await prisma.appointment.findUnique({
-    where: { appointment_id: id },
+/** Renvoie le rendez-vous avec ses liens, ou une 404 s'il n'existe pas ou n'est pas visible. */
+async function findAppointmentOrFail(id: number, viewer: Viewer) {
+  const appointment = await prisma.appointment.findFirst({
+    where: { appointment_id: id, ...visibleAppointmentsWhere(viewer) },
     include: appointmentInclude,
   });
   if (!appointment) throw new NotFoundError('Rendez-vous introuvable.');
@@ -82,8 +92,8 @@ async function findAppointmentOrFail(id: number) {
 }
 
 /** Règle métier : un rendez-vous archivé est en lecture seule. Le renvoie sinon. */
-async function assertAppointmentEditable(id: number) {
-  const appointment = await findAppointmentOrFail(id);
+async function assertAppointmentEditable(id: number, viewer: Viewer) {
+  const appointment = await findAppointmentOrFail(id, viewer);
   if (areAllBeneficiariesArchived(appointment.beneficiaries)) {
     throw new ConflictError(
       "Un rendez-vous archivé ne peut pas être modifié. Désarchivez d'abord un de ses bénéficiaires.",
@@ -96,11 +106,12 @@ async function assertAppointmentEditable(id: number) {
  * Liste les rendez-vous filtrés, du plus tôt au plus tard.
  * Un rendez-vous est retenu s'il chevauche la période demandée.
  */
-export async function findAll(filters: ListAppointmentsQuery) {
+export async function findAll(filters: ListAppointmentsQuery, viewer: Viewer) {
   const { from, to, userId, beneficiaryId } = filters;
 
   const appointments = await prisma.appointment.findMany({
     where: {
+      ...visibleAppointmentsWhere(viewer),
       user_id: userId,
       start_at: to ? { lt: new Date(to) } : undefined,
       end_at: from ? { gt: new Date(from) } : undefined,
@@ -114,23 +125,23 @@ export async function findAll(filters: ListAppointmentsQuery) {
 }
 
 /** Renvoie un rendez-vous, ou une 404. */
-export async function findById(id: number) {
-  return toAppointmentDto(await findAppointmentOrFail(id));
+export async function findById(id: number, viewer: Viewer) {
+  return toAppointmentDto(await findAppointmentOrFail(id, viewer));
 }
 
 /** Crée un rendez-vous. Par défaut, la personne connectée en a la charge. */
 export async function create(
   data: CreateAppointmentInput,
-  currentUserId: number,
+  currentUser: Viewer & { id: number },
 ) {
   const startAt = new Date(data.startAt);
   const endAt = new Date(data.endAt);
-  const userId = data.userId ?? currentUserId;
+  const userId = data.userId ?? currentUser.id;
   const beneficiaryIds = unique(data.beneficiaryIds ?? []);
   const noteIds = unique(data.noteIds ?? []);
 
   assertEndAfterStart(startAt, endAt);
-  await assertActiveUsers([userId], UNKNOWN_USER_MESSAGE);
+  await assertValidUser(userId, currentUser);
   await assertActiveBeneficiaries(beneficiaryIds);
   await assertNotesExist(noteIds);
 
@@ -155,8 +166,12 @@ export async function create(
  * Modifie un rendez-vous. Seuls les champs envoyés sont modifiés.
  * Seuls les ajouts sont vérifiés : un lien existant peut être conservé.
  */
-export async function update(id: number, data: UpdateAppointmentInput) {
-  const existing = await assertAppointmentEditable(id);
+export async function update(
+  id: number,
+  data: UpdateAppointmentInput,
+  viewer: Viewer,
+) {
+  const existing = await assertAppointmentEditable(id, viewer);
 
   const startAt = data.startAt ? new Date(data.startAt) : existing.start_at;
   const endAt = data.endAt ? new Date(data.endAt) : existing.end_at;
@@ -166,7 +181,7 @@ export async function update(id: number, data: UpdateAppointmentInput) {
   assertEndAfterStart(startAt, endAt);
 
   if (data.userId !== undefined && data.userId !== existing.user_id) {
-    await assertActiveUsers([data.userId], UNKNOWN_USER_MESSAGE);
+    await assertValidUser(data.userId, viewer);
   }
   if (beneficiaryIds) {
     await assertActiveBeneficiaries(
@@ -198,8 +213,8 @@ export async function update(id: number, data: UpdateAppointmentInput) {
 }
 
 /** Supprime un rendez-vous. Ses liens sont supprimés en cascade. */
-export async function remove(id: number) {
-  await assertAppointmentEditable(id);
+export async function remove(id: number, viewer: Viewer) {
+  await assertAppointmentEditable(id, viewer);
 
   await prisma.appointment.delete({ where: { appointment_id: id } });
 }

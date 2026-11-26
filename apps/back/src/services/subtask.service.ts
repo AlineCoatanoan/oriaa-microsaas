@@ -2,7 +2,7 @@ import prisma from '../lib/prisma.js';
 import { NotFoundError } from '../errors/app-error.js';
 import { toSubtaskDto } from '../lib/dto.js';
 import { assertTaskEditable } from './task.service.js';
-import type { Viewer } from '../lib/task-visibility.js';
+import type { Viewer } from '../lib/visibility.js';
 import type {
   CreateSubtaskInput,
   UpdateSubtaskInput,

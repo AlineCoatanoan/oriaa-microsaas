@@ -4,6 +4,7 @@ import prisma from '../lib/prisma.js';
 import {
   BadRequestError,
   ConflictError,
+  ForbiddenError,
   NotFoundError,
 } from '../errors/app-error.js';
 import type {
@@ -12,7 +13,8 @@ import type {
 } from '../schemas/user.schema.js';
 import { hashPassword } from '../lib/password.js';
 import { toPublicUser } from '../lib/dto.js';
-import type { RoleLabel } from '../config/roles.js';
+import { ROLES, type RoleLabel } from '../config/roles.js';
+import type { Viewer } from '../lib/visibility.js';
 
 /** Format renvoyé au front. */
 const toUserDto = (user: User & { role: Role }) => ({
@@ -31,6 +33,25 @@ export async function assertActiveUsers(ids: number[], message: string) {
     where: { user_id: { in: ids }, archived_at: null },
   });
   if (count !== ids.length) throw new BadRequestError(message);
+}
+
+/**
+ * Vérifie les comptes à qui l'on confie une tâche ou un rendez-vous :
+ * actifs (sinon 400), et jamais un admin quand la personne connectée
+ * est un simple utilisateur (sinon 403).
+ */
+export async function assertAssignableUsers(
+  ids: number[],
+  viewer: Viewer,
+  messages: { unknown: string; admin: string },
+) {
+  await assertActiveUsers(ids, messages.unknown);
+  if (viewer.role === ROLES.ADMIN) return;
+
+  const adminCount = await prisma.user.count({
+    where: { user_id: { in: ids }, role: { label: ROLES.ADMIN } },
+  });
+  if (adminCount > 0) throw new ForbiddenError(messages.admin);
 }
 
 /** Renvoie le compte avec son rôle, ou une 404 s'il n'existe pas ou a été supprimé. */

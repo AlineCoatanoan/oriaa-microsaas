@@ -29,5 +29,6 @@ export const queryKeys = {
   appointments: {
     all: ['appointments'],
     list: (filters: AppointmentFilters) => ['appointments', 'list', filters],
+    detail: (id: number) => ['appointments', 'detail', id],
   },
 };

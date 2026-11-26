@@ -5,6 +5,26 @@ export function toDateKey(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** Date locale à minuit à partir de « 2026-11-26 ». */
+export function fromDateKey(dateKey: string) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/** La même date, décalée d'un nombre de jours (négatif pour reculer). */
+export function addDays(date: Date, days: number) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+/** Lundi de la semaine qui contient cette date, à minuit. */
+export function startOfWeek(date: Date) {
+  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // getDay() : 0 = dimanche … 6 = samedi ; la semaine commence le lundi
+  return addDays(day, -((day.getDay() + 6) % 7));
+}
+
 /** Début et fin de la journée, au format attendu par l'API. */
 export function dayRange(date: Date) {
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
