@@ -1,8 +1,13 @@
 import type { Note } from '@prisma/client';
 import prisma from '../lib/prisma.js';
 import { personSelect, toPerson } from '../lib/dto.js';
-import type { Person } from '../lib/dto.js';
-import { BadRequestError, NotFoundError } from '../errors/app-error.js';
+import type { Person, PublicUser } from '../lib/dto.js';
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from '../errors/app-error.js';
+import { ROLES } from '../config/roles.js';
 import type {
   CreateNoteInput,
   UpdateNoteInput,
@@ -13,6 +18,9 @@ import {
 } from './beneficiary.service.js';
 
 type NoteWithAuthor = Note & { user: Person };
+
+export const NOTE_AUTHOR_MESSAGE =
+  "Seul l'auteur de la note ou un administrateur peut la modifier ou la supprimer.";
 
 const ARCHIVED_NOTES_MESSAGE =
   "Les notes d'un dossier archivé ne peuvent pas être modifiées. Désarchivez-le d'abord.";
@@ -30,12 +38,26 @@ function toNoteDto(note: NoteWithAuthor) {
   };
 }
 
-/** Vérifie que la note existe et appartient bien à ce bénéficiaire, sinon 404. */
-async function assertNoteExists(beneficiaryId: number, noteId: number) {
+type CurrentUser = Pick<PublicUser, 'id' | 'role'>;
+
+/**
+ * Vérifie que la note existe et appartient bien à ce bénéficiaire (sinon 404),
+ * puis que la personne connectée peut la modifier : son auteur ou un admin (sinon 403).
+ */
+async function assertCanEditNote(
+  beneficiaryId: number,
+  noteId: number,
+  currentUser: CurrentUser,
+) {
   const note = await prisma.note.findFirst({
     where: { note_id: noteId, beneficiary_id: beneficiaryId },
   });
   if (!note) throw new NotFoundError('Note introuvable.');
+
+  const isAuthor = note.user_id === currentUser.id;
+  if (!isAuthor && currentUser.role !== ROLES.ADMIN) {
+    throw new ForbiddenError(NOTE_AUTHOR_MESSAGE);
+  }
 }
 
 /** Les notes liées à une tâche ou à un rendez-vous doivent exister. */
@@ -83,9 +105,10 @@ export async function update(
   beneficiaryId: number,
   noteId: number,
   data: UpdateNoteInput,
+  currentUser: CurrentUser,
 ) {
   await assertBeneficiaryActive(beneficiaryId, ARCHIVED_NOTES_MESSAGE);
-  await assertNoteExists(beneficiaryId, noteId);
+  await assertCanEditNote(beneficiaryId, noteId, currentUser);
 
   const note = await prisma.note.update({
     where: { note_id: noteId },
@@ -97,9 +120,13 @@ export async function update(
 }
 
 /** Supprime une note. */
-export async function remove(beneficiaryId: number, noteId: number) {
+export async function remove(
+  beneficiaryId: number,
+  noteId: number,
+  currentUser: CurrentUser,
+) {
   await assertBeneficiaryActive(beneficiaryId, ARCHIVED_NOTES_MESSAGE);
-  await assertNoteExists(beneficiaryId, noteId);
+  await assertCanEditNote(beneficiaryId, noteId, currentUser);
 
   await prisma.note.delete({ where: { note_id: noteId } });
 }

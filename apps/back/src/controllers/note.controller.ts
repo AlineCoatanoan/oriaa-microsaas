@@ -21,13 +21,18 @@ export async function create(req: Request, res: Response) {
 /** PATCH /api/beneficiaries/:id/notes/:noteId */
 export async function update(req: Request, res: Response) {
   const { id, noteId } = res.locals.validated.params;
-  const note = await noteService.update(id, noteId, req.body);
+  const note = await noteService.update(
+    id,
+    noteId,
+    req.body,
+    getCurrentUser(res),
+  );
   res.status(200).json({ note });
 }
 
 /** DELETE /api/beneficiaries/:id/notes/:noteId */
 export async function remove(_req: Request, res: Response) {
   const { id, noteId } = res.locals.validated.params;
-  await noteService.remove(id, noteId);
+  await noteService.remove(id, noteId, getCurrentUser(res));
   res.status(204).end();
 }

@@ -23,6 +23,9 @@ export const queryKeys = {
     list: (filters: TaskQueryFilters) => ['tasks', 'list', filters],
     detail: (id: number) => ['tasks', 'detail', id],
   },
+  notes: {
+    list: (beneficiaryId: number) => ['notes', 'list', beneficiaryId],
+  },
   appointments: {
     all: ['appointments'],
     list: (filters: AppointmentFilters) => ['appointments', 'list', filters],

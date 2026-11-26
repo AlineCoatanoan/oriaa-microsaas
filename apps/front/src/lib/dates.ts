@@ -31,6 +31,11 @@ export function formatDate(dateKey: string) {
   return `${day}/${month}/${year}`;
 }
 
+/** « 20/11/2026 à 14h32 » à partir d'une date ISO complète */
+export function formatDateTime(isoDate: string) {
+  return `${formatDate(toDateKey(new Date(isoDate)))} à ${formatTime(isoDate)}`;
+}
+
 /** Âge en années révolues à partir d'une date « 1987-03-14 ». */
 export function computeAge(dateKey: string, today = new Date()) {
   const [year, month, day] = dateKey.split('-').map(Number);

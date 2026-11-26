@@ -1,10 +1,13 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 type DialogProps = {
   open: boolean;
   /** Échap ou bouton « Annuler » : le parent décide de fermer ou non. */
   onClose: () => void;
   title: string;
+  /** « large » : pour lire ou écrire un texte long (une note). */
+  size?: 'default' | 'large';
   children: ReactNode;
 };
 
@@ -12,7 +15,13 @@ type DialogProps = {
  * Fenêtre modale basée sur l'élément natif <dialog> : le navigateur gère
  * le piège du focus, la touche Échap et rend le reste de la page inactif.
  */
-export function Dialog({ open, onClose, title, children }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  size = 'default',
+  children,
+}: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -32,7 +41,10 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-border bg-surface p-6 text-structure backdrop:bg-structure/50"
+      className={cn(
+        'm-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto rounded-xl border border-border bg-surface p-6 text-structure backdrop:bg-structure/50',
+        size === 'large' ? 'max-w-3xl' : 'max-w-md',
+      )}
     >
       <h2 id={titleId} className="mb-4 text-xl font-semibold">
         {title}

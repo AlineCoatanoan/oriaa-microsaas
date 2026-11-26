@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import { cn } from '@/lib/utils';
 
@@ -84,18 +84,29 @@ export function DataListRow({ columns, actions, children }: DataListRowProps) {
   );
 }
 
-/** Lien principal d'une ligne : il la rend cliquable en entier (after:inset-0). */
+// Le lien ou bouton principal rend toute la ligne cliquable (after:inset-0)
+const rowActionClass =
+  'font-medium after:absolute after:inset-0 hover:underline';
+
+/** Lien principal d'une ligne. */
 export function RowLink({ className, ...props }: LinkProps) {
+  return <Link className={cn(rowActionClass, className)} {...props} />;
+}
+
+/** Bouton principal d'une ligne, quand il ouvre une fenêtre au lieu d'une page. */
+export function RowButton({ className, ...props }: ComponentProps<'button'>) {
   return (
-    <Link
-      className={cn(
-        'font-medium after:absolute after:inset-0 hover:underline',
-        className,
-      )}
+    <button
+      type="button"
+      className={cn(rowActionClass, 'text-left', className)}
       {...props}
     />
   );
 }
+
+// Au-dessus du lien de la ligne (z-10) pour rester cliquable
+const iconActionClass =
+  'relative z-10 flex size-11 items-center justify-center rounded-lg hover:bg-page';
 
 type IconLinkProps = {
   to: string;
@@ -103,15 +114,45 @@ type IconLinkProps = {
   icon: LucideIcon;
 };
 
-/** Action d'une ligne, placée au-dessus de RowLink pour rester cliquable. */
+/** Action d'une ligne qui mène à une page. */
 export function IconLink({ to, label, icon: Icon }: IconLinkProps) {
   return (
     <Link
       to={to}
       aria-label={label}
-      className="relative z-10 flex size-11 items-center justify-center rounded-lg text-interaction hover:bg-page"
+      className={cn(iconActionClass, 'text-interaction')}
     >
       <Icon className="size-5" aria-hidden="true" />
     </Link>
+  );
+}
+
+type IconButtonProps = {
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  /** Rouge pour une action destructrice (supprimer). */
+  danger?: boolean;
+};
+
+/** Action d'une ligne qui ouvre une fenêtre. */
+export function IconButton({
+  label,
+  icon: Icon,
+  onClick,
+  danger = false,
+}: IconButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        iconActionClass,
+        danger ? 'text-danger hover:bg-danger-soft' : 'text-interaction',
+      )}
+    >
+      <Icon className="size-5" aria-hidden="true" />
+    </button>
   );
 }
