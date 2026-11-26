@@ -20,6 +20,7 @@ import { FormAlert } from '@/components/ui/form-alert';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { isAdmin } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
+import { BeneficiaryNotes } from '@/features/notes/BeneficiaryNotes';
 import { BeneficiaryTasks } from '@/features/tasks/BeneficiaryTasks';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
@@ -257,9 +258,11 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
             <TabsPanel value="tasks">
               <BeneficiaryTasks beneficiary={beneficiary} />
             </TabsPanel>
-            {/* Contenu ajouté par #89 (notes), #91 (rendez-vous) et #134 (documents) */}
+            <TabsPanel value="notes">
+              <BeneficiaryNotes beneficiary={beneficiary} />
+            </TabsPanel>
             {tabs
-              .filter(({ value }) => value !== 'tasks')
+              .filter(({ value }) => value !== 'tasks' && value !== 'notes')
               .map(({ value, label }) => (
                 <TabsPanel key={value} value={value} className="p-4 md:p-6">
                   <p className="text-muted">
