@@ -32,4 +32,9 @@ export const TASK_PRIORITIES = [
 export const TASKS_LISTING = 'tasks';
 export const BENEFICIARIES_LISTING = 'beneficiaries';
 
-export type Listing = typeof TASKS_LISTING | typeof BENEFICIARIES_LISTING;
+export const APPOINTMENTS_LISTING = 'appointments';
+
+export type Listing =
+  | typeof TASKS_LISTING
+  | typeof BENEFICIARIES_LISTING
+  | typeof APPOINTMENTS_LISTING;

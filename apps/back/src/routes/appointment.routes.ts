@@ -14,11 +14,19 @@ import {
   remove,
   update,
 } from '../controllers/appointment.controller.js';
+import { APPOINTMENTS_LISTING } from '../config/constants.js';
+import { createFilterPreferenceRouter } from './filter-preference.routes.js';
 
 const appointmentRouter = Router();
 
 // Toutes les routes des rendez-vous exigent d'être connecté (tous rôles)
 appointmentRouter.use(authenticate);
+
+// Avant /:id : sinon "filter-preference" serait pris pour un identifiant
+appointmentRouter.use(
+  '/filter-preference',
+  createFilterPreferenceRouter(APPOINTMENTS_LISTING),
+);
 
 appointmentRouter.get(
   '/',

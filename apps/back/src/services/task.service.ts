@@ -8,14 +8,9 @@ import {
   toPerson,
   toSubtaskDto,
 } from '../lib/dto.js';
-import { visibleTasksWhere, type Viewer } from '../lib/task-visibility.js';
+import { visibleTasksWhere, type Viewer } from '../lib/visibility.js';
 import { assertNotesExist } from './note.service.js';
-import {
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-} from '../errors/app-error.js';
-import { ROLES } from '../config/roles.js';
+import { ConflictError, NotFoundError } from '../errors/app-error.js';
 import {
   COMPLETED_TASK_STATUS,
   DEFAULT_TASK_PRIORITY,
@@ -27,7 +22,7 @@ import type {
   ListTasksQuery,
   UpdateTaskInput,
 } from '../schemas/task.schema.js';
-import { assertActiveUsers } from './user.service.js';
+import { assertAssignableUsers } from './user.service.js';
 import {
   areAllBeneficiariesArchived,
   beneficiaryLinksInclude,
@@ -115,19 +110,12 @@ export async function assertTaskEditable(id: number, viewer: Viewer) {
   return task;
 }
 
-/**
- * Vérifie les responsables ajoutés : des comptes actifs, et jamais un admin
- * quand la personne connectée est un simple utilisateur.
- */
-async function assertValidAssignees(ids: number[], viewer: Viewer) {
-  await assertActiveUsers(ids, UNKNOWN_ASSIGNEE_MESSAGE);
-  if (viewer.role === ROLES.ADMIN) return;
-
-  const adminCount = await prisma.user.count({
-    where: { user_id: { in: ids }, role: { label: ROLES.ADMIN } },
+/** Responsables ajoutés : comptes actifs, jamais un admin pour un user. */
+const assertValidAssignees = (ids: number[], viewer: Viewer) =>
+  assertAssignableUsers(ids, viewer, {
+    unknown: UNKNOWN_ASSIGNEE_MESSAGE,
+    admin: ADMIN_ASSIGNEE_MESSAGE,
   });
-  if (adminCount > 0) throw new ForbiddenError(ADMIN_ASSIGNEE_MESSAGE);
-}
 
 /** Liste les tâches filtrées, de l'échéance la plus proche à la plus lointaine. */
 export async function findAll(filters: ListTasksQuery, viewer: Viewer) {
