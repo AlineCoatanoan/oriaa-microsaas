@@ -1,4 +1,5 @@
 import { z } from 'zod/mini';
+import { toDateKey } from '@/lib/dates';
 import { optionalText, orNull, requiredText } from '@/lib/form';
 import type { AppointmentPayload } from './useSaveAppointment';
 
@@ -45,4 +46,16 @@ export function toAppointmentPayload(
     userId: Number(values.userId),
     beneficiaryIds: values.beneficiaryIds.map(Number),
   };
+}
+
+/** Début proposé pour un nouveau rendez-vous : l'heure suivante aujourd'hui, 9h un autre jour. */
+export function defaultStartOn(day: Date) {
+  const start = new Date(day);
+  const now = new Date();
+  if (toDateKey(day) === toDateKey(now) && now.getHours() >= 8) {
+    start.setHours(now.getHours() + 1, 0, 0, 0);
+  } else {
+    start.setHours(9, 0, 0, 0);
+  }
+  return start;
 }
