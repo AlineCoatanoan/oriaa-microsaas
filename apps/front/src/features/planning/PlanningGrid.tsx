@@ -6,10 +6,16 @@ import {
   HOUR_HEIGHT,
   hourRange,
   placeAppointments,
+  SLOT_MINUTES,
   type PlacedAppointment,
 } from './planning-grid';
 import { ARCHIVED_COLOR, colorOf } from './person-colors';
 import type { Appointment } from './types';
+import {
+  useAppointmentDrag,
+  type DragHandlers,
+  type DragPreview,
+} from './useAppointmentDrag';
 
 const dayLabel = new Intl.DateTimeFormat('fr-FR', {
   weekday: 'long',
@@ -21,12 +27,18 @@ const shortDayLabel = new Intl.DateTimeFormat('fr-FR', {
   day: 'numeric',
 });
 
+/** Forme commune d'un rendez-vous et de son aperçu pendant le glisser. */
+const blockClass =
+  'flex size-full flex-col overflow-hidden rounded-md border-l-4 px-2 py-1 text-left text-xs leading-4';
+
 type PlanningGridProps = {
   days: Date[];
   appointments: Appointment[];
   onOpen: (appointment: Appointment) => void;
   /** Clic sur un créneau libre : début du rendez-vous à créer. */
   onSlot: (start: Date) => void;
+  /** Rendez-vous glissé à la souris vers un nouvel horaire. */
+  onMove: (appointment: Appointment, start: Date, end: Date) => void;
 };
 
 /**
@@ -39,8 +51,15 @@ export function PlanningGrid({
   appointments,
   onOpen,
   onSlot,
+  onMove,
 }: PlanningGridProps) {
   const range = hourRange(appointments, days);
+  const { gridRef, preview, handlersFor } = useAppointmentDrag({
+    days,
+    range,
+    onOpen,
+    onMove,
+  });
   const hours = Array.from(
     { length: range.end - range.start },
     (_, index) => range.start + index,
@@ -56,7 +75,10 @@ export function PlanningGrid({
       aria-label="Grille du planning"
       className="overflow-x-auto"
     >
-      <div className={cn('flex', days.length > 1 && 'min-w-[48rem]')}>
+      <div
+        ref={gridRef}
+        className={cn('flex', days.length > 1 && 'min-w-[48rem]')}
+      >
         {/* Heures : repères visuels seulement */}
         <div aria-hidden="true" className="w-14 shrink-0">
           <div className="h-14" />
@@ -73,7 +95,7 @@ export function PlanningGrid({
           </div>
         </div>
 
-        {days.map((day) => (
+        {days.map((day, index) => (
           <DayColumn
             key={day.getTime()}
             day={day}
@@ -82,7 +104,10 @@ export function PlanningGrid({
             hourCount={hours.length}
             height={height}
             startHour={range.start}
-            onOpen={onOpen}
+            dragHandlers={handlersFor}
+            draggedId={preview?.appointment.id}
+            // Aperçu du rendez-vous glissé, dans la colonne visée
+            preview={preview?.dayIndex === index ? preview : undefined}
             onSlot={onSlot}
           />
         ))}
@@ -98,12 +123,11 @@ type DayColumnProps = {
   hourCount: number;
   height: number;
   startHour: number;
-  onOpen: (appointment: Appointment) => void;
+  dragHandlers: DragHandlers;
+  draggedId?: number;
+  preview?: DragPreview;
   onSlot: (start: Date) => void;
 };
-
-/** Créneaux d'un quart d'heure : un clic arrondit au quart d'heure inférieur. */
-const SLOT_MINUTES = 15;
 
 function DayColumn({
   day,
@@ -112,12 +136,15 @@ function DayColumn({
   hourCount,
   height,
   startHour,
-  onOpen,
+  dragHandlers,
+  draggedId,
+  preview,
   onSlot,
 }: DayColumnProps) {
   const titleId = useId();
 
-  // Clic dans la colonne, hors d'un rendez-vous : créneau à cette heure.
+  // Clic dans la colonne, hors d'un rendez-vous : créneau à cette heure,
+  // arrondi au quart d'heure inférieur.
   // Raccourci à la souris ; au clavier, le bouton « Nouveau rendez-vous ».
   function handleSlotClick(event: MouseEvent<HTMLDivElement>) {
     if ((event.target as HTMLElement).closest('button')) return;
@@ -159,6 +186,7 @@ function DayColumn({
 
       {/* Aujourd'hui : colonne légèrement grisée */}
       <div
+        data-day-column
         className={cn('relative cursor-pointer', isToday && 'bg-page')}
         style={{ height }}
         onClick={handleSlotClick}
@@ -182,10 +210,15 @@ function DayColumn({
               <AppointmentBlock
                 key={item.appointment.id}
                 item={item}
-                onOpen={onOpen}
+                isDragged={item.appointment.id === draggedId}
+                dragHandlers={dragHandlers}
               />
             ))}
           </ul>
+        )}
+
+        {preview && (
+          <DragPreviewBlock preview={preview} startHour={startHour} />
         )}
       </div>
     </section>
@@ -194,10 +227,12 @@ function DayColumn({
 
 function AppointmentBlock({
   item,
-  onOpen,
+  isDragged,
+  dragHandlers,
 }: {
   item: PlacedAppointment;
-  onOpen: (appointment: Appointment) => void;
+  isDragged: boolean;
+  dragHandlers: DragHandlers;
 }) {
   const { appointment, top, height, lane, lanes } = item;
   const time = `${formatTime(appointment.startAt)} – ${formatTime(appointment.endAt)}`;
@@ -219,14 +254,17 @@ function AppointmentBlock({
     >
       <button
         type="button"
-        onClick={() => onOpen(appointment)}
+        {...dragHandlers(appointment)}
         // Couleur de la personne, ou grisé si le dossier est archivé
         style={
           appointment.isArchived ? undefined : colorOf(appointment.user.id)
         }
         className={cn(
-          'flex size-full flex-col overflow-hidden rounded-md border-l-4 px-2 py-1 text-left text-xs leading-4 hover:brightness-95',
-          appointment.isArchived && ARCHIVED_COLOR,
+          blockClass,
+          'hover:brightness-95',
+          appointment.isArchived ? ARCHIVED_COLOR : 'cursor-grab',
+          // Pendant le glisser, le rendez-vous reste estompé à sa place
+          isDragged && 'cursor-grabbing opacity-40',
         )}
       >
         <span className="truncate font-semibold">
@@ -250,5 +288,41 @@ function AppointmentBlock({
         {appointment.isArchived && <span className="sr-only">(archivé)</span>}
       </button>
     </li>
+  );
+}
+
+/** Aperçu du rendez-vous glissé : nouveau jour et nouvel horaire en direct. */
+function DragPreviewBlock({
+  preview,
+  startHour,
+}: {
+  preview: DragPreview;
+  startHour: number;
+}) {
+  const { appointment, start, end } = preview;
+  const minutes = start.getHours() * 60 + start.getMinutes();
+  const duration = (end.getTime() - start.getTime()) / 60_000;
+
+  return (
+    // Visuel seulement : le résultat est annoncé une fois le rendez-vous déposé
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 z-10 px-0.5"
+      style={{
+        top: ((minutes - startHour * 60) / 60) * HOUR_HEIGHT,
+        height: Math.max((duration / 60) * HOUR_HEIGHT, 24),
+      }}
+    >
+      <div
+        className={cn(blockClass, 'shadow-lg ring-2 ring-interaction')}
+        style={colorOf(appointment.user.id)}
+      >
+        <span className="truncate font-semibold">
+          <span className="capitalize">{shortDayLabel.format(start)}</span> ·{' '}
+          {formatTime(start.toISOString())} – {formatTime(end.toISOString())}
+        </span>
+        <span className="truncate font-medium">{appointment.title}</span>
+      </div>
+    </div>
   );
 }

@@ -15,7 +15,14 @@ import {
 } from '@/features/filter-preference/PersonFilter';
 import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
 import { useAssignableUsers } from '@/features/users/useAssignableUsers';
-import { addDays, fromDateKey, startOfWeek, toDateKey } from '@/lib/dates';
+import { getErrorMessage } from '@/lib/api';
+import {
+  addDays,
+  formatTime,
+  fromDateKey,
+  startOfWeek,
+  toDateKey,
+} from '@/lib/dates';
 import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import { AppointmentDialog } from './AppointmentDialog';
 import { AppointmentFormDialog } from './AppointmentFormDialog';
@@ -23,8 +30,10 @@ import { DeleteAppointmentDialog } from './DeleteAppointmentDialog';
 import { colorOf } from './person-colors';
 import { PlanningGrid } from './PlanningGrid';
 import { visibleDays } from './planning-grid';
+import type { Appointment } from './types';
 import { useAppointment } from './useAppointment';
 import { useAppointments } from './useAppointments';
+import { useMoveAppointment } from './useMoveAppointment';
 
 type View = 'week' | 'day';
 
@@ -133,11 +142,19 @@ export function PlanningPage() {
     people,
     mineLabel: 'Mon planning',
   });
-  const appointments = (query.data ?? []).filter(
-    (appointment) =>
-      personFilter.selectedId === undefined ||
-      appointment.user.id === personFilter.selectedId,
-  );
+  const move = useMoveAppointment();
+  const appointments = (query.data ?? [])
+    .filter(
+      (appointment) =>
+        personFilter.selectedId === undefined ||
+        appointment.user.id === personFilter.selectedId,
+    )
+    // Rendez-vous déplacé : affiché à sa nouvelle place pendant l'enregistrement
+    .map((appointment) =>
+      move.isPending && move.variables.id === appointment.id
+        ? { ...appointment, ...move.variables }
+        : appointment,
+    );
 
   // Légende : les personnes qui ont un rendez-vous sur la période affichée
   const legend = people.filter(({ id }) =>
@@ -177,6 +194,23 @@ export function PlanningPage() {
   function closeDetail() {
     setMode(undefined);
     updateParam('appointment', '');
+  }
+
+  function moveAppointment(appointment: Appointment, start: Date, end: Date) {
+    const startAt = start.toISOString();
+    const endAt = end.toISOString();
+    move.mutate(
+      { id: appointment.id, startAt, endAt },
+      {
+        onSuccess: () =>
+          setResult({
+            message: `Rendez-vous « ${appointment.title} » déplacé au ${fullDate.format(start)}, de ${formatTime(startAt)} à ${formatTime(endAt)}.`,
+            isError: false,
+          }),
+        onError: (error) =>
+          setResult({ message: getErrorMessage(error), isError: true }),
+      },
+    );
   }
 
   return (
@@ -295,6 +329,7 @@ export function PlanningPage() {
               appointments={appointments}
               onOpen={(appointment) => openDetail(appointment.id)}
               onSlot={openCreate}
+              onMove={moveAppointment}
             />
           </div>
         </QueryState>
