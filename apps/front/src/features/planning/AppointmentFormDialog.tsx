@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { Dialog } from '@/components/ui/dialog';
@@ -59,7 +59,7 @@ export function AppointmentFormDialog({
     onClose();
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const result = validateForm(appointmentFormSchema, form, {

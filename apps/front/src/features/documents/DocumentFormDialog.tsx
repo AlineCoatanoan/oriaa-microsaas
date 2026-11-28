@@ -1,4 +1,5 @@
-import { useId, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type SubmitEvent } from 'react';
+import { Combobox } from '@/components/ui/combobox';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
@@ -23,6 +24,8 @@ type DocumentFormDialogProps = {
   document?: BeneficiaryDocument;
   /** Dossiers existants de la fiche, proposés dans le champ « Dossier ». */
   folders: string[];
+  /** Nouveau document : dossier proposé (celui qui est ouvert). */
+  defaultFolder?: string;
   onSaved: (document: BeneficiaryDocument) => void;
 };
 
@@ -33,12 +36,12 @@ export function DocumentFormDialog({
   beneficiaryId,
   document,
   folders,
+  defaultFolder,
   onSaved,
 }: DocumentFormDialogProps) {
   const save = useSaveDocument(beneficiaryId, document?.id);
   const [errors, setErrors] = useState<FieldErrors>({});
   const titleRef = useRef<HTMLInputElement>(null);
-  const foldersId = useId();
 
   function handleClose() {
     // Pas de fermeture pendant l'envoi
@@ -58,7 +61,7 @@ export function DocumentFormDialog({
     save.mutate(data, { onSuccess: onSaved });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
 
@@ -136,21 +139,17 @@ export function DocumentFormDialog({
             required
           >
             {(control) => (
-              <Input
+              <Combobox
                 {...control}
                 name="category"
-                list={foldersId}
-                defaultValue={document?.category}
-                autoComplete="off"
+                options={folders}
+                defaultValue={document?.category ?? defaultFolder}
+                toggleLabel="Afficher les dossiers existants"
+                listLabel="Dossiers existants"
                 required
               />
             )}
           </Field>
-          <datalist id={foldersId}>
-            {folders.map((folder) => (
-              <option key={folder} value={folder} />
-            ))}
-          </datalist>
         </fieldset>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

@@ -1,7 +1,9 @@
 import {
+  ChevronLeft,
   FileImage,
   FileText,
   Folder,
+  FolderOpen,
   Pencil,
   Plus,
   Trash2,
@@ -62,6 +64,11 @@ export function BeneficiaryDocuments({
   const [result, setResult] = useState<ActionResult>();
   const [deletedCount, setDeletedCount] = useState(0);
   const addButtonRef = useRef<HTMLButtonElement>(null);
+  // Dossier ouvert (ses documents sont affichés), et le dernier quitté
+  const [openFolder, setOpenFolder] = useState<string>();
+  const [lastFolder, setLastFolder] = useState<string>();
+  const folderListRef = useRef<HTMLUListElement>(null);
+  const folderTitleRef = useRef<HTMLHeadingElement>(null);
 
   // Un dossier archivé est en lecture seule (les documents restent téléchargeables)
   const isArchived = beneficiary.archivedAt !== null;
@@ -72,8 +79,24 @@ export function BeneficiaryDocuments({
     if (deletedCount > 0) addButtonRef.current?.focus();
   }, [deletedCount]);
 
+  // En entrant dans un dossier, le focus va sur son titre ; en revenant,
+  // sur le dossier quitté. Effet nécessaire : la vue change au rendu suivant.
+  useEffect(() => {
+    if (openFolder) {
+      folderTitleRef.current?.focus();
+    } else if (lastFolder) {
+      folderListRef.current
+        ?.querySelector<HTMLButtonElement>(
+          `[data-folder="${CSS.escape(lastFolder)}"]`,
+        )
+        ?.focus();
+    }
+  }, [openFolder, lastFolder]);
+
   const documents = query.data ?? [];
   const folders = groupByFolder(documents);
+  // Dossier vidé (dernier document supprimé ou déplacé) : retour aux dossiers
+  const currentFolder = folders.find(({ name }) => name === openFolder);
   const status = `${documents.length} ${plural(documents.length, 'document')}${
     folders.length > 0
       ? ` dans ${folders.length} ${plural(folders.length, 'dossier')}`
@@ -85,8 +108,15 @@ export function BeneficiaryDocuments({
     setMode(nextMode);
   }
 
+  function enterFolder(name: string) {
+    setOpenFolder(name);
+    setLastFolder(name);
+  }
+
   function handleSaved(document: BeneficiaryDocument) {
     setMode(undefined);
+    // On affiche le dossier où le document est rangé
+    enterFolder(document.category);
     setResult({
       message: `Document « ${document.title} » enregistré dans le dossier « ${document.category} ».`,
       isError: false,
@@ -129,35 +159,79 @@ export function BeneficiaryDocuments({
           <p className="px-4 py-8 text-center text-muted md:px-6">
             Aucun document pour ce bénéficiaire.
           </p>
+        ) : currentFolder ? (
+          <section className="@container">
+            <div className="space-y-2 px-4 md:px-6">
+              <button
+                type="button"
+                onClick={() => setOpenFolder(undefined)}
+                className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-interaction hover:underline"
+              >
+                <ChevronLeft className="size-4" aria-hidden="true" />
+                Tous les dossiers
+              </button>
+              <h3
+                ref={folderTitleRef}
+                tabIndex={-1}
+                className="flex items-center gap-2 font-semibold outline-none"
+              >
+                <FolderOpen
+                  className="size-5 shrink-0 text-accent"
+                  aria-hidden="true"
+                />
+                {currentFolder.name}
+                <span className="text-sm font-normal text-muted">
+                  ({currentFolder.documents.length}{' '}
+                  {plural(currentFolder.documents.length, 'document')})
+                </span>
+              </h3>
+            </div>
+            <ul className="mt-2 divide-y divide-border border-y border-border">
+              {currentFolder.documents.map((document) => (
+                <DocumentRow
+                  key={document.id}
+                  beneficiaryId={beneficiary.id}
+                  document={document}
+                  canEdit={!isArchived}
+                  onEdit={() => open('edit', document)}
+                  onDelete={() => open('delete', document)}
+                />
+              ))}
+            </ul>
+          </section>
         ) : (
-          <div className="@container space-y-6">
-            {folders.map((folder) => (
-              <section key={folder.name}>
-                <h3 className="flex items-center gap-2 px-4 font-semibold md:px-6">
-                  <Folder
-                    className="size-5 shrink-0 text-interaction"
-                    aria-hidden="true"
-                  />
-                  {folder.name}
-                  <span className="text-sm font-normal text-muted">
-                    ({folder.documents.length}{' '}
-                    {plural(folder.documents.length, 'document')})
-                  </span>
-                </h3>
-                <ul className="mt-2 divide-y divide-border border-y border-border">
-                  {folder.documents.map((document) => (
-                    <DocumentRow
-                      key={document.id}
-                      beneficiaryId={beneficiary.id}
-                      document={document}
-                      canEdit={!isArchived}
-                      onEdit={() => open('edit', document)}
-                      onDelete={() => open('delete', document)}
+          // Les dossiers : un clic entre dans le dossier et montre ses documents
+          <div className="@container">
+            <ul
+              ref={folderListRef}
+              aria-label="Dossiers"
+              className="grid gap-3 px-4 md:px-6 @md:grid-cols-2 @2xl:grid-cols-3"
+            >
+              {folders.map(({ name, documents: folderDocuments }) => (
+                <li key={name}>
+                  <button
+                    type="button"
+                    data-folder={name}
+                    onClick={() => enterFolder(name)}
+                    className="flex w-full items-center gap-3 rounded-lg border border-border bg-surface p-4 text-left hover:border-interaction hover:bg-info-soft"
+                  >
+                    <Folder
+                      className="size-8 shrink-0 text-accent"
+                      aria-hidden="true"
                     />
-                  ))}
-                </ul>
-              </section>
-            ))}
+                    <span className="min-w-0">
+                      <span className="block font-semibold break-words">
+                        {name}
+                      </span>
+                      <span className="text-sm text-muted">
+                        {folderDocuments.length}{' '}
+                        {plural(folderDocuments.length, 'document')}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </QueryState>
@@ -167,6 +241,7 @@ export function BeneficiaryDocuments({
         beneficiaryId={beneficiary.id}
         document={mode === 'edit' ? selected : undefined}
         folders={folders.map(({ name }) => name)}
+        defaultFolder={currentFolder?.name}
         onClose={() => setMode(undefined)}
         onSaved={handleSaved}
       />
