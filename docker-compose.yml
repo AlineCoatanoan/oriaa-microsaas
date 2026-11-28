@@ -13,6 +13,16 @@ services:
       - oriaa_dev_data:/var/lib/postgresql
       - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
 
+  # Faux serveur d'e-mails pour le développement : les e-mails envoyés par
+  # l'API (mot de passe oublié) arrivent sur http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    container_name: oriaa-mailpit
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
   postgres-staging:
     image: postgres:18
     container_name: oriaa-db-staging

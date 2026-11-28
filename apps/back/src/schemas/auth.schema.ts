@@ -14,3 +14,14 @@ export const changePasswordSchema = z.object({
 });
 
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/** Mot de passe oublié : l'adresse e-mail du compte. */
+export const forgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
+/** Nouveau mot de passe, avec le jeton reçu dans le lien de l'e-mail. */
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1).max(100),
+  password: newPassword,
+});

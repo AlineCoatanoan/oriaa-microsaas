@@ -11,6 +11,12 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   // Durée de validité d'un token, en secondes (8 h par défaut : une journée de travail)
   JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
+  // Envoi des e-mails (mot de passe oublié). En développement : Mailpit (docker compose)
+  SMTP_HOST: z.string().min(1).default('localhost'),
+  SMTP_PORT: z.coerce.number().int().positive().default(1025),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  MAIL_FROM: z.string().min(1).default('Oriaa <no-reply@oriaa.test>'),
 });
 
 const env = envSchema.parse(process.env);

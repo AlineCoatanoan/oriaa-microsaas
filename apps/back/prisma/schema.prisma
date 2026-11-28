@@ -24,6 +24,8 @@ model User {
   deleted_at  DateTime?
   created_at  DateTime  @default(now())
   role_id     Int
+  password_reset_token_hash String?   @unique @db.VarChar(64)
+  password_reset_expires_at DateTime?
 
   role                      Role               @relation(fields: [role_id], references: [role_id])
   beneficiaries             Beneficiary[]
