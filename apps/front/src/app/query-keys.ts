@@ -26,6 +26,9 @@ export const queryKeys = {
   notes: {
     list: (beneficiaryId: number) => ['notes', 'list', beneficiaryId],
   },
+  documents: {
+    list: (beneficiaryId: number) => ['documents', 'list', beneficiaryId],
+  },
   appointments: {
     all: ['appointments'],
     list: (filters: AppointmentFilters) => ['appointments', 'list', filters],
