@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { isAdmin } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { BeneficiaryNotes } from '@/features/notes/BeneficiaryNotes';
+import { BeneficiaryAppointments } from '@/features/planning/BeneficiaryAppointments';
 import { BeneficiaryTasks } from '@/features/tasks/BeneficiaryTasks';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
@@ -261,15 +262,15 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
             <TabsPanel value="notes">
               <BeneficiaryNotes beneficiary={beneficiary} />
             </TabsPanel>
-            {tabs
-              .filter(({ value }) => value !== 'tasks' && value !== 'notes')
-              .map(({ value, label }) => (
-                <TabsPanel key={value} value={value} className="p-4 md:p-6">
-                  <p className="text-muted">
-                    {label} de ce bénéficiaire : bientôt disponible.
-                  </p>
-                </TabsPanel>
-              ))}
+            <TabsPanel value="appointments">
+              <BeneficiaryAppointments beneficiary={beneficiary} />
+            </TabsPanel>
+            {/* Documents : à venir (#134) */}
+            <TabsPanel value="documents" className="p-4 md:p-6">
+              <p className="text-muted">
+                Documents de ce bénéficiaire : bientôt disponible.
+              </p>
+            </TabsPanel>
           </Tabs>
         </Card>
       </div>

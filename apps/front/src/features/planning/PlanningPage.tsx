@@ -24,14 +24,15 @@ import {
   toDateKey,
 } from '@/lib/dates';
 import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
-import { AppointmentDialog } from './AppointmentDialog';
-import { AppointmentFormDialog } from './AppointmentFormDialog';
-import { DeleteAppointmentDialog } from './DeleteAppointmentDialog';
+import { defaultStartOn } from './appointment-form';
+import {
+  AppointmentDialogs,
+  type AppointmentDialogMode,
+} from './AppointmentDialogs';
 import { colorOf } from './person-colors';
 import { PlanningGrid } from './PlanningGrid';
 import { visibleDays } from './planning-grid';
 import type { Appointment } from './types';
-import { useAppointment } from './useAppointment';
 import { useAppointments } from './useAppointments';
 import { useMoveAppointment } from './useMoveAppointment';
 
@@ -76,24 +77,6 @@ function saveShowWeekend(value: boolean) {
     // Stockage indisponible (navigation privée…) : le choix vaut pour la visite
   }
 }
-
-/** Début proposé par « Nouveau rendez-vous » : l'heure suivante aujourd'hui, 9h un autre jour. */
-function defaultStartOn(day: Date) {
-  const start = new Date(day);
-  const now = new Date();
-  if (toDateKey(day) === toDateKey(now) && now.getHours() >= 8) {
-    start.setHours(now.getHours() + 1, 0, 0, 0);
-  } else {
-    start.setHours(9, 0, 0, 0);
-  }
-  return start;
-}
-
-/**
- * Fenêtre ouverte à la place du détail : créer, modifier ou supprimer.
- * « deleted » : le rendez-vous vient d'être supprimé, aucune fenêtre ne s'ouvre.
- */
-type FormMode = 'create' | 'edit' | 'delete' | 'deleted';
 
 /** Date affichée : celle de l'URL si elle est valide, sinon aujourd'hui. */
 function readDate(dateKey: string | null) {
@@ -168,8 +151,7 @@ export function PlanningPage() {
       : fullDate.format(firstDay);
   // Rendez-vous ouvert : dans l'URL, pour le lien « Mes RDV du jour » de l'accueil
   const openId = Number(searchParams.get('appointment')) || undefined;
-  const selected = useAppointment(openId);
-  const [mode, setMode] = useState<FormMode>();
+  const [mode, setMode] = useState<AppointmentDialogMode>();
   const [createStart, setCreateStart] = useState(() => defaultStartOn(date));
   const [result, setResult] = useState<ActionResult>();
   const [deletedCount, setDeletedCount] = useState(0);
@@ -335,49 +317,24 @@ export function PlanningPage() {
         </QueryState>
       </Card>
 
-      {/* Dans l'ordre d'ouverture : le détail se ferme avant que la
-          modification ou la suppression s'ouvre */}
-      <AppointmentDialog
-        open={openId !== undefined && mode === undefined}
-        query={selected}
-        onClose={closeDetail}
-        onEdit={() => setMode('edit')}
-        onDelete={() => setMode('delete')}
-      />
-      <AppointmentFormDialog
-        open={mode === 'create' || (mode === 'edit' && !!selected.data)}
-        appointment={mode === 'edit' ? selected.data : undefined}
-        defaultStart={createStart}
-        // Modification annulée : retour au détail du rendez-vous
-        onClose={() => setMode(undefined)}
+      <AppointmentDialogs
+        openId={openId}
+        mode={mode}
+        onModeChange={setMode}
+        onCloseDetail={closeDetail}
+        createStart={createStart}
+        onResult={setResult}
         onSaved={(appointment) => {
-          setMode(undefined);
-          setResult({
-            message: `Rendez-vous « ${appointment.title} » enregistré.`,
-            isError: false,
-          });
           // Création : on affiche le jour du nouveau rendez-vous
           if (!openId) {
             updateParam('date', toDateKey(new Date(appointment.startAt)));
           }
         }}
+        onDeleted={() => {
+          updateParam('appointment', '');
+          setDeletedCount((count) => count + 1);
+        }}
       />
-      {selected.data && (
-        <DeleteAppointmentDialog
-          appointment={selected.data}
-          open={mode === 'delete'}
-          onClose={() => setMode(undefined)}
-          onDeleted={() => {
-            setResult({
-              message: `Rendez-vous « ${selected.data.title} » supprimé.`,
-              isError: false,
-            });
-            setMode('deleted');
-            updateParam('appointment', '');
-            setDeletedCount((count) => count + 1);
-          }}
-        />
-      )}
     </div>
   );
 }

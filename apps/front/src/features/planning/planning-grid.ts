@@ -9,6 +9,7 @@ const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 19;
 
 const MINUTES_PER_DAY = 24 * 60;
+
 /** Créneaux d'un quart d'heure : clic sur la grille et glisser-déposer. */
 export const SLOT_MINUTES = 15;
 
