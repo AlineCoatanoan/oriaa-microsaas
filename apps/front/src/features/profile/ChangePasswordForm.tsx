@@ -5,30 +5,22 @@ import { Field } from '@/components/ui/field';
 import { FormAlert } from '@/components/ui/form-alert';
 import { ResultMessage } from '@/components/ui/result-message';
 import { PasswordInput } from '@/components/ui/password-input';
+import { newPassword, PASSWORDS_DIFFER } from '@/features/auth/password-rules';
 import { getErrorMessage } from '@/lib/api';
 import { focusFirstError, validateForm, type FieldErrors } from '@/lib/form';
 import { useChangePassword } from './useChangePassword';
 
-/** Mêmes règles que le back : 12 caractères au moins, 72 au plus. */
 const changePasswordSchema = z
   .object({
     currentPassword: z
       .string()
       .check(z.minLength(1, 'Saisissez votre mot de passe actuel.')),
-    newPassword: z
-      .string()
-      .check(
-        z.minLength(
-          12,
-          'Le mot de passe doit contenir au moins 12 caractères.',
-        ),
-        z.maxLength(72, 'Le mot de passe doit contenir au plus 72 caractères.'),
-      ),
+    newPassword,
     confirmPassword: z.string(),
   })
   .check(
     z.refine((data) => data.confirmPassword === data.newPassword, {
-      message: 'Les deux mots de passe ne correspondent pas.',
+      message: PASSWORDS_DIFFER,
       path: ['confirmPassword'],
     }),
   );

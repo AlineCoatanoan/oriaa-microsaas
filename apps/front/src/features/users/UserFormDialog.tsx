@@ -6,6 +6,7 @@ import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Select } from '@/components/ui/select';
+import { NEW_PASSWORD_HINT } from '@/features/auth/password-rules';
 import { ROLES, roleLabels } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
 import { getErrorMessage } from '@/lib/api';
@@ -168,7 +169,7 @@ export function UserFormDialog({
           {!user && (
             <Field
               label="Mot de passe provisoire"
-              hint="12 caractères minimum. Transmettez-le à la personne : elle le changera depuis son profil."
+              hint={`${NEW_PASSWORD_HINT} Transmettez-le à la personne : elle le changera depuis son profil.`}
               error={errors.password}
               required
             >
