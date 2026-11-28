@@ -9,6 +9,8 @@ const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 19;
 
 const MINUTES_PER_DAY = 24 * 60;
+/** Créneaux d'un quart d'heure : clic sur la grille et glisser-déposer. */
+export const SLOT_MINUTES = 15;
 
 /** Minutes écoulées depuis le début du jour (peut dépasser 24 h). */
 const minutesSince = (date: Date, day: Date) =>
@@ -110,4 +112,31 @@ export function placeAppointments(
   closeGroup();
 
   return placed;
+}
+
+/**
+ * Nouvel horaire d'un rendez-vous glissé de `offset` pixels vers le bas
+ * (négatif : vers le haut) et posé sur `day` : même durée, début arrondi
+ * au quart d'heure le plus proche, sans sortir des heures de la grille.
+ */
+export function movedTimes(
+  appointment: Appointment,
+  day: Date,
+  offset: number,
+  range: { start: number; end: number },
+) {
+  const start = new Date(appointment.startAt);
+  const duration = new Date(appointment.endAt).getTime() - start.getTime();
+  const minutes =
+    start.getHours() * 60 + start.getMinutes() + (offset / HOUR_HEIGHT) * 60;
+  const snapped = Math.round(minutes / SLOT_MINUTES) * SLOT_MINUTES;
+  const earliest = range.start * 60;
+  const latest = Math.max(earliest, range.end * 60 - duration / 60_000);
+
+  const movedStart = new Date(day);
+  movedStart.setMinutes(Math.min(Math.max(snapped, earliest), latest));
+  return {
+    start: movedStart,
+    end: new Date(movedStart.getTime() + duration),
+  };
 }
