@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -54,7 +54,7 @@ export function BeneficiaryForm({ beneficiary }: BeneficiaryFormProps) {
     !currentReferent ||
     referentOptions?.some(({ id }) => id === currentReferent.id);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const result = validateForm(beneficiaryFormSchema, form);

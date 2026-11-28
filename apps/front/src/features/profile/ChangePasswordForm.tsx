@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { z } from 'zod/mini';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -37,7 +37,7 @@ export function ChangePasswordForm() {
   const changePassword = useChangePassword();
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const result = validateForm(changePasswordSchema, form);

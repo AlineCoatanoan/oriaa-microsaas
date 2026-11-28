@@ -1,5 +1,5 @@
 import { Plus, X } from 'lucide-react';
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState, type SubmitEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { FormAlert } from '@/components/ui/form-alert';
@@ -30,7 +30,7 @@ export function SubtaskList({ task }: { task: TaskDetails }) {
   const isReadOnly = task.isArchived;
   const error = add.error ?? remove.error;
 
-  function handleAdd(event: FormEvent<HTMLFormElement>) {
+  function handleAdd(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = label.trim();
     if (!trimmed) {

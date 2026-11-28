@@ -19,3 +19,12 @@ export function formatBeneficiaries(beneficiaries: BeneficiarySummary[]) {
 export function plural(count: number, word: string) {
   return count > 1 ? `${word}s` : word;
 }
+
+const sizeFormat = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+
+/** Taille d'un fichier : « 245 Ko », « 1,2 Mo ». */
+export function formatFileSize(bytes: number) {
+  const kilobytes = bytes / 1024;
+  if (kilobytes < 1024) return `${sizeFormat.format(Math.ceil(kilobytes))} Ko`;
+  return `${sizeFormat.format(kilobytes / 1024)} Mo`;
+}

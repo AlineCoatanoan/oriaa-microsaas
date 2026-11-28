@@ -20,6 +20,7 @@ import { FormAlert } from '@/components/ui/form-alert';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { isAdmin } from '@/features/auth/roles';
 import { useCurrentUser } from '@/features/auth/useSession';
+import { BeneficiaryDocuments } from '@/features/documents/BeneficiaryDocuments';
 import { BeneficiaryNotes } from '@/features/notes/BeneficiaryNotes';
 import { BeneficiaryAppointments } from '@/features/planning/BeneficiaryAppointments';
 import { BeneficiaryTasks } from '@/features/tasks/BeneficiaryTasks';
@@ -265,11 +266,8 @@ function BeneficiaryDetails({ beneficiary }: { beneficiary: Beneficiary }) {
             <TabsPanel value="appointments">
               <BeneficiaryAppointments beneficiary={beneficiary} />
             </TabsPanel>
-            {/* Documents : à venir (#134) */}
-            <TabsPanel value="documents" className="p-4 md:p-6">
-              <p className="text-muted">
-                Documents de ce bénéficiaire : bientôt disponible.
-              </p>
+            <TabsPanel value="documents">
+              <BeneficiaryDocuments beneficiary={beneficiary} />
             </TabsPanel>
           </Tabs>
         </Card>

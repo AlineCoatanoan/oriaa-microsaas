@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { LockKeyhole, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { z } from 'zod/mini';
@@ -21,7 +21,7 @@ export function LoginForm() {
   const login = useLogin();
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const result = validateForm(loginSchema, form);
