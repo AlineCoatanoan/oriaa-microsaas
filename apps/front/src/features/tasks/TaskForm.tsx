@@ -2,10 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
-import {
-  CheckboxGroup,
-  type CheckboxOption,
-} from '@/components/ui/checkbox-group';
+import { CheckboxGroup } from '@/components/ui/checkbox-group';
 import { Field } from '@/components/ui/field';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
@@ -19,6 +16,7 @@ import { useUsers } from '@/features/users/useUsers';
 import { getErrorMessage } from '@/lib/api';
 import { focusFirstError, validateForm, type FieldErrors } from '@/lib/form';
 import { formatBeneficiaryName } from '@/lib/format';
+import { withCurrent } from '@/lib/options';
 import type { Person } from '@/lib/types';
 import { taskFormLists, taskFormSchema, toTaskPayload } from './task-form';
 import {
@@ -30,18 +28,6 @@ import {
 import { useSaveTask } from './useSaveTask';
 
 const DEFAULT_PRIORITY: TaskPriority = 'Normale';
-
-/** Ajoute en tête les éléments déjà liés qui ne sont plus proposés. */
-function withCurrent<T extends { id: number }>(
-  options: CheckboxOption[],
-  current: T[],
-  toOption: (item: T) => CheckboxOption,
-) {
-  const kept = current
-    .filter(({ id }) => !options.some((option) => option.id === id))
-    .map(toOption);
-  return [...kept, ...options];
-}
 
 type TaskFormProps = {
   /** Absent : création d'une nouvelle tâche. */

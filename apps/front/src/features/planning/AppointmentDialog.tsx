@@ -1,3 +1,5 @@
+import type { UseQueryResult } from '@tanstack/react-query';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,6 @@ import { PersonName } from '@/features/users/PersonName';
 import { formatTime } from '@/lib/dates';
 import { formatBeneficiaryName, plural } from '@/lib/format';
 import type { Appointment } from './types';
-import { useAppointment } from './useAppointment';
 
 const fullDate = new Intl.DateTimeFormat('fr-FR', {
   weekday: 'long',
@@ -18,18 +19,28 @@ const fullDate = new Intl.DateTimeFormat('fr-FR', {
 });
 
 type AppointmentDialogProps = {
-  /** Rendez-vous à afficher ; absent : fenêtre fermée. */
-  id: number | undefined;
+  open: boolean;
+  /** Le rendez-vous choisi, chargé depuis l'API. */
+  query: UseQueryResult<Appointment>;
   onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 };
 
 /** Détail d'un rendez-vous, ouvert depuis le planning ou l'accueil. */
-export function AppointmentDialog({ id, onClose }: AppointmentDialogProps) {
-  const query = useAppointment(id);
+export function AppointmentDialog({
+  open,
+  query,
+  onClose,
+  onEdit,
+  onDelete,
+}: AppointmentDialogProps) {
+  // Règle métier : un rendez-vous archivé est en lecture seule
+  const canEdit = query.data !== undefined && !query.data.isArchived;
 
   return (
     <Dialog
-      open={id !== undefined}
+      open={open}
       onClose={onClose}
       title={query.data?.title ?? 'Rendez-vous'}
       size="large"
@@ -38,10 +49,22 @@ export function AppointmentDialog({ id, onClose }: AppointmentDialogProps) {
         <QueryState query={query}>
           {query.data && <AppointmentDetails appointment={query.data} />}
         </QueryState>
-        <div className="flex justify-end">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={onClose}>
             Fermer
           </Button>
+          {canEdit && (
+            <>
+              <Button variant="danger" onClick={onDelete}>
+                <Trash2 className="size-4" aria-hidden="true" />
+                Supprimer
+              </Button>
+              <Button onClick={onEdit}>
+                <Pencil className="size-4" aria-hidden="true" />
+                Modifier
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </Dialog>

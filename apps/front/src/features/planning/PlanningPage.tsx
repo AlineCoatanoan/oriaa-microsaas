@@ -1,24 +1,29 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { QueryState } from '@/components/ui/query-state';
+import {
+  ResultMessage,
+  type ActionResult,
+} from '@/components/ui/result-message';
 import { SegmentedControl } from '@/components/ui/segmented-control';
-import { isAdmin, ROLES } from '@/features/auth/roles';
-import { useCurrentUser } from '@/features/auth/useSession';
 import {
   PersonFilterSelect,
   SavedPersonFilter,
 } from '@/features/filter-preference/PersonFilter';
 import { usePersonFilter } from '@/features/filter-preference/usePersonFilter';
-import { useUsers } from '@/features/users/useUsers';
+import { useAssignableUsers } from '@/features/users/useAssignableUsers';
 import { addDays, fromDateKey, startOfWeek, toDateKey } from '@/lib/dates';
 import { useUpdateSearchParam } from '@/lib/useUpdateSearchParam';
 import { AppointmentDialog } from './AppointmentDialog';
+import { AppointmentFormDialog } from './AppointmentFormDialog';
+import { DeleteAppointmentDialog } from './DeleteAppointmentDialog';
 import { colorOf } from './person-colors';
 import { PlanningGrid } from './PlanningGrid';
 import { visibleDays } from './planning-grid';
+import { useAppointment } from './useAppointment';
 import { useAppointments } from './useAppointments';
 
 type View = 'week' | 'day';
@@ -63,6 +68,24 @@ function saveShowWeekend(value: boolean) {
   }
 }
 
+/** Début proposé par « Nouveau rendez-vous » : l'heure suivante aujourd'hui, 9h un autre jour. */
+function defaultStartOn(day: Date) {
+  const start = new Date(day);
+  const now = new Date();
+  if (toDateKey(day) === toDateKey(now) && now.getHours() >= 8) {
+    start.setHours(now.getHours() + 1, 0, 0, 0);
+  } else {
+    start.setHours(9, 0, 0, 0);
+  }
+  return start;
+}
+
+/**
+ * Fenêtre ouverte à la place du détail : créer, modifier ou supprimer.
+ * « deleted » : le rendez-vous vient d'être supprimé, aucune fenêtre ne s'ouvre.
+ */
+type FormMode = 'create' | 'edit' | 'delete' | 'deleted';
+
 /** Date affichée : celle de l'URL si elle est valide, sinon aujourd'hui. */
 function readDate(dateKey: string | null) {
   const date = dateKey ? fromDateKey(dateKey) : new Date(NaN);
@@ -72,8 +95,7 @@ function readDate(dateKey: string | null) {
 }
 
 export function PlanningPage() {
-  const user = useCurrentUser();
-  const usersQuery = useUsers();
+  const { users } = useAssignableUsers();
   const [searchParams] = useSearchParams();
   const updateParam = useUpdateSearchParam();
   const [showWeekend, setShowWeekend] = useState(readShowWeekend);
@@ -99,14 +121,12 @@ export function PlanningPage() {
     to: addDays(lastDay, 1).toISOString(),
   });
 
-  // Règle métier : un utilisateur ne voit pas le planning des admins
-  const people = (usersQuery.data ?? [])
-    .filter(({ role }) => isAdmin(user) || role === ROLES.USER)
-    .map(({ id, firstName, lastName }) => ({
-      id,
-      name: `${firstName} ${lastName}`,
-      status: 'active' as const,
-    }));
+  // Plannings visibles (un utilisateur ne voit pas ceux des admins)
+  const people = users.map(({ id, firstName, lastName }) => ({
+    id,
+    name: `${firstName} ${lastName}`,
+    status: 'active' as const,
+  }));
   const personFilter = usePersonFilter({
     listing: 'appointments',
     param: 'user',
@@ -129,12 +149,50 @@ export function PlanningPage() {
     view === 'week'
       ? `Semaine du ${dayMonth.format(firstDay)} au ${dayMonthYear.format(lastDay)}`
       : fullDate.format(firstDay);
+  // Rendez-vous ouvert : dans l'URL, pour le lien « Mes RDV du jour » de l'accueil
   const openId = Number(searchParams.get('appointment')) || undefined;
+  const selected = useAppointment(openId);
+  const [mode, setMode] = useState<FormMode>();
+  const [createStart, setCreateStart] = useState(() => defaultStartOn(date));
+  const [result, setResult] = useState<ActionResult>();
+  const [deletedCount, setDeletedCount] = useState(0);
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Le rendez-vous supprimé a disparu : le focus va sur « Nouveau rendez-vous ».
+  // Effet nécessaire : il faut attendre que la fenêtre de confirmation soit fermée.
+  useEffect(() => {
+    if (deletedCount > 0) createButtonRef.current?.focus();
+  }, [deletedCount]);
+
+  function openCreate(start: Date) {
+    setCreateStart(start);
+    setMode('create');
+  }
+
+  function openDetail(appointmentId: number) {
+    setMode(undefined);
+    updateParam('appointment', String(appointmentId));
+  }
+
+  function closeDetail() {
+    setMode(undefined);
+    updateParam('appointment', '');
+  }
 
   return (
     <div className="space-y-6">
       <title>Planning – Oriaa</title>
-      <h1>Planning</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1>Planning</h1>
+        <Button
+          ref={createButtonRef}
+          onClick={() => openCreate(defaultStartOn(date))}
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          Nouveau rendez-vous
+        </Button>
+      </div>
+      <ResultMessage result={result} />
 
       <div className="space-y-3">
         {/* Les flèches changent la période affichée juste à côté */}
@@ -235,18 +293,56 @@ export function PlanningPage() {
             <PlanningGrid
               days={days}
               appointments={appointments}
-              onOpen={(appointment) =>
-                updateParam('appointment', String(appointment.id))
-              }
+              onOpen={(appointment) => openDetail(appointment.id)}
+              onSlot={openCreate}
             />
           </div>
         </QueryState>
       </Card>
 
+      {/* Dans l'ordre d'ouverture : le détail se ferme avant que la
+          modification ou la suppression s'ouvre */}
       <AppointmentDialog
-        id={openId}
-        onClose={() => updateParam('appointment', '')}
+        open={openId !== undefined && mode === undefined}
+        query={selected}
+        onClose={closeDetail}
+        onEdit={() => setMode('edit')}
+        onDelete={() => setMode('delete')}
       />
+      <AppointmentFormDialog
+        open={mode === 'create' || (mode === 'edit' && !!selected.data)}
+        appointment={mode === 'edit' ? selected.data : undefined}
+        defaultStart={createStart}
+        // Modification annulée : retour au détail du rendez-vous
+        onClose={() => setMode(undefined)}
+        onSaved={(appointment) => {
+          setMode(undefined);
+          setResult({
+            message: `Rendez-vous « ${appointment.title} » enregistré.`,
+            isError: false,
+          });
+          // Création : on affiche le jour du nouveau rendez-vous
+          if (!openId) {
+            updateParam('date', toDateKey(new Date(appointment.startAt)));
+          }
+        }}
+      />
+      {selected.data && (
+        <DeleteAppointmentDialog
+          appointment={selected.data}
+          open={mode === 'delete'}
+          onClose={() => setMode(undefined)}
+          onDeleted={() => {
+            setResult({
+              message: `Rendez-vous « ${selected.data.title} » supprimé.`,
+              isError: false,
+            });
+            setMode('deleted');
+            updateParam('appointment', '');
+            setDeletedCount((count) => count + 1);
+          }}
+        />
+      )}
     </div>
   );
 }
