@@ -10,6 +10,7 @@ import {
   ResultMessage,
   type ActionResult,
 } from '@/components/ui/result-message';
+import { Tooltip } from '@/components/ui/tooltip';
 import { PersonName } from '@/features/users/PersonName';
 import { getErrorMessage } from '@/lib/api';
 import { formatDate, toDateKey } from '@/lib/dates';
@@ -106,14 +107,16 @@ function TaskView({ task }: { task: TaskDetails }) {
               <Pencil className="size-4" aria-hidden="true" />
               Modifier
             </ButtonLink>
-            <Button
-              variant="danger"
-              size="icon"
-              aria-label="Supprimer la tâche"
-              onClick={() => setIsDeleteOpen(true)}
-            >
-              <Trash2 className="size-5" aria-hidden="true" />
-            </Button>
+            <Tooltip text="Supprimer">
+              <Button
+                variant="danger"
+                size="icon"
+                aria-label="Supprimer la tâche"
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <Trash2 className="size-5" aria-hidden="true" />
+              </Button>
+            </Tooltip>
           </div>
         )}
       </div>

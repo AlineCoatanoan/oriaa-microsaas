@@ -152,6 +152,7 @@ export function BeneficiaryAppointments({
                   <IconLink
                     to={`/planning?date=${dateKey}&view=day&appointment=${appointment.id}`}
                     label={`Voir « ${appointment.title} » dans le planning`}
+                    tooltip="Voir dans le planning"
                     icon={CalendarDays}
                   />
                 }

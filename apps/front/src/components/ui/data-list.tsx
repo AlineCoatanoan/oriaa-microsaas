@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import { cn } from '@/lib/utils';
+import { Tooltip } from './tooltip';
 
 type DataListProps = {
   /** Nombre de résultats, annoncé aux lecteurs d'écran (ex. : « 3 tâches »). */
@@ -110,25 +111,33 @@ const iconActionClass =
 
 type IconLinkProps = {
   to: string;
+  /** Nom complet, lu par les lecteurs d'écran (« Modifier la tâche … »). */
   label: string;
+  /** Nom court affiché au survol (« Modifier ») : le début de label. */
+  tooltip: string;
   icon: LucideIcon;
 };
 
 /** Action d'une ligne qui mène à une page. */
-export function IconLink({ to, label, icon: Icon }: IconLinkProps) {
+export function IconLink({ to, label, tooltip, icon: Icon }: IconLinkProps) {
   return (
-    <Link
-      to={to}
-      aria-label={label}
-      className={cn(iconActionClass, 'text-interaction')}
-    >
-      <Icon className="size-5" aria-hidden="true" />
-    </Link>
+    <Tooltip text={tooltip}>
+      <Link
+        to={to}
+        aria-label={label}
+        className={cn(iconActionClass, 'text-interaction')}
+      >
+        <Icon className="size-5" aria-hidden="true" />
+      </Link>
+    </Tooltip>
   );
 }
 
 type IconButtonProps = {
+  /** Nom complet, lu par les lecteurs d'écran (« Supprimer la note … »). */
   label: string;
+  /** Nom court affiché au survol (« Supprimer ») : le début de label. */
+  tooltip: string;
   icon: LucideIcon;
   onClick: () => void;
   /** Rouge pour une action destructrice (supprimer). */
@@ -138,21 +147,24 @@ type IconButtonProps = {
 /** Action d'une ligne qui ouvre une fenêtre. */
 export function IconButton({
   label,
+  tooltip,
   icon: Icon,
   onClick,
   danger = false,
 }: IconButtonProps) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={cn(
-        iconActionClass,
-        danger ? 'text-danger hover:bg-danger-soft' : 'text-interaction',
-      )}
-    >
-      <Icon className="size-5" aria-hidden="true" />
-    </button>
+    <Tooltip text={tooltip}>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onClick}
+        className={cn(
+          iconActionClass,
+          danger ? 'text-danger hover:bg-danger-soft' : 'text-interaction',
+        )}
+      >
+        <Icon className="size-5" aria-hidden="true" />
+      </button>
+    </Tooltip>
   );
 }

@@ -42,6 +42,7 @@ export function TaskRow({ task, details, onResult }: TaskRowProps) {
           <IconLink
             to={`/tasks/${task.id}`}
             label={`Voir la tâche « ${task.title} »`}
+            tooltip="Voir"
             icon={Eye}
           />
           {/* Une tâche archivée est en lecture seule */}
@@ -49,6 +50,7 @@ export function TaskRow({ task, details, onResult }: TaskRowProps) {
             <IconLink
               to={`/tasks/${task.id}/edit`}
               label={`Modifier la tâche « ${task.title} »`}
+              tooltip="Modifier"
               icon={Pencil}
             />
           )}

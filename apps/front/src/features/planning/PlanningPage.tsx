@@ -9,6 +9,7 @@ import {
   type ActionResult,
 } from '@/components/ui/result-message';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { Tooltip } from '@/components/ui/tooltip';
 import {
   PersonFilterSelect,
   SavedPersonFilter,
@@ -145,6 +146,8 @@ export function PlanningPage() {
   );
   const step = view === 'week' ? 7 : 1;
   const unit = view === 'week' ? 'Semaine' : 'Jour';
+  const previousLabel = `${unit} précédent${view === 'week' ? 'e' : ''}`;
+  const nextLabel = `${unit} suivant${view === 'week' ? 'e' : ''}`;
   const period =
     view === 'week'
       ? `Semaine du ${dayMonth.format(firstDay)} au ${dayMonthYear.format(lastDay)}`
@@ -214,29 +217,33 @@ export function PlanningPage() {
         {/* Les flèches changent la période affichée juste à côté */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={`${unit} précédent${view === 'week' ? 'e' : ''}`}
-              onClick={() =>
-                updateParam('date', toDateKey(addDays(date, -step)))
-              }
-            >
-              <ChevronLeft className="size-4" aria-hidden="true" />
-            </Button>
+            <Tooltip text={previousLabel} align="start">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={previousLabel}
+                onClick={() =>
+                  updateParam('date', toDateKey(addDays(date, -step)))
+                }
+              >
+                <ChevronLeft className="size-4" aria-hidden="true" />
+              </Button>
+            </Tooltip>
             <Button variant="outline" onClick={() => updateParam('date', '')}>
               Aujourd'hui
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={`${unit} suivant${view === 'week' ? 'e' : ''}`}
-              onClick={() =>
-                updateParam('date', toDateKey(addDays(date, step)))
-              }
-            >
-              <ChevronRight className="size-4" aria-hidden="true" />
-            </Button>
+            <Tooltip text={nextLabel}>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={nextLabel}
+                onClick={() =>
+                  updateParam('date', toDateKey(addDays(date, step)))
+                }
+              >
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </Button>
+            </Tooltip>
           </div>
           <h2 className="text-lg font-semibold first-letter:uppercase">
             {period}
