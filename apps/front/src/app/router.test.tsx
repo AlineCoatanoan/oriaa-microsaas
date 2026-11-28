@@ -73,7 +73,7 @@ describe('routes', () => {
   it('affiche la page admin à un administrateur', async () => {
     mockSession(200, 'admin');
     renderRoute('/users');
-    await expectPage('Utilisateurs');
+    await expectPage('Administration');
   });
 
   it('affiche le lien Administration à un administrateur', async () => {
