@@ -1,11 +1,12 @@
 import { z } from 'zod/mini';
+import { newPassword } from '@/features/auth/password-rules';
 import { ROLES } from '@/features/auth/roles';
 import { requiredText } from '@/lib/form';
 
 const job = requiredText(50, 'Saisissez la fonction.');
 const role = z.enum([ROLES.ADMIN, ROLES.USER]);
 
-/** Mêmes règles que le back ; mot de passe provisoire de 12 à 72 caractères. */
+/** Mêmes règles que le back, avec un mot de passe provisoire. */
 export const newUserFormSchema = z.object({
   firstName: requiredText(50, 'Saisissez le prénom.'),
   lastName: requiredText(50, 'Saisissez le nom.'),
@@ -21,12 +22,7 @@ export const newUserFormSchema = z.object({
     ),
   job,
   role,
-  password: z
-    .string()
-    .check(
-      z.minLength(12, 'Le mot de passe doit contenir au moins 12 caractères.'),
-      z.maxLength(72, 'Le mot de passe doit contenir au plus 72 caractères.'),
-    ),
+  password: newPassword,
 });
 
 /**

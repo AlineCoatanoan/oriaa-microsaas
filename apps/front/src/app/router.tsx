@@ -32,6 +32,21 @@ export const routes: RouteObject[] = [
     hydrateFallbackElement: <LoadingState className="min-h-dvh" />,
     children: [
       { path: '/login', element: <LoginPage /> },
+      // Mot de passe oublié : pages publiques, chargées à la demande
+      {
+        path: '/forgot-password',
+        lazy: () =>
+          import('@/features/auth/ForgotPasswordPage').then(
+            ({ ForgotPasswordPage }) => ({ Component: ForgotPasswordPage }),
+          ),
+      },
+      {
+        path: '/reset-password',
+        lazy: () =>
+          import('@/features/auth/ResetPasswordPage').then(
+            ({ ResetPasswordPage }) => ({ Component: ResetPasswordPage }),
+          ),
+      },
       {
         element: <RequireAuth />,
         children: [

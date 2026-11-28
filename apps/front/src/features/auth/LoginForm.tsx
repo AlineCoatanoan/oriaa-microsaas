@@ -1,6 +1,6 @@
 import { useState, type SubmitEvent } from 'react';
 import { LockKeyhole, Mail } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { z } from 'zod/mini';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -75,6 +75,14 @@ export function LoginForm() {
         </Field>
       </fieldset>
 
+      <p className="text-right text-sm">
+        <Link
+          to="/forgot-password"
+          className="font-medium text-interaction hover:underline"
+        >
+          Mot de passe oublié ?
+        </Link>
+      </p>
       <Button type="submit" pending={login.isPending} className="w-full">
         {login.isPending ? 'Connexion…' : 'Se connecter'}
       </Button>
