@@ -5,6 +5,11 @@ export function toDateKey(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** « 09:30 » : l'heure au format d'un champ <input type="time">. */
+export function toTimeKey(date: Date) {
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 /** Date locale à minuit à partir de « 2026-11-26 ». */
 export function fromDateKey(dateKey: string) {
   const [year, month, day] = dateKey.split('-').map(Number);

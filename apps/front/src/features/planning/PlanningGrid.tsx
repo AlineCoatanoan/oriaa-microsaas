@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type MouseEvent } from 'react';
 import { formatTime, toDateKey } from '@/lib/dates';
 import { formatBeneficiaries } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,8 @@ type PlanningGridProps = {
   days: Date[];
   appointments: Appointment[];
   onOpen: (appointment: Appointment) => void;
+  /** Clic sur un créneau libre : début du rendez-vous à créer. */
+  onSlot: (start: Date) => void;
 };
 
 /**
@@ -36,6 +38,7 @@ export function PlanningGrid({
   days,
   appointments,
   onOpen,
+  onSlot,
 }: PlanningGridProps) {
   const range = hourRange(appointments, days);
   const hours = Array.from(
@@ -78,7 +81,9 @@ export function PlanningGrid({
             placed={placeAppointments(appointments, day, range.start)}
             hourCount={hours.length}
             height={height}
+            startHour={range.start}
             onOpen={onOpen}
+            onSlot={onSlot}
           />
         ))}
       </div>
@@ -92,8 +97,13 @@ type DayColumnProps = {
   placed: PlacedAppointment[];
   hourCount: number;
   height: number;
+  startHour: number;
   onOpen: (appointment: Appointment) => void;
+  onSlot: (start: Date) => void;
 };
+
+/** Créneaux d'un quart d'heure : un clic arrondit au quart d'heure inférieur. */
+const SLOT_MINUTES = 15;
 
 function DayColumn({
   day,
@@ -101,9 +111,25 @@ function DayColumn({
   placed,
   hourCount,
   height,
+  startHour,
   onOpen,
+  onSlot,
 }: DayColumnProps) {
   const titleId = useId();
+
+  // Clic dans la colonne, hors d'un rendez-vous : créneau à cette heure.
+  // Raccourci à la souris ; au clavier, le bouton « Nouveau rendez-vous ».
+  function handleSlotClick(event: MouseEvent<HTMLDivElement>) {
+    if ((event.target as HTMLElement).closest('button')) return;
+    const offset =
+      event.clientY - event.currentTarget.getBoundingClientRect().top;
+    const minutes =
+      startHour * 60 +
+      Math.floor((offset / HOUR_HEIGHT) * (60 / SLOT_MINUTES)) * SLOT_MINUTES;
+    const start = new Date(day);
+    start.setMinutes(minutes);
+    onSlot(start);
+  }
 
   return (
     <section
@@ -132,7 +158,11 @@ function DayColumn({
       </h3>
 
       {/* Aujourd'hui : colonne légèrement grisée */}
-      <div className={cn('relative', isToday && 'bg-page')} style={{ height }}>
+      <div
+        className={cn('relative cursor-pointer', isToday && 'bg-page')}
+        style={{ height }}
+        onClick={handleSlotClick}
+      >
         {/* Lignes des heures */}
         <div aria-hidden="true">
           {Array.from({ length: hourCount }, (_, index) => (

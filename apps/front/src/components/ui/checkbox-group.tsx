@@ -1,15 +1,14 @@
 import { useId, useState } from 'react';
+import type { Option } from '@/lib/options';
 import { normalizeText } from '@/lib/search';
 import { cn } from '@/lib/utils';
 import { SearchInput } from './search-input';
-
-export type CheckboxOption = { id: number; label: string };
 
 type CheckboxGroupProps = {
   legend: string;
   /** Nom des cases : le formulaire reçoit la liste des identifiants cochés. */
   name: string;
-  options: CheckboxOption[];
+  options: Option[];
   defaultChecked: number[];
   error?: string;
   /** Affiche un astérisque à côté de la légende. */
@@ -36,7 +35,7 @@ export function CheckboxGroup({
   const [search, setSearch] = useState('');
 
   // Une option cochée reste toujours visible, même hors de la recherche
-  const isVisible = ({ id, label }: CheckboxOption) =>
+  const isVisible = ({ id, label }: Option) =>
     checked.has(id) || normalizeText(label).includes(normalizeText(search));
 
   function toggle(id: number) {
