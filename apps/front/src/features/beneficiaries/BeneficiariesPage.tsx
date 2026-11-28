@@ -190,6 +190,7 @@ export function BeneficiariesPage() {
                       <IconLink
                         to={`/beneficiaries/${beneficiary.id}`}
                         label={`Voir la fiche de ${name}`}
+                        tooltip="Voir"
                         icon={Eye}
                       />
                       {/* Un dossier archivé est en lecture seule */}
@@ -197,6 +198,7 @@ export function BeneficiariesPage() {
                         <IconLink
                           to={`/beneficiaries/${beneficiary.id}/edit`}
                           label={`Modifier ${name}`}
+                          tooltip="Modifier"
                           icon={Pencil}
                         />
                       )}

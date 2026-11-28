@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardTitle } from '@/components/ui/card';
 import { FormAlert } from '@/components/ui/form-alert';
 import { Input } from '@/components/ui/input';
+import { Tooltip } from '@/components/ui/tooltip';
 import { getErrorMessage } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { Subtask, TaskDetails } from './types';
@@ -76,16 +77,18 @@ export function SubtaskList({ task }: { task: TaskDetails }) {
                 disabled={isReadOnly}
               />
               {!isReadOnly && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={`Supprimer la sous-tâche « ${subtask.label} »`}
-                  disabled={remove.isPending}
-                  onClick={() => remove.mutate(subtask.id)}
-                  className="border-0 text-muted"
-                >
-                  <X className="size-4" aria-hidden="true" />
-                </Button>
+                <Tooltip text="Supprimer">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label={`Supprimer la sous-tâche « ${subtask.label} »`}
+                    disabled={remove.isPending}
+                    onClick={() => remove.mutate(subtask.id)}
+                    className="border-0 text-muted"
+                  >
+                    <X className="size-4" aria-hidden="true" />
+                  </Button>
+                </Tooltip>
               )}
             </li>
           ))}

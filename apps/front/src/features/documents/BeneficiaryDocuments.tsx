@@ -285,11 +285,13 @@ function DocumentRow({
           <div className="flex">
             <IconButton
               label={`Modifier le document « ${document.title} »`}
+              tooltip="Modifier"
               icon={Pencil}
               onClick={onEdit}
             />
             <IconButton
               label={`Supprimer le document « ${document.title} »`}
+              tooltip="Supprimer"
               icon={Trash2}
               danger
               onClick={onDelete}

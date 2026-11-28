@@ -12,6 +12,7 @@ import type { TaskQueryFilters } from '@/features/tasks/useTasks';
 export const queryKeys = {
   session: ['session'],
   users: ['users'],
+  archivedUsers: ['users', 'archived'],
   filterPreference: (listing: Listing) => ['filter-preference', listing],
   beneficiaries: {
     lists: ['beneficiaries', 'list'],

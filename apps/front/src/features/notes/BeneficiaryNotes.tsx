@@ -135,11 +135,13 @@ export function BeneficiaryNotes({
                   <div className="flex w-[5.5rem] justify-end">
                     <IconButton
                       label={`Modifier la note « ${note.title} »`}
+                      tooltip="Modifier"
                       icon={Pencil}
                       onClick={() => open('edit', note)}
                     />
                     <IconButton
                       label={`Supprimer la note « ${note.title} »`}
+                      tooltip="Supprimer"
                       icon={Trash2}
                       danger
                       onClick={() => open('delete', note)}

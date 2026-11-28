@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ELLIPSIS, pageNumbers } from '@/lib/paginate';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
+import { Tooltip } from './tooltip';
 
 type PaginationProps = {
   page: number;
@@ -20,15 +21,17 @@ export function Pagination({ page, pageCount, onChange }: PaginationProps) {
 
   return (
     <nav aria-label="Pagination" className="flex justify-center gap-1">
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label="Page précédente"
-        disabled={page === 1}
-        onClick={() => onChange(page - 1)}
-      >
-        <ChevronLeft className="size-4" aria-hidden="true" />
-      </Button>
+      <Tooltip text="Page précédente">
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Page précédente"
+          disabled={page === 1}
+          onClick={() => onChange(page - 1)}
+        >
+          <ChevronLeft className="size-4" aria-hidden="true" />
+        </Button>
+      </Tooltip>
       {lists.map(({ siblings, className }) => (
         <ul key={siblings} className={cn('gap-1', className)}>
           {pageNumbers(page, pageCount, siblings).map((number, index) =>
@@ -60,15 +63,17 @@ export function Pagination({ page, pageCount, onChange }: PaginationProps) {
           )}
         </ul>
       ))}
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label="Page suivante"
-        disabled={page === pageCount}
-        onClick={() => onChange(page + 1)}
-      >
-        <ChevronRight className="size-4" aria-hidden="true" />
-      </Button>
+      <Tooltip text="Page suivante">
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Page suivante"
+          disabled={page === pageCount}
+          onClick={() => onChange(page + 1)}
+        >
+          <ChevronRight className="size-4" aria-hidden="true" />
+        </Button>
+      </Tooltip>
     </nav>
   );
 }
